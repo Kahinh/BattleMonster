@@ -1,0 +1,4 @@
+Dictionnaire = {
+    "EN" : {
+    }
+}
