@@ -12,7 +12,6 @@ from Classes.Monsters import Monsters
 from Classes.Items import Items
 from gitignore import postgresql
 
-
 #Si on est en local (Donc en prod)
 #conn = psycopg2.connect('dbname')
 conn = psycopg2.connect(f'host={postgresql.host} user={postgresql.user} password={postgresql.password} dbname={postgresql.dbname}')
@@ -134,6 +133,46 @@ resSQL = cur.fetchall()
 Rarities_list = {}
 for row in resSQL:
     Rarities_list[row[0]] = {}
-    Rarities_list[row[0]]["display_text"], Rarities_list[row[0]]["display_color"] = row[1], int(row[2], 16)
+    Rarities_list[row[0]]["display_text"], Rarities_list[row[0]]["display_color"], Rarities_list[row[0]]["gearscore"] = row[1], int(row[2], 16), row[7]
     Rarities_list[row[0]]["loot_rate"] = {}
     Rarities_list[row[0]]["loot_rate"]["common"], Rarities_list[row[0]]["loot_rate"]["rare"], Rarities_list[row[0]]["loot_rate"]["epic"], Rarities_list[row[0]]["loot_rate"]["legendary"] = float(row[3]), float(row[4]), float(row[5]), float(row[6])
+
+#Gamemodes
+cur.execute('select * from "GameModes"')
+resSQL = cur.fetchall()
+
+GameModes_list = {}
+for row in resSQL:
+    GameModes_list[row[1]] = {}
+    GameModes_list[row[1]]["scaling"] = {}
+    GameModes_list[row[1]]["scaling"]["hp"], GameModes_list[row[1]]["scaling"]["armor"], GameModes_list[row[1]]["scaling"]["letality"], GameModes_list[row[1]]["scaling"]["parry"], GameModes_list[row[1]]["scaling"]["damage"], GameModes_list[row[1]]["scaling"]["protect_crit"] = int(row[2]), int(row[3]), int(row[4]), int(row[5]), int(row[6]), int(row[13])
+    GameModes_list[row[1]]["roll_dices"] = [int(row[7]), int(row[8])]
+    GameModes_list[row[1]]["spawn_rates"] = {}
+    GameModes_list[row[1]]["spawn_rates"]["common"], GameModes_list[row[1]]["spawn_rates"]["rare"], GameModes_list[row[1]]["spawn_rates"]["epic"], GameModes_list[row[1]]["spawn_rates"]["legendary"] = float(row[9]), float(row[10]), float(row[11]), float(row[12])
+    GameModes_list[row[1]]["loots_slot"] = row[14]
+#Gamemodes_lootsslot
+cur.execute('select * from "GameModes_LootsSlot"')
+resSQL = cur.fetchall()
+
+GameModes_LootsSlot_list = {}
+for row in resSQL:
+    GameModes_LootsSlot_list[row[1]] = []
+    if row[2]: GameModes_LootsSlot_list[row[1]].append("weapon")
+    if row[3]: GameModes_LootsSlot_list[row[1]].append("head")
+    if row[4]: GameModes_LootsSlot_list[row[1]].append("torso")
+    if row[5]: GameModes_LootsSlot_list[row[1]].append("arms")
+    if row[6]: GameModes_LootsSlot_list[row[1]].append("legs")
+    if row[7]: GameModes_LootsSlot_list[row[1]].append("ring_right")
+    if row[8]: GameModes_LootsSlot_list[row[1]].append("ring_left")
+    if row[9]: GameModes_LootsSlot_list[row[1]].append("boots")
+    if row[10]: GameModes_LootsSlot_list[row[1]].append("gloves")
+    if row[11]: GameModes_LootsSlot_list[row[1]].append("shield")
+    if row[12]: GameModes_LootsSlot_list[row[1]].append("belt")
+    if row[13]: GameModes_LootsSlot_list[row[1]].append("lantern")
+    if row[14]: GameModes_LootsSlot_list[row[1]].append("pet")
+    if row[15]: GameModes_LootsSlot_list[row[1]].append("relic1")
+    if row[16]: GameModes_LootsSlot_list[row[1]].append("relic2")
+    if row[17]: GameModes_LootsSlot_list[row[1]].append("relic3")
+    if row[18]: GameModes_LootsSlot_list[row[1]].append("relic4")
+    if row[19]: GameModes_LootsSlot_list[row[1]].append("relic5")
+    if row[20]: GameModes_LootsSlot_list[row[1]].append("relic6")

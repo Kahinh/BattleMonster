@@ -164,7 +164,7 @@ class Slayers:
         }
         return stats
 
-    def CalculateDamage(self, Hit, Battle):
+    def CalculateDamage(self, Hit, Battle, user_id):
         stats = self.calculateStats()
         #On check si on fail
         isFail = random.choices(population=[True, False], weights=[stats[f"total_fail_{Hit}"], 1-stats[f"total_fail_{Hit}"]], k=1)
@@ -182,8 +182,12 @@ class Slayers:
             else:
                 #On check si on crit
                 isCrit = random.choices(population=[True, False], weights=[stats[f"total_crit_chance_{Hit}"], 1-stats[f"total_crit_chance_{Hit}"]], k=1)
+
+                #on récup le mult_spe
+                mult_spe = 1 if user_id not in Battle.slayers_data else Battle.slayers_data[user_id].mult_spe
+
                 #Calcul des dégâts
-                Damage = min(int(max(((stats[f"total_damage_{Hit}"]*(1 + (stats[f"total_crit_damage_{Hit}"] if isCrit[0] else 0)) * (1 + stats[f"total_final_damage_{Hit}"])) - (Battle.monster_class.protect_crit if isCrit[0] else 0)), 0)*(Bases_Bonuses_Slayers["ratio_armor"]/(Bases_Bonuses_Slayers["ratio_armor"]+max(((Battle.monster_class.armor*(1-stats[f"total_letality_per_{Hit}"]))-stats[f"total_letality_{Hit}"]),0)))), Battle.monster_class.base_hp)
+                Damage = min(int(max((((stats[f"total_damage_{Hit}"]*(1 + (stats[f"total_crit_damage_{Hit}"] if isCrit[0] else 0)) * (1 + stats[f"total_final_damage_{Hit}"])) * mult_spe) - (Battle.monster_class.protect_crit if isCrit[0] else 0)), 0)*(Bases_Bonuses_Slayers["ratio_armor"]/(Bases_Bonuses_Slayers["ratio_armor"]+max(((Battle.monster_class.armor*(1-stats[f"total_letality_per_{Hit}"]))-stats[f"total_letality_{Hit}"]),0)))), Battle.monster_class.base_hp)
                 Stacks_Earned = min(self.calculateStats()["total_stacks"] - self.special_stacks, self.calculateStats()[f"total_special_charge_{Hit}"])
                 self.special_stacks += Stacks_Earned
         return Damage, Stacks_Earned

@@ -34,8 +34,5 @@ import Functions.Combat.Functions
 
 #DATA
 import Data.Global.Global_Variables
-import Data.Global.Rate
-import Data.Combat.Combat_Variables
-import Data.Items.Loots
 
 #Localisation

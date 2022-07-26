@@ -1,4 +1,5 @@
 #list_with_rarity = [key for key, val in Monsters_list.items() if val.rarity=="rare"]
+from random import randint
 
 class Monsters:
   def __init__(
@@ -40,18 +41,21 @@ class Monsters:
     self.bg_url = bg_url
     self.roll_dices = 0
   
-  def updateStats(self, monster_hp_scaling, monster_difficulty_scaling, roll_dices):
+  def updateStats(self, monster_hp_scaling_based_on_active_players, monster_difficulty_scaling, roll_dices):
 
-    self.base_hp *= monster_hp_scaling
-    self.total_hp *= monster_hp_scaling
+    #On calcul le Roll_dice choisi dans la liste de choix
 
-    self.roll_dices += roll_dices
+    roll_dice = randint(roll_dices[0], roll_dices[1])
+    self.roll_dices += roll_dice
 
-    self.parry["parry_chance_L"] *= monster_difficulty_scaling
-    self.parry["parry_chance_H"] *= monster_difficulty_scaling
+    self.base_hp *= (monster_hp_scaling_based_on_active_players * monster_difficulty_scaling["hp"])
+    self.total_hp *= (monster_hp_scaling_based_on_active_players * monster_difficulty_scaling["hp"])
 
-    self.damage *= monster_difficulty_scaling
-    self.armor *= monster_difficulty_scaling
-    self.letality *= monster_difficulty_scaling
-    self.letality_per *= monster_difficulty_scaling
-    self.protect_crit *= monster_difficulty_scaling
+    self.parry["parry_chance_L"] *= monster_difficulty_scaling["parry"]
+    self.parry["parry_chance_H"] *= monster_difficulty_scaling["parry"]
+
+    self.damage *= monster_difficulty_scaling["damage"]
+    self.armor *= monster_difficulty_scaling["armor"]
+    self.letality *= monster_difficulty_scaling["letality"]
+    self.letality_per *= monster_difficulty_scaling["letality"]
+    self.protect_crit *= monster_difficulty_scaling["protect_crit"]

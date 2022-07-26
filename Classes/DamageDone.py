@@ -8,6 +8,7 @@ class DamageDone:
     eligible=False
     ):
     self.total_damage = total_damage
+    self.mult_spe = 1
     self.timestamp_next_hit = timestamp_next_hit
     self.eligible = eligible
 

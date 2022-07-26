@@ -35,11 +35,17 @@ Merci à vous de jouer et de partager le bot !
 - [X] Une seule attaque toutes les X minutes
 - [X] Message et gestion si joueur parry
 - [X] Message et gestion si joueur fail
+- [X] Prépa Spé 4 : Acharnement (mult_spe dans Slayers)
+- [X] Fusionner données spawn-hunts dans Combat_Variables & Rate
 
-- [] Fusionner spawn-hunts dans Combat_Variables & Rate
-Colonne : Mode de jeu / combat_variables / rates spawn
-Dict GameMode = {Combats_variables} {rates spawn}
+- [] Spe 3 (Surarmement)
+Pour la deuxième attaque ->
+If special == 3 (surarmement):
+    Damage, Stacks_Earned += … (après le parry_fail)
 
+- [] Prépa Spé 4 : Reset (X%) to increase mult_spe & reset stacks
+
+- [] Rajout de bonus supplémentaires pour les spé
 - [] Complétion de la BDD des Monstres
 - [] Pouvoir attaquer avec le spécial
 - [] Complétion de la BDD des Butins
@@ -47,6 +53,7 @@ Dict GameMode = {Combats_variables} {rates spawn}
 - [] Timeout View Items
 - [] Timeout Behemoths (Fuite) - TBC
 - [] Ajout d' "Achievements" : Nombre de Monstres tués, ...
+- [] Ajout d' "Achievements" pour le monstre : Display le nombre de dégâts occasionnés aux Slayers ....
 - [] Canal pour afficher les dégâts infligés par les joueurs
 - [] Spawn aléatoire des Monstres
 - [] Stockage des items dans une table IDSlayers -> IDItems

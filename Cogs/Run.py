@@ -50,28 +50,25 @@ class Run(lib.discord.ext.commands.Cog):
         for guild_id in lib.Data.Global.Global_Variables.battle_channels:
             if guild_id not in global_slayerlist: global_slayerlist[guild_id] = {}
             if guild_id not in global_battleslist: global_battleslist[guild_id] = {}
-            for spawn in lib.Data.Global.Rate.spawns:
+            for gamemode in lib.PostgreSQL.GameModes_list:
 
                 #Doit on faire spawn un monster ?
 
-                monster_hp_scaling = max(1, len(global_slayerlist[guild_id].keys()) * lib.Data.Combat.Combat_Variables.Combat_Variables[spawn]["hp_scaling_mult"] + lib.Data.Combat.Combat_Variables.Combat_Variables[spawn]["hp_scaling_fix"])
-                monster_difficulty_scaling = lib.Data.Combat.Combat_Variables.Combat_Variables[spawn]["difficulty_scaling"]
-                channel = self.bot.get_channel(lib.Data.Global.Global_Variables.battle_channels[guild_id][lib.tokens.var_TestProd][spawn])
+                monster_hp_scaling_based_on_active_players = max(1, len(global_slayerlist[guild_id].keys()))
+                channel = self.bot.get_channel(lib.Data.Global.Global_Variables.battle_channels[guild_id][lib.tokens.var_TestProd][gamemode])
 
                 #On calcule le behemoth a faire spawn en prenant random dans la liste.
-                rarity = lib.random.choices(list(lib.Data.Global.Rate.spawns["spawn_hunts"]), weights=list(lib.Data.Global.Rate.spawns["spawn_hunts"].values()), cum_weights=None, k=1)[0]
+                rarity = lib.random.choices(list(lib.PostgreSQL.GameModes_list[gamemode]["spawn_rates"]), weights=list(lib.PostgreSQL.GameModes_list[gamemode]["spawn_rates"].values()), cum_weights=None, k=1)[0]
                 monster_to_spawn = lib.random.choice([key for key, val in lib.PostgreSQL.Monsters_list.items() if val.rarity==rarity])
 
-                roll_dices = lib.random.randint(int(lib.Data.Combat.Combat_Variables.Combat_Variables[spawn]["roll_dices_min"]), int(lib.Data.Combat.Combat_Variables.Combat_Variables[spawn]["roll_dices_max"]))
-
-                await self.spawn_battle(guild_id, channel, monster_hp_scaling, monster_difficulty_scaling, monster_to_spawn, lib.PostgreSQL.Monsters_list, roll_dices, lib.Data.Items.Loots.loots_slots[spawn])
+                await self.spawn_battle(guild_id, channel, monster_hp_scaling_based_on_active_players, lib.PostgreSQL.GameModes_list[gamemode]["scaling"], monster_to_spawn, lib.PostgreSQL.Monsters_list, lib.PostgreSQL.GameModes_list[gamemode]["roll_dices"], lib.PostgreSQL.GameModes_LootsSlot_list[lib.PostgreSQL.GameModes_list[gamemode]["loots_slot"]])
                 
-    async def spawn_battle(self, guild_id, channel, monster_hp_scaling, monster_difficulty_scaling, monster_to_spawn, Monsters_list, roll_dices, loots_slots):
+    async def spawn_battle(self, guild_id, channel, monster_hp_scaling_based_on_active_players, monster_difficulty_scaling, monster_to_spawn, Monsters_list, roll_dices, loots_slots):
         global global_slayerlist
         global global_battleslist
         #On calcule l'embed
         monster_class = lib.deepcopy(Monsters_list[monster_to_spawn])
-        monster_class.updateStats(monster_hp_scaling, monster_difficulty_scaling, roll_dices)
+        monster_class.updateStats(monster_hp_scaling_based_on_active_players, monster_difficulty_scaling, roll_dices)
         embed = lib.Functions.Combat.Embed.create_embed_spawn(monster_class)
 
         view = Buttons_Battle()
@@ -90,7 +87,7 @@ class Run(lib.discord.ext.commands.Cog):
         global_slayerlist = await lib.Functions.Global.Tools.checkifguildslayerexist(global_slayerlist, interaction.guild_id, interaction.user)
 
         #On calcule les dégâts
-        Damage, Stacks_Earned = global_slayerlist[interaction.guild.id][interaction.user.id].CalculateDamage(hit, global_battleslist[interaction.guild.id][interaction.message.id])
+        Damage, Stacks_Earned = global_slayerlist[interaction.guild.id][interaction.user.id].CalculateDamage(hit, global_battleslist[interaction.guild.id][interaction.message.id], interaction.user.id)
 
         #On documente la Class DamageDone
         if interaction.user.id not in global_battleslist[interaction.guild.id][interaction.message.id].slayers_data:
