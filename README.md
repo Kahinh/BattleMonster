@@ -40,10 +40,12 @@ Merci à vous de jouer et de partager le bot !
 
 - [] Spe 3 (Surarmement)
 Pour la deuxième attaque ->
-If special == 3 (surarmement):
+If special == 3 (surarmement) & les 2 slots sont non vides:
     Damage, Stacks_Earned += … (après le parry_fail)
 
 - [] Prépa Spé 4 : Reset (X%) to increase mult_spe & reset stacks
+
+- [] Optimisation des rates avec table intermédiaire (gamemode_spawn_rate, rarities_loot_rates)
 
 - [] Rajout de bonus supplémentaires pour les spé
 - [] Complétion de la BDD des Monstres

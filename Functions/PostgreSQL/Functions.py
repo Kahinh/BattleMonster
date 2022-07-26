@@ -17,6 +17,24 @@ from gitignore import postgresql
 conn = psycopg2.connect(f'host={postgresql.host} user={postgresql.user} password={postgresql.password} dbname={postgresql.dbname}')
 cur = conn.cursor()
 
+#List GameModes_Spawn_Rates
+cur.execute('select * from "GameModes_Spawn_Rates"')
+resSQL = cur.fetchall()
+
+GameModes_Spawn_Rates_list = {}
+for row in resSQL:
+    if row[1] not in GameModes_Spawn_Rates_list: GameModes_Spawn_Rates_list[row[1]] = {}
+    GameModes_Spawn_Rates_list[row[1]][row[2]] = float(row[3])
+
+#List Rarities_Loot_Rates
+cur.execute('select * from "Rarities_Loot_Rates"')
+resSQL = cur.fetchall()
+
+Rarities_Loot_Rates_list = {}
+for row in resSQL:
+    if row[1] not in Rarities_Loot_Rates_list: Rarities_Loot_Rates_list[row[1]] = {}
+    Rarities_Loot_Rates_list[row[1]][row[2]] = float(row[3])
+
 #List Behemoths
 cur.execute('select * from "Monsters"')
 resSQL = cur.fetchall()
@@ -133,9 +151,8 @@ resSQL = cur.fetchall()
 Rarities_list = {}
 for row in resSQL:
     Rarities_list[row[0]] = {}
-    Rarities_list[row[0]]["display_text"], Rarities_list[row[0]]["display_color"], Rarities_list[row[0]]["gearscore"] = row[1], int(row[2], 16), row[7]
-    Rarities_list[row[0]]["loot_rate"] = {}
-    Rarities_list[row[0]]["loot_rate"]["common"], Rarities_list[row[0]]["loot_rate"]["rare"], Rarities_list[row[0]]["loot_rate"]["epic"], Rarities_list[row[0]]["loot_rate"]["legendary"] = float(row[3]), float(row[4]), float(row[5]), float(row[6])
+    Rarities_list[row[0]]["display_text"], Rarities_list[row[0]]["display_color"], Rarities_list[row[0]]["gearscore"], Rarities_list[row[0]]["price"] = row[1], int(row[2], 16), int(row[3]), int(row[4])
+    Rarities_list[row[0]]["loot_rate"] = Rarities_Loot_Rates_list[row[0]]
 
 #Gamemodes
 cur.execute('select * from "GameModes"')
@@ -145,34 +162,36 @@ GameModes_list = {}
 for row in resSQL:
     GameModes_list[row[1]] = {}
     GameModes_list[row[1]]["scaling"] = {}
-    GameModes_list[row[1]]["scaling"]["hp"], GameModes_list[row[1]]["scaling"]["armor"], GameModes_list[row[1]]["scaling"]["letality"], GameModes_list[row[1]]["scaling"]["parry"], GameModes_list[row[1]]["scaling"]["damage"], GameModes_list[row[1]]["scaling"]["protect_crit"] = int(row[2]), int(row[3]), int(row[4]), int(row[5]), int(row[6]), int(row[13])
+    GameModes_list[row[1]]["scaling"]["hp"], GameModes_list[row[1]]["scaling"]["armor"], GameModes_list[row[1]]["scaling"]["letality"], GameModes_list[row[1]]["scaling"]["parry"], GameModes_list[row[1]]["scaling"]["damage"], GameModes_list[row[1]]["scaling"]["protect_crit"] = int(row[2]), int(row[3]), int(row[4]), int(row[5]), int(row[6]), int(row[9])
     GameModes_list[row[1]]["roll_dices"] = [int(row[7]), int(row[8])]
-    GameModes_list[row[1]]["spawn_rates"] = {}
-    GameModes_list[row[1]]["spawn_rates"]["common"], GameModes_list[row[1]]["spawn_rates"]["rare"], GameModes_list[row[1]]["spawn_rates"]["epic"], GameModes_list[row[1]]["spawn_rates"]["legendary"] = float(row[9]), float(row[10]), float(row[11]), float(row[12])
-    GameModes_list[row[1]]["loots_slot"] = row[14]
+    GameModes_list[row[1]]["spawn_rates"] = GameModes_Spawn_Rates_list[row[1]]
+    GameModes_list[row[1]]["loots_slot"] = row[10]
+    GameModes_list[row[1]]["invoke"] = {}
+    GameModes_list[row[1]]["invoke"]["start"], GameModes_list[row[1]]["invoke"]["increment"] = float(row[11]), float(row[12])
+
 #Gamemodes_lootsslot
-cur.execute('select * from "GameModes_LootsSlot"')
+cur.execute('select * from "LootsSlot"')
 resSQL = cur.fetchall()
 
-GameModes_LootsSlot_list = {}
+LootsSlot_list = {}
 for row in resSQL:
-    GameModes_LootsSlot_list[row[1]] = []
-    if row[2]: GameModes_LootsSlot_list[row[1]].append("weapon")
-    if row[3]: GameModes_LootsSlot_list[row[1]].append("head")
-    if row[4]: GameModes_LootsSlot_list[row[1]].append("torso")
-    if row[5]: GameModes_LootsSlot_list[row[1]].append("arms")
-    if row[6]: GameModes_LootsSlot_list[row[1]].append("legs")
-    if row[7]: GameModes_LootsSlot_list[row[1]].append("ring_right")
-    if row[8]: GameModes_LootsSlot_list[row[1]].append("ring_left")
-    if row[9]: GameModes_LootsSlot_list[row[1]].append("boots")
-    if row[10]: GameModes_LootsSlot_list[row[1]].append("gloves")
-    if row[11]: GameModes_LootsSlot_list[row[1]].append("shield")
-    if row[12]: GameModes_LootsSlot_list[row[1]].append("belt")
-    if row[13]: GameModes_LootsSlot_list[row[1]].append("lantern")
-    if row[14]: GameModes_LootsSlot_list[row[1]].append("pet")
-    if row[15]: GameModes_LootsSlot_list[row[1]].append("relic1")
-    if row[16]: GameModes_LootsSlot_list[row[1]].append("relic2")
-    if row[17]: GameModes_LootsSlot_list[row[1]].append("relic3")
-    if row[18]: GameModes_LootsSlot_list[row[1]].append("relic4")
-    if row[19]: GameModes_LootsSlot_list[row[1]].append("relic5")
-    if row[20]: GameModes_LootsSlot_list[row[1]].append("relic6")
+    LootsSlot_list[row[1]] = []
+    if row[2]: LootsSlot_list[row[1]].append("weapon")
+    if row[3]: LootsSlot_list[row[1]].append("head")
+    if row[4]: LootsSlot_list[row[1]].append("torso")
+    if row[5]: LootsSlot_list[row[1]].append("arms")
+    if row[6]: LootsSlot_list[row[1]].append("legs")
+    if row[7]: LootsSlot_list[row[1]].append("ring_right")
+    if row[8]: LootsSlot_list[row[1]].append("ring_left")
+    if row[9]: LootsSlot_list[row[1]].append("boots")
+    if row[10]: LootsSlot_list[row[1]].append("gloves")
+    if row[11]: LootsSlot_list[row[1]].append("shield")
+    if row[12]: LootsSlot_list[row[1]].append("belt")
+    if row[13]: LootsSlot_list[row[1]].append("lantern")
+    if row[14]: LootsSlot_list[row[1]].append("pet")
+    if row[15]: LootsSlot_list[row[1]].append("relic1")
+    if row[16]: LootsSlot_list[row[1]].append("relic2")
+    if row[17]: LootsSlot_list[row[1]].append("relic3")
+    if row[18]: LootsSlot_list[row[1]].append("relic4")
+    if row[19]: LootsSlot_list[row[1]].append("relic5")
+    if row[20]: LootsSlot_list[row[1]].append("relic6")

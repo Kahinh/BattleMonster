@@ -61,7 +61,7 @@ class Run(lib.discord.ext.commands.Cog):
                 rarity = lib.random.choices(list(lib.PostgreSQL.GameModes_list[gamemode]["spawn_rates"]), weights=list(lib.PostgreSQL.GameModes_list[gamemode]["spawn_rates"].values()), cum_weights=None, k=1)[0]
                 monster_to_spawn = lib.random.choice([key for key, val in lib.PostgreSQL.Monsters_list.items() if val.rarity==rarity])
 
-                await self.spawn_battle(guild_id, channel, monster_hp_scaling_based_on_active_players, lib.PostgreSQL.GameModes_list[gamemode]["scaling"], monster_to_spawn, lib.PostgreSQL.Monsters_list, lib.PostgreSQL.GameModes_list[gamemode]["roll_dices"], lib.PostgreSQL.GameModes_LootsSlot_list[lib.PostgreSQL.GameModes_list[gamemode]["loots_slot"]])
+                await self.spawn_battle(guild_id, channel, monster_hp_scaling_based_on_active_players, lib.PostgreSQL.GameModes_list[gamemode]["scaling"], monster_to_spawn, lib.PostgreSQL.Monsters_list, lib.PostgreSQL.GameModes_list[gamemode]["roll_dices"], lib.PostgreSQL.LootsSlot_list[lib.PostgreSQL.GameModes_list[gamemode]["loots_slot"]])
                 
     async def spawn_battle(self, guild_id, channel, monster_hp_scaling_based_on_active_players, monster_difficulty_scaling, monster_to_spawn, Monsters_list, roll_dices, loots_slots):
         global global_slayerlist
