@@ -24,6 +24,7 @@ class Slayers:
         specialization=1,
         inventory_items=[],
         inventory_specializations=[1],
+        slots={}
         ):
         self.Run = Run
         self.name = name
@@ -36,8 +37,7 @@ class Slayers:
         self.specialization = specialization
         self.inventory_items = inventory_items
         self.inventory_specializations = inventory_specializations
-        self.slots = {
-        }
+        self.slots = slots
 
     def calculateBonuses(self):
 

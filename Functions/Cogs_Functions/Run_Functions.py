@@ -68,13 +68,13 @@ async def calculate_loot(self, message_id):
                 if loot is not None:
                     if loot in self.slayerlist[slayer_id].inventory_items:
                         isAlready = True
-                        self.slayerlist[slayer_id].money += self.BDD["Rarities_list"][self.BDD["Items_list"][loot]].price
+                        self.slayerlist[slayer_id].money += self.BDD["Rarities_list"][self.BDD["Items_list"][loot].rarity]["price"]
                     else:
                         self.slayerlist[slayer_id].inventory_items.append(loot)
-                        view = lib.Buttons.Buttons_Loot(self, slayer_id, loot)
                     
                     #On calcule l'embed à poster
-                    embed = lib.Embed.create_embed_loot(self, loot, isAlready, isDetailed)
-
-                    #On poste l'embed
-                    view.message = await self.channels["loots"].send(embed=embed, view=view)
+                    view = lib.Buttons.Buttons_Loot(self, slayer_id, loot, isAlready)
+                    embed = lib.Embed.create_embed_loot(self, loot, isAlready)
+                    view.message = await self.channels["loots"].send(content=f"<@{slayer_id}>", embed=embed, view=view)
+    
+    lib.PostgreSQL_Tools.updateTables(self.slayerlist)

@@ -50,7 +50,7 @@ def get_ephemeralAttack(self, Damage, Hit, Stacks_Earned, slayer_class, battle_c
 
     return ephemeral_message
 
-def get_ephemeralLootReaction(isGoodSlayer, reaction, loot):
+def get_ephemeralLootReaction(self, interaction, isGoodSlayer, reaction, loot):
     ephemeral_message = ""
     ephemeral_message += "Tu as cliqué !"
     return ephemeral_message

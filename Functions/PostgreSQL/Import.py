@@ -1,6 +1,6 @@
 import datetime
 
-def importSlayers(conn, cur, postgres_insert_query, records_to_insert):
+def ImportTable(conn, cur, postgres_insert_query, records_to_insert):
     
     try:
         result = cur.executemany(postgres_insert_query, records_to_insert)

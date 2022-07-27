@@ -7,10 +7,11 @@ class Run(lib.discord.ext.commands.Cog):
         self.bot = bot
 
         self.battleslist = {}
-        self.slayerlist = {}
 
         self.BDD = lib.PostgreSQL.extractBDDs()
         self.battle_monster.start()
+
+        self.slayerlist = lib.PostgreSQL.get_PostgreSQL_Slayerslist(self)
 
     @property
     def channels(self):

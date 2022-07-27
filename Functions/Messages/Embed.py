@@ -28,16 +28,27 @@ def create_embed_spawn(self, monster_class):
     #embed.set_footer(text="")
     return embed
 
-def create_embed_loot(self, loot, isAlready, isDetailed):
+def create_embed_loot(self, loot, isAlready):
 
     Items_list = self.BDD["Items_list"]
     Rarities_list = self.BDD["Rarities_list"]
+    loot_price = Rarities_list[Items_list[loot].rarity]["price"]
+
+    Description = "Félicitations ! Vous avez obtenu un butin !" \
+        f"\n{Items_list[loot].description}"
+    #Setup Description
+    if isAlready:
+        Description += f"\n\nMalheureusement, tu possèdes déjà cet objet. Il a donc été vendu pour **{loot_price}** 🪙."
+    else:
+        Description += "\n\nQue souhaites-tu faire désormais ? L'équiper ? Le vendre ? Le laisser dans ton inventaire ?"
+
 
     embed=lib.discord.Embed(title=f"{Items_list[loot].name}",
     description= \
-        f"{Items_list[loot].description}",
+        f"{Description}",
     color=Rarities_list[Items_list[loot].rarity]['display_color']
     )
+
     if Items_list[loot].img_url is not None:
         embed.set_thumbnail(url=f"{Items_list[loot].img_url}")
     #embed.set_footer(text="")
