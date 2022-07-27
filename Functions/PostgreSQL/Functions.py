@@ -17,30 +17,25 @@ from gitignore import postgresql
 conn = psycopg2.connect(f'host={postgresql.host} user={postgresql.user} password={postgresql.password} dbname={postgresql.dbname}')
 cur = conn.cursor()
 
-#List GameModes_Spawn_Rates
-cur.execute('select * from "GameModes_Spawn_Rates"')
-resSQL = cur.fetchall()
+def get_resSQL(table):
+    cur.execute(f'select * from "{table}"')
+    return cur.fetchall()
 
+#List GameModes_Spawn_Rates
 GameModes_Spawn_Rates_list = {}
-for row in resSQL:
+for row in get_resSQL("GameModes_Spawn_Rates"):
     if row[1] not in GameModes_Spawn_Rates_list: GameModes_Spawn_Rates_list[row[1]] = {}
     GameModes_Spawn_Rates_list[row[1]][row[2]] = float(row[3])
 
 #List Rarities_Loot_Rates
-cur.execute('select * from "Rarities_Loot_Rates"')
-resSQL = cur.fetchall()
-
 Rarities_Loot_Rates_list = {}
-for row in resSQL:
+for row in get_resSQL("Rarities_Loot_Rates"):
     if row[1] not in Rarities_Loot_Rates_list: Rarities_Loot_Rates_list[row[1]] = {}
     Rarities_Loot_Rates_list[row[1]][row[2]] = float(row[3])
 
-#List Behemoths
-cur.execute('select * from "Monsters"')
-resSQL = cur.fetchall()
-
+#List Monsters
 Monsters_list = {}
-for row in resSQL:
+for row in get_resSQL("Monsters"):
     Monsters_list[row[0]] = Monsters(\
         name=row[1],
         description=row[2],
@@ -60,11 +55,8 @@ for row in resSQL:
     )
 
 #List Items
-cur.execute('select * from "Items"')
-resSQL = cur.fetchall()
-
 Items_list = {}
-for row in resSQL:
+for row in get_resSQL("Items"):
     Items_list[row[0]] = Items(\
     name = row[1],
     description = row[2],
@@ -135,31 +127,21 @@ Bases_Bonuses_Slayers = {
     "ratio_armor" : int(resSQL[0][19])
 }
 
-#Elements
-cur.execute('select * from "Elements"')
-resSQL = cur.fetchall()
-
 Elements_list = {}
-for row in resSQL:
+for row in get_resSQL("Elements"):
     Elements_list[row[0]] = {}
     Elements_list[row[0]]["display_text"], Elements_list[row[0]]["display_emote"] = row[1], row[2]
 
 #Rarities
-cur.execute('select * from "Rarities"')
-resSQL = cur.fetchall()
-
 Rarities_list = {}
-for row in resSQL:
+for row in get_resSQL("Rarities"):
     Rarities_list[row[0]] = {}
     Rarities_list[row[0]]["display_text"], Rarities_list[row[0]]["display_color"], Rarities_list[row[0]]["gearscore"], Rarities_list[row[0]]["price"] = row[1], int(row[2], 16), int(row[3]), int(row[4])
     Rarities_list[row[0]]["loot_rate"] = Rarities_Loot_Rates_list[row[0]]
 
 #Gamemodes
-cur.execute('select * from "GameModes"')
-resSQL = cur.fetchall()
-
 GameModes_list = {}
-for row in resSQL:
+for row in get_resSQL("GameModes"):
     GameModes_list[row[1]] = {}
     GameModes_list[row[1]]["scaling"] = {}
     GameModes_list[row[1]]["scaling"]["hp"], GameModes_list[row[1]]["scaling"]["armor"], GameModes_list[row[1]]["scaling"]["letality"], GameModes_list[row[1]]["scaling"]["parry"], GameModes_list[row[1]]["scaling"]["damage"], GameModes_list[row[1]]["scaling"]["protect_crit"] = int(row[2]), int(row[3]), int(row[4]), int(row[5]), int(row[6]), int(row[9])
@@ -170,11 +152,8 @@ for row in resSQL:
     GameModes_list[row[1]]["invoke"]["start"], GameModes_list[row[1]]["invoke"]["increment"] = float(row[11]), float(row[12])
 
 #Gamemodes_lootsslot
-cur.execute('select * from "LootsSlot"')
-resSQL = cur.fetchall()
-
 LootsSlot_list = {}
-for row in resSQL:
+for row in get_resSQL("LootsSlot"):
     LootsSlot_list[row[1]] = []
     if row[2]: LootsSlot_list[row[1]].append("weapon")
     if row[3]: LootsSlot_list[row[1]].append("head")

@@ -19,6 +19,10 @@ import gitignore.tokens as tokens
 #SQL REQUESTS
 import Functions.PostgreSQL.Functions as PostgreSQL
 
+#COGS
+import Cogs.Buttons as Buttons
+import Cogs.Run as Run
+
 #CLASSES
 import Classes.Battles
 import Classes.DamageDone
@@ -28,9 +32,9 @@ import Classes.Slayers
 import Classes.Specialization
 
 #FUNCTIONS
-import Functions.Global.Tools
-import Functions.Combat.Embed
-import Functions.Combat.Functions
+import Functions.Messages.Embed as Embed
+import Functions.Messages.Ephemeral as Ephemeral
+import Functions.Run.Functions
 
 #DATA
 import Data.Global.Global_Variables

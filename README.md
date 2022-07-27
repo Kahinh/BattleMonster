@@ -37,6 +37,8 @@ Merci à vous de jouer et de partager le bot !
 - [X] Message et gestion si joueur fail
 - [X] Prépa Spé 4 : Acharnement (mult_spe dans Slayers)
 - [X] Fusionner données spawn-hunts dans Combat_Variables & Rate
+- [X] Optimisation des rates avec table intermédiaire (gamemode_spawn_rate, rarities_loot_rates)
+- [X] Timeout View Items
 
 - [] Spe 3 (Surarmement)
 Pour la deuxième attaque ->
@@ -45,14 +47,11 @@ If special == 3 (surarmement) & les 2 slots sont non vides:
 
 - [] Prépa Spé 4 : Reset (X%) to increase mult_spe & reset stacks
 
-- [] Optimisation des rates avec table intermédiaire (gamemode_spawn_rate, rarities_loot_rates)
-
 - [] Rajout de bonus supplémentaires pour les spé
 - [] Complétion de la BDD des Monstres
 - [] Pouvoir attaquer avec le spécial
 - [] Complétion de la BDD des Butins
 - [] Loop pour Regen & Revive (Sauf première boucle) 5% toutes les Xmin
-- [] Timeout View Items
 - [] Timeout Behemoths (Fuite) - TBC
 - [] Ajout d' "Achievements" : Nombre de Monstres tués, ...
 - [] Ajout d' "Achievements" pour le monstre : Display le nombre de dégâts occasionnés aux Slayers ....

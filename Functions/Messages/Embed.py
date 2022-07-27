@@ -1,7 +1,7 @@
 import lib
 
 def create_embed_spawn(monster_class):
-    embed=lib.discord.Embed(title=f"{monster_class.name} ({monster_class.base_hp}/{monster_class.total_hp} ❤️)",
+    embed=lib.discord.Embed(title=f"{monster_class.name} ({'{:,}'.format(monster_class.base_hp).replace(',', ' ')}/{'{:,}'.format(monster_class.total_hp).replace(',', ' ')} ❤️)",
     description= \
         f"**Monstre {lib.PostgreSQL.Rarities_list[monster_class.rarity]['display_text'].capitalize()}**\n" \
         f"⚔️ Puissance : **{monster_class.damage}** {lib.PostgreSQL.Elements_list[monster_class.element]['display_emote']}\n" \
@@ -24,5 +24,13 @@ def create_embed_spawn(monster_class):
     #embed.set_footer(text="")
     return embed
 
-def create_loot_message():
-    pass
+def create_embed_loot(loot, isAlready):
+    embed=lib.discord.Embed(title=f"{lib.PostgreSQL.Items_list[loot].name}",
+    description= \
+        f"{lib.PostgreSQL.Items_list[loot].description}",
+    color=lib.PostgreSQL.Rarities_list[lib.PostgreSQL.Items_list[loot].rarity]['display_color']
+    )
+    if lib.PostgreSQL.Items_list[loot].img_url is not None:
+        embed.set_thumbnail(url=f"{lib.PostgreSQL.Items_list[loot].img_url}")
+    #embed.set_footer(text="")
+    return embed

@@ -11,6 +11,7 @@ sys.path.insert(0, parentdir)
 from Functions.PostgreSQL.Functions import Items_list
 from Classes.Specialization import Specializations_list
 from Functions.PostgreSQL.Functions import Bases_Bonuses_Slayers
+from Functions.PostgreSQL.Functions import Rarities_Loot_Rates_list
 
 class Slayers:
     def __init__(
@@ -160,7 +161,8 @@ class Slayers:
             "total_stacks_reduction" : bonuses["stacks_reduction"],
             "total_stacks" : max(Specializations_list[self.specialization].stacks - bonuses["stacks_reduction"], 1),
             "total_vivacity" : bonuses["vivacity"],
-            "total_cooldown" : Bases_Bonuses_Slayers["cooldown"] - bonuses["vivacity"]
+            "total_cooldown" : Bases_Bonuses_Slayers["cooldown"] - bonuses["vivacity"],
+            "total_luck" : min(max(bonuses["luck"],0),1)
         }
         return stats
 
@@ -192,8 +194,17 @@ class Slayers:
                 self.special_stacks += Stacks_Earned
         return Damage, Stacks_Earned
 
-    def GetLoot(self):
-        pass
+    def GetLoot(self, element, rarity):
+
+        stats = self.calculateStats()
+        loot = None
+
+        isLoot = random.choices(population=[True, False], weights=[stats[f"total_luck"], 1-stats[f"total_luck"]], k=1)
+        if isLoot[0]:
+            rarity_loot = random.choices(population=list(Rarities_Loot_Rates_list[rarity]), weights=list(Rarities_Loot_Rates_list[rarity].values()), k=1)
+            loot = random.choice([key for key, val in Items_list.items() if val.element==element and val.rarity==rarity_loot[0]])
+        
+        return loot
 
     def GetDamage(self, damage):
         self.damage_taken += damage
@@ -203,6 +214,7 @@ class Slayers:
 
     def Regen(self):
         pass
+
 
 
 
