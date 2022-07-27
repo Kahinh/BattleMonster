@@ -8,44 +8,24 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 
-from Functions.PostgreSQL.Functions import Items_list
 from Classes.Specialization import Specializations_list
-from Functions.PostgreSQL.Functions import Bases_Bonuses_Slayers
-from Functions.PostgreSQL.Functions import Rarities_Loot_Rates_list
 
 class Slayers:
     def __init__(
-        self, 
+        self,
+        Run, 
         name,
         creation_date=datetime.datetime.timestamp(datetime.datetime.now()),
         xp=0,
         money=10,
         damage_taken=0,
         special_stacks=0,
-        faction="",
+        faction=0,
         specialization=1,
         inventory_items=[],
         inventory_specializations=[1],
-        slot_weapon=None,
-        slot_head=None,
-        slot_torso=None,
-        slot_arms=None,
-        slot_legs=None,
-        slot_ring_right=None,
-        slot_ring_left=None,
-        slot_boots=None,
-        slot_gloves=None,
-        slot_second_weapon=None,
-        slot_belt=None,
-        slot_lantern=None,
-        slot_pet=None,
-        slot_relic1=None,
-        slot_relic2=None,
-        slot_relic3=None,
-        slot_relic4=None,
-        slot_relic5=None,
-        slot_relic6=None,
         ):
+        self.Run = Run
         self.name = name
         self.creation_date = creation_date
         self.xp = xp
@@ -57,28 +37,13 @@ class Slayers:
         self.inventory_items = inventory_items
         self.inventory_specializations = inventory_specializations
         self.slots = {
-            "weapon" : slot_weapon,
-            "head" : slot_head,
-            "torso" : slot_torso,
-            "arms" : slot_arms,
-            "legs" : slot_legs,
-            "ring_right" : slot_ring_right,
-            "ring_left" : slot_ring_left,
-            "boots" : slot_boots,
-            "gloves" : slot_gloves,
-            "second_weapon" : slot_second_weapon,
-            "belt" : slot_belt,
-            "lantern" : slot_lantern,
-            "pet" : slot_pet,
-            "relic1": slot_relic1,
-            "relic2": slot_relic2,
-            "relic3": slot_relic3,
-            "relic4": slot_relic4,
-            "relic5": slot_relic5,
-            "relic6": slot_relic6
         }
 
     def calculateBonuses(self):
+
+        Bases_Bonuses_Slayers = self.Run.BDD["Bases_Bonuses_Slayers"]
+        Items_list = self.Run.BDD["Items_list"]
+
         bonuses = {
             "armor" : Bases_Bonuses_Slayers["armor"],
             "armor_per" : 0,
@@ -126,6 +91,9 @@ class Slayers:
         return bonuses
 
     def calculateStats(self):
+
+        Bases_Bonuses_Slayers = self.Run.BDD["Bases_Bonuses_Slayers"]
+
         bonuses = self.calculateBonuses()
         stats = {
             "total_armor" : int(bonuses["armor"]*(1+bonuses["armor_per"])),
@@ -167,6 +135,10 @@ class Slayers:
         return stats
 
     def CalculateDamage(self, Hit, Battle, user_id):
+
+        Bases_Bonuses_Slayers = self.Run.BDD["Bases_Bonuses_Slayers"]
+        Items_list = self.Run.BDD["Items_list"]
+
         stats = self.calculateStats()
         #On check si on fail
         isFail = random.choices(population=[True, False], weights=[stats[f"total_fail_{Hit}"], 1-stats[f"total_fail_{Hit}"]], k=1)
@@ -195,6 +167,9 @@ class Slayers:
         return Damage, Stacks_Earned
 
     def GetLoot(self, element, rarity):
+
+        Items_list = self.Run.BDD["Items_list"]
+        Rarities_Loot_Rates_list = self.Run.BDD["Rarities_Loot_Rates_list"]
 
         stats = self.calculateStats()
         loot = None

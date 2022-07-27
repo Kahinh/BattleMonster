@@ -10,7 +10,7 @@ class Buttons_Battle(lib.discord.ui.View):
 
     @lib.discord.ui.button(label='Attaque Légère', style=lib.discord.ButtonStyle.green)
     async def light(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
-        isDead = await lib.Functions.Run.Functions.attack(self.Run, interaction, "L")
+        isDead = await lib.Run_Functions.attack(self.Run, interaction, "L")
         if isDead:
             for item in self.children:
                 item.disabled = True
@@ -18,7 +18,7 @@ class Buttons_Battle(lib.discord.ui.View):
 
     @lib.discord.ui.button(label='Attaque Lourde', style=lib.discord.ButtonStyle.blurple)
     async def heavy(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
-        isDead = await lib.Functions.Run.Functions.attack(self.Run, interaction, "L")
+        isDead = await lib.Run_Functions.attack(self.Run, interaction, "L")
         if isDead:
             for item in self.children:
                 item.disabled = True
@@ -35,24 +35,47 @@ class Buttons_Battle(lib.discord.ui.View):
 
 
 class Buttons_Loot(lib.discord.ui.View):
-    def __init__(self, Run):
+    def __init__(self, Run, slayer_id, loot):
         super().__init__(timeout=600)
         self.Run = Run
+        self.slayer_id = slayer_id
+        self.loot = loot
+        self.isDetailed = False
 
     async def on_timeout(self) -> None:
         for item in self.children:
             item.disabled = True
-        await self.message.edit(view=None)
+        embed = lib.Embed.create_embed_loot(self.loot, False, False)
+        await self.message.edit(embed=embed, view=None)
         self.stop()
 
     @lib.discord.ui.button(label='Détails', style=lib.discord.ButtonStyle.green)
     async def details(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
-        pass
-
+        self.isDetailed = False if self.isDetailed else True
+        if self.slayer_id == interaction.user.id:
+            embed = lib.Embed.create_embed_loot(self.loot, False, self.isDetailed)
+            self.message.edit(embed=embed)
+        else:
+            await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(False, "detailed", self.loot)}', ephemeral=True)
+        
     @lib.discord.ui.button(label='Équiper', style=lib.discord.ButtonStyle.blurple)
     async def equip(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
-        pass
+        if self.slayer_id == interaction.user.id:
+            self.Run.slayerlist[interaction.user.id].slots[lib.PostgreSQL.Items_list[self.loot].slot] = self.loot
+            await self.message.edit(view=None)
+            await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(True, "equip", self.loot)}', ephemeral=True)
+            self.stop()
+        else:
+            await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(False, "equip", self.loot)}', ephemeral=True)
+
 
     @lib.discord.ui.button(label='Vendre', style=lib.discord.ButtonStyle.red)
     async def sell(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
-        pass
+        if self.slayer_id == interaction.user.id:
+            self.Run.slayerlist[interaction.user.id].money += lib.PostgreSQL.Rarities_list[lib.PostgreSQL.Items_list[self.loot].rarity]["price"]
+            self.Run.slayerlist[interaction.user.id].inventory_items.remove(self.loot)
+            await self.message.edit(view=None)
+            await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(True, "sell", self.loot)}', ephemeral=True)
+            self.stop()
+        else:
+            await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(False, "sell", self.loot)}', ephemeral=True)

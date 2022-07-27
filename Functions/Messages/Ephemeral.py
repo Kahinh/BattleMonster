@@ -1,6 +1,9 @@
 import lib
 
-def get_ephemeral_message(Damage, Hit, Stacks_Earned, slayer_class, battle_class, user_id, canAttack):
+def get_ephemeralAttack(self, Damage, Hit, Stacks_Earned, slayer_class, battle_class, user_id, canAttack):
+
+    Bases_Bonuses_Slayers = self.BDD["Bases_Bonuses_Slayers"]
+    Items_list = self.BDD["Items_list"]
 
     ephemeral_message = ""
     if Hit == "L":
@@ -45,4 +48,9 @@ def get_ephemeral_message(Damage, Hit, Stacks_Earned, slayer_class, battle_class
         #Puis, on rajoute la vivacité !
         ephemeral_message += f"\n\n> Grâce à ta vivacité de {slayer_class.calculateStats()['total_vivacity']}, tu pourras attaquer de nouveau dans **{slayer_class.calculateStats()['total_cooldown']}s**."
 
+    return ephemeral_message
+
+def get_ephemeralLootReaction(isGoodSlayer, reaction, loot):
+    ephemeral_message = ""
+    ephemeral_message += "Tu as cliqué !"
     return ephemeral_message

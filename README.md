@@ -40,6 +40,8 @@ Merci à vous de jouer et de partager le bot !
 - [X] Optimisation des rates avec table intermédiaire (gamemode_spawn_rate, rarities_loot_rates)
 - [X] Timeout View Items
 
+- [] PostgreSQL en self.table (Fonction pour récup chaque table)
+
 - [] Spe 3 (Surarmement)
 Pour la deuxième attaque ->
 If special == 3 (surarmement) & les 2 slots sont non vides:

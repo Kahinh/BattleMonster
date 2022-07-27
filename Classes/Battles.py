@@ -5,11 +5,13 @@ battle_bonuses = {
 class Battles:
   def __init__(
     self, 
+    gamemode,
     loots_slots,
     monster_class,
-    last_hits ,
+    last_hits,
     slayers_data
     ):
+    self.gamemode = gamemode
     self.loots_slots = loots_slots
     self.monster_class = monster_class
     self.last_hits = last_hits
