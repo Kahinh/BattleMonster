@@ -12,8 +12,9 @@ class DamageDone:
     self.timestamp_next_hit = timestamp_next_hit
     self.eligible = eligible
 
-  def updateClass(self, Damage, Cooldown):
-    self.timestamp_next_hit = datetime.datetime.timestamp(datetime.datetime.now()) + Cooldown
+  def updateClass(self, Damage, Cooldown=None):
+    if Cooldown is not None:
+      self.timestamp_next_hit = datetime.datetime.timestamp(datetime.datetime.now()) + Cooldown
     if Damage > 0:
       self.total_damage += Damage
       self.eligible = True

@@ -1,46 +1,52 @@
-from time import time
-from tkinter import DISABLED
-
 from async_timeout import Timeout, timeout
 import lib
 
+print("Buttons : √")
+
 class Buttons_Battle(lib.discord.ui.View):
-    def __init__(self, Run):
+    def __init__(self, Main, cMonster, rElement, rRarity):
         super().__init__()
-        self.Run = Run
+        self.Main = Main
+        self.cMonster = cMonster
+        self.rElement = rElement
+        self.rRarity = rRarity
 
     @lib.discord.ui.button(label='Attaque Légère', style=lib.discord.ButtonStyle.green)
     async def light(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
-        isDead = await lib.Run_Functions.attack(self.Run, interaction, "L")
+        isDead = await lib.Battle_Functions.attack(self, interaction, "L")
         if isDead:
             for item in self.children:
                 item.disabled = True
+            del(self.cMonster)
             self.stop()
 
     @lib.discord.ui.button(label='Attaque Lourde', style=lib.discord.ButtonStyle.blurple)
     async def heavy(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
-        isDead = await lib.Run_Functions.attack(self.Run, interaction, "L")
+        isDead = await lib.Battle_Functions.attack(self, interaction, "H")
         if isDead:
             for item in self.children:
                 item.disabled = True
+            del(self.cMonster)
             self.stop()
 
-    #@lib.discord.ui.button(label='Spécial', style=lib.discord.ButtonStyle.red)
-    #async def special(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
-        ##Check Guild ID & User ID
-        #global global_slayerlist
-        #global global_battleslist
-        #global_slayerlist = await lib.Functions.Global.Tools.checkifguildslayerexist(global_slayerlist, interaction.guild_id, interaction.user)
-
-    #    await interaction.response.send_message('Special', ephemeral=True)
+    @lib.discord.ui.button(label='Spécial', style=lib.discord.ButtonStyle.red)
+    async def special(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
+        isDead = await lib.Battle_Functions.attack(self, interaction, "S")
+        if isDead:
+            for item in self.children:
+                item.disabled = True
+            del(self.cMonster)
+            self.stop()
 
 
 class Buttons_Loot(lib.discord.ui.View):
-    def __init__(self, Run, slayer_id, loot, isAlready):
+    def __init__(self, Buttons_Battle, slayer_id, loot, isAlready, rPrice, rRarity):
         super().__init__(timeout=300)
-        self.Run = Run
+        self.Buttons_Battle = Buttons_Battle
         self.slayer_id = slayer_id
         self.loot = loot
+        self.rPrice = rPrice
+        self.rRarity = rRarity
         if isAlready:
             self.remove_item(self.equip)
             self.remove_item(self.sell)
@@ -49,18 +55,21 @@ class Buttons_Loot(lib.discord.ui.View):
     async def on_timeout(self) -> None:
         for item in self.children:
             item.disabled = True
-        await self.message.edit(view=None)
+        try:
+            await self.message.edit(view=None)
+        except:
+            pass
         self.stop()
 
     @lib.discord.ui.button(label='Détails', style=lib.discord.ButtonStyle.green)
     async def details(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
-        await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(self.Run, interaction, True, "detailed", self.loot)}', ephemeral=True)
+        await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(self.Buttons_Battle, interaction, True, "detailed", self.loot, self.rPrice, self.rRarity)}', ephemeral=True)
         
     @lib.discord.ui.button(label='Équiper', style=lib.discord.ButtonStyle.blurple)
     async def equip(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
         if self.slayer_id == interaction.user.id:
-            self.Run.slayerlist[interaction.user.id].slots[self.Run.BDD["Items_list"][self.loot].slot] = self.loot
-            await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(self.Run, interaction, True, "equip", self.loot)}', ephemeral=True)
+            self.Buttons_Battle.Main.bot.slayers_list[interaction.user.id].slots[self.loot["slot"]] = self.loot["id"]
+            await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(self.Buttons_Battle, interaction, True, "equip", self.loot, self.rPrice, self.rRarity)}', ephemeral=True)
 
             #Puis on désactive les autres boutons
             for item in self.children:
@@ -69,14 +78,14 @@ class Buttons_Loot(lib.discord.ui.View):
             await self.message.edit(view=self)
 
         else:
-            await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(self.Run, interaction, False, "equip", self.loot)}', ephemeral=True)
+            await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(self.Buttons_Battle, interaction, False, "equip", self.loot, self.rPrice, self.rRarity)}', ephemeral=True)
 
     @lib.discord.ui.button(label='Vendre', style=lib.discord.ButtonStyle.red)
     async def sell(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
         if self.slayer_id == interaction.user.id:
-            self.Run.slayerlist[interaction.user.id].money += self.Run.BDD["Rarities_list"][self.Run.BDD["Items_list"][self.loot].rarity]["price"]
-            self.Run.slayerlist[interaction.user.id].inventory_items.remove(self.loot)
-            await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(self.Run, interaction, True, "sell", self.loot)}', ephemeral=True)
+            self.Buttons_Battle.Main.bot.slayers_list[interaction.user.id].money += 0
+            self.Buttons_Battle.Main.bot.slayers_list[interaction.user.id].inventory_items.remove(self.loot["id"])
+            await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(self.Buttons_Battle, interaction, True, "sell", self.loot, self.rPrice, self.rRarity)}', ephemeral=True)
 
             #Puis on désactive les autres boutons
             for item in self.children:
@@ -85,4 +94,4 @@ class Buttons_Loot(lib.discord.ui.View):
             await self.message.edit(view=self)
 
         else:
-            await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(self.Run, interaction, False, "sell", self.loot)}', ephemeral=True)
+            await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(self.Buttons_Battle, interaction, False, "sell", self.loot, self.rPrice, self.rRarity)}', ephemeral=True)

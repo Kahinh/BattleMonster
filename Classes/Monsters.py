@@ -1,61 +1,46 @@
-#list_with_rarity = [key for key, val in Monsters_list.items() if val.rarity=="rare"]
-from random import randint
+#list_with_rarity = [key for key, val in Monsters.items() if val.rarity=="rare"]
+battle_bonuses = {
+    "pain_lasthit": 10
+}
 
-class Monsters:
+import random
+
+class Monster:
   def __init__(
     self, 
-    name, 
-    description, 
-    element,
-    base_hp,
-    rarity,
-    parry_chance_L,
-    parry_chance_H,
-    damage,
-    armor,
-    protect_crit,
-    img_url_normal,
-    img_url_enraged,
-    bg_url,
-    letality,
-    letality_per,
+    rMonster,
+    rGamemode,
+    hp_scaling
     ):
-    self.name = name
-    self.description = description
-    self.element = element
-    self.base_hp = base_hp
-    self.total_hp = base_hp
-    self.rarity = rarity
+    self.name = rMonster["name"]
+    self.description = rMonster["description"]
+    self.element = rMonster["element"]
+    self.base_hp = rMonster["base_hp"] * hp_scaling * rGamemode["hp_scaling"]
+    self.total_hp = rMonster["base_hp"] * hp_scaling
+    self.rarity = rMonster["rarity"]
     self.parry = {
-      "parry_chance_L" : parry_chance_L,
-      "parry_chance_H" : parry_chance_H,
+      "parry_chance_L" : float(rMonster["parry_chance_L"]) * int(rGamemode["parry_scaling"]),
+      "parry_chance_H" : float(rMonster["parry_chance_H"]) * int(rGamemode["parry_scaling"]),
       "parry_chance_S" : 0
     }
-    self.damage = damage
-    self.letality = letality
-    self.letality_per = letality_per
-    self.armor = armor
-    self.protect_crit = protect_crit
-    self.img_url_normal = img_url_normal
-    self.img_url_enraged = img_url_enraged
-    self.bg_url = bg_url
-    self.roll_dices = 0
-  
-  def updateStats(self, monster_hp_scaling_based_on_active_players, monster_difficulty_scaling, roll_dices):
+    self.damage = rMonster["damage"] * rGamemode["damage_scaling"]
+    self.letality = rMonster["letality"] * rGamemode["letality_scaling"]
+    self.letality_per = rMonster["letality_per"] * rGamemode["letality_scaling"]
+    self.armor = rMonster["armor"] * rGamemode["armor_scaling"]
+    self.protect_crit = rMonster["protect_crit"] * rGamemode["protect_crit_scaling"]
+    self.img_url_normal = rMonster["img_url_normal"]
+    self.img_url_enraged = rMonster["img_url_enraged"]
+    self.bg_url = rMonster["bg_url"]
+    self.roll_dices = random.randint(rGamemode["roll_dices_min"], rGamemode["roll_dices_max"])
 
-    #On calcul le Roll_dice choisi dans la liste de choix
+    self.rGamemode = rGamemode
+    self.last_hits = []
+    self.slayers_hits = {}
 
-    roll_dice = randint(roll_dices[0], roll_dices[1])
-    self.roll_dices += roll_dice
-
-    self.base_hp *= (monster_hp_scaling_based_on_active_players * monster_difficulty_scaling["hp"])
-    self.total_hp *= (monster_hp_scaling_based_on_active_players * monster_difficulty_scaling["hp"])
-
-    self.parry["parry_chance_L"] *= monster_difficulty_scaling["parry"]
-    self.parry["parry_chance_H"] *= monster_difficulty_scaling["parry"]
-
-    self.damage *= monster_difficulty_scaling["damage"]
-    self.armor *= monster_difficulty_scaling["armor"]
-    self.letality *= monster_difficulty_scaling["letality"]
-    self.letality_per *= monster_difficulty_scaling["letality"]
-    self.protect_crit *= monster_difficulty_scaling["protect_crit"]
+  def GetDamage(self, damage, hit, slayer_class):
+    self.base_hp -= damage
+    #On stock les last hits pour le special Douleur
+    if (hit != "S" and slayer_class.specialization != 2) :
+      self.last_hits.append(damage)
+      if len(self.last_hits) > battle_bonuses["pain_lasthit"]:
+        del self.last_hits[0]

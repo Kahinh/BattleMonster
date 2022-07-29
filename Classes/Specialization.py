@@ -1,4 +1,4 @@
-class Specializations:
+class Specialization:
   def __init__(
     self, 
     name,
@@ -13,15 +13,15 @@ class Specializations:
     self.stacks = stacks
     self.cost = cost
 
-Specializations_list = {
-  1: Specializations(
+Specializations = {
+  1: Specialization(
       name = "Guerrier",
       description = "test",
       damage = 300,
       stacks = 20,
       cost = 0
   ),
-  2: Specializations(
+  2: Specialization(
       name = "Douleur",
       description = "test",
       damage = 400,
