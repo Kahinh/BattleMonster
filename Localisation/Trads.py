@@ -1,4 +1,0 @@
-Dictionnaire = {
-    "EN" : {
-    }
-}

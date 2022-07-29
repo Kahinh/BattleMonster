@@ -16,7 +16,7 @@ class Monster:
     self.description = rMonster["description"]
     self.element = rMonster["element"]
     self.base_hp = rMonster["base_hp"] * hp_scaling * rGamemode["hp_scaling"]
-    self.total_hp = rMonster["base_hp"] * hp_scaling
+    self.total_hp = rMonster["base_hp"] * hp_scaling * rGamemode["hp_scaling"]
     self.rarity = rMonster["rarity"]
     self.parry = {
       "parry_chance_L" : float(rMonster["parry_chance_L"]) * int(rGamemode["parry_scaling"]),

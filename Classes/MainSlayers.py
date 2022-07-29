@@ -10,26 +10,93 @@ sys.path.insert(0, parentdir)
 
 from Classes.Specialization import Specializations
 from Classes.Items import Item
+from Classes.Queries import qBaseBonuses, qSlayers
+
+class MSlayer:
+    def __init__(
+        self,
+        bot,
+        interaction
+        ):
+        self.bot = bot
+        self.isExist = False
+        self.interaction = interaction
+        self.cSlayer = None
+
+    async def extractdB(self):
+        async with self.bot.db_pool.acquire() as conn:
+            self.rBaseBonuses = await conn.fetchrow(qBaseBonuses.SELECT_BASE_BONUSES)
+            self.rSlayer = await conn.fetchrow(qSlayers.SELECT_SLAYER, self.interaction.user.id)
+            if self.rSlayer is not None:
+                self.rItemsSlayer = await conn.fetch(qSlayers.SELECT_SLAYER_ITEMS, self.interaction.user.id)
+                self.rSlayerInventory = await conn.fetch(qSlayers.SELECT_SLAYER_INVENTORY, self.interaction.user.id)
+                self.rSlayerSpeInventory = await conn.fetch(qSlayers.SELECT_SLAYER_SPE_INVENTORY, self.interaction.user.id)
+                self.rSlayerSlots = await conn.fetch(qSlayers.SELECT_SLAYER_SLOTS, self.interaction.user.id)
+    
+    async def constructClass(self):
+        await self.extractdB()
+        if self.rSlayer is None:
+            self.cSlayer = Slayer(name=self.interaction.user.name)
+        else:
+            self.isExist = True
+            self.cSlayer = Slayer(
+                name= self.rSlayer["name"],
+                creation_date= self.rSlayer["creation_date"],
+                dead= self.rSlayer["dead"],
+                xp= self.rSlayer["xp"],
+                money= self.rSlayer["money"],
+                damage_taken= self.rSlayer["damage_taken"],
+                special_stacks= self.rSlayer["special_stacks"],
+                faction= self.rSlayer["faction"],
+                specialization= self.rSlayer["specialization"],
+                inventory_items= [int(dict(item)['item_id']) for item in self.rSlayerInventory],
+                inventory_specializations=[int(dict(spe)['specialization_id']) for spe in self.rSlayerSpeInventory],
+                slots= await self.getSlots()
+            )
+        self.cSlayer.stats = self.cSlayer.calculateStats(self.rBaseBonuses, self.rItemsSlayer)
+    
+    async def getSlots(self):
+        if self.rSlayerSlots != []:
+            slots = {}
+            for row in self.rSlayerSlots:
+                slots[row["slot"]] = row["item_id"]
+
+    async def Slayer_update(self):
+        pass
+    async def inSlayerInventory_append(self):
+        pass
+    async def inSlayerInventory_remove(self):
+        pass
+    async def inSlayerSlots_append(self):
+        pass
+    async def inSlayerSlots_remove(self):
+        pass
+    async def inSlayerSpeInventory_append(self):
+        pass
+    async def inSlayerSpeInventory_remove(self):
+        pass
+            
 
 class Slayer:
     def __init__(
         self,
-        Run, 
         name,
         creation_date=datetime.datetime.timestamp(datetime.datetime.now()),
+        dead=False,
         xp=0,
         money=10,
         damage_taken=0,
-        special_stacks=20,
+        special_stacks=0,
         faction=0,
         specialization=1,
         inventory_items=[],
         inventory_specializations=[1],
-        slots={}
+        slots={},
+        stats = {}
         ):
-        self.Main = Run
         self.name = name
         self.creation_date = creation_date
+        self.dead = dead
         self.xp = xp
         self.damage_taken = damage_taken
         self.money = money
@@ -39,6 +106,7 @@ class Slayer:
         self.inventory_items = inventory_items
         self.inventory_specializations = inventory_specializations
         self.slots = slots
+        self.stats = stats
 
     def calculateBonuses(self, rBaseBonuses, rItemsSlayer):
         bonuses = {
@@ -80,13 +148,14 @@ class Slayer:
             "vivacity": rBaseBonuses["vivacity"]
         }
 
-        for row in rItemsSlayer:
-            cItem = Item(row)
-            for bonus in cItem.bonuses:
-                bonuses[bonus] += cItem.bonuses[bonus]
+        if rItemsSlayer is not None:
+            for row in rItemsSlayer:
+                cItem = Item(row)
+                for bonus in cItem.bonuses:
+                    bonuses[bonus] += cItem.bonuses[bonus]
         return bonuses
 
-    def calculateStats(self, rBaseBonuses, rItemsSlayer):
+    def calculateStats(self, rBaseBonuses, rItemsSlayer=None):
 
         bonuses = self.calculateBonuses(rBaseBonuses, rItemsSlayer)
         stats = {
@@ -128,43 +197,39 @@ class Slayer:
         }
         return stats
 
-    def CalculateDamage(self, Hit, cMonster, rBaseBonuses, rItemsSlayer):
-
-        stats = self.calculateStats(rBaseBonuses, rItemsSlayer)
+    def CalculateDamage(self, Hit, cMonster):
         #On check si on fail
-        isFail = False if Hit == "S" else random.choices(population=[True, False], weights=[stats[f"total_fail_{Hit}"], 1-stats[f"total_fail_{Hit}"]], k=1)[0]
+        isFail = False if Hit == "S" else random.choices(population=[True, False], weights=[self.stats[f"total_fail_{Hit}"], 1-self.stats[f"total_fail_{Hit}"]], k=1)[0]
         if isFail:
             Damage = 0
             Stacks_Earned = 0
         else: 
             #On check si on est parrty
-            isParry = False if Hit == "S" else random.choices(population=[True, False], weights=[min(max(cMonster.parry[f"parry_chance_{Hit}"] + stats[f"total_parry_{Hit}"], 0),1), 1-min(max(cMonster.parry[f"parry_chance_{Hit}"] + stats[f"total_parry_{Hit}"], 0), 1)], k=1)[0]
+            isParry = False if Hit == "S" else random.choices(population=[True, False], weights=[min(max(cMonster.parry[f"parry_chance_{Hit}"] + self.stats[f"total_parry_{Hit}"], 0),1), 1-min(max(cMonster.parry[f"parry_chance_{Hit}"] + self.stats[f"total_parry_{Hit}"], 0), 1)], k=1)[0]
             if isParry:
-                Damage = -int(min(cMonster.damage * (rBaseBonuses["ratio_armor"]/(rBaseBonuses["ratio_armor"] + (stats["total_armor"] * (1 - cMonster.letality_per) - cMonster.letality))), stats["total_current_health"]))
+                Damage = -int(min(cMonster.damage * (1000/(1000 + (self.stats["total_armor"] * (1 - cMonster.letality_per) - cMonster.letality))), self.stats["total_current_health"]))
                 Stacks_Earned = 0
                 #On subit les dégâts
                 self.damage_taken = abs(Damage)
             else:
                 #On check si on crit
-                isCrit = random.choices(population=[True, False], weights=[float(stats[f"total_crit_chance_{Hit}"]), float(1-stats[f"total_crit_chance_{Hit}"])], k=1)
+                isCrit = random.choices(population=[True, False], weights=[float(self.stats[f"total_crit_chance_{Hit}"]), float(1-self.stats[f"total_crit_chance_{Hit}"])], k=1)
 
                 #Calcul des dégâts
-                Damage = min(int(max((((stats[f"total_damage_{Hit}"]*(1 + (stats[f"total_crit_damage_{Hit}"] if isCrit[0] else 0)) * (1 + stats[f"total_final_damage_{Hit}"]))) - (cMonster.protect_crit if isCrit[0] else 0)), 0)*(rBaseBonuses["ratio_armor"]/(rBaseBonuses["ratio_armor"]+max(((cMonster.armor*(1-stats[f"total_letality_per_{Hit}"]))-stats[f"total_letality_{Hit}"]),0)))), cMonster.base_hp)
+                Damage = min(int(max((((self.stats[f"total_damage_{Hit}"]*(1 + (self.stats[f"total_crit_damage_{Hit}"] if isCrit[0] else 0)) * (1 + self.stats[f"total_final_damage_{Hit}"]))) - (cMonster.protect_crit if isCrit[0] else 0)), 0)*(1000/(1000+max(((cMonster.armor*(1-self.stats[f"total_letality_per_{Hit}"]))-self.stats[f"total_letality_{Hit}"]),0)))), cMonster.base_hp)
                 if Hit == "S":
                     Stacks_Earned = -self.special_stacks
                 else:
-                    Stacks_Earned = min(stats["total_stacks"] - self.special_stacks, stats[f"total_special_charge_{Hit}"])
+                    Stacks_Earned = min(self.stats["total_stacks"] - self.special_stacks, self.stats[f"total_special_charge_{Hit}"])
                 self.special_stacks += Stacks_Earned
-        
-        stats = self.calculateStats(rBaseBonuses, rItemsSlayer)
-        return Damage, Stacks_Earned, stats
 
-    def GetLoot(self, element, rBaseBonuses, rItemsSlayer, rRarities_Name, rRarities_Weight):
+        return Damage, Stacks_Earned
 
-        stats = self.calculateStats(rBaseBonuses, rItemsSlayer)
+    def GetLoot(self, element, rRarities_Name, rRarities_Weight):
+
         rarity_loot = None
 
-        isLoot = random.choices(population=[True, False], weights=[stats[f"total_luck"], 1-stats[f"total_luck"]], k=1)
+        isLoot = random.choices(population=[True, False], weights=[self.stats[f"total_luck"], 1-self.stats[f"total_luck"]], k=1)
         if isLoot[0]:
             rarity_loot = random.choices(population=list(rRarities_Name), weights=list([float(dict(element)['loot_rate']) for element in rRarities_Weight]), k=1)
         
@@ -173,9 +238,8 @@ class Slayer:
     def GetDamage(self, damage):
         self.damage_taken += damage
 
-    def canSpecial(self, rBaseBonuses, rItemsSlayer):
-        stats = self.calculateStats(rBaseBonuses, rItemsSlayer)
-        if stats["total_stacks"] == self.special_stacks:
+    def canSpecial(self, Stats):
+        if Stats["total_stacks"] == self.special_stacks:
             return True
         return False
 

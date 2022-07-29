@@ -39,6 +39,8 @@ Merci à vous de jouer et de partager le bot !
 - [X] Fusionner données spawn-hunts dans Combat_Variables & Rate
 - [X] Optimisation des rates avec table intermédiaire (gamemode_spawn_rate, rarities_loot_rates)
 - [X] Timeout View Items
+- [X] Pouvoir attaquer avec le spécial
+- [X] Stockage des items dans une table IDSlayers -> IDItems
 
 - [] PostgreSQL en self.table (Fonction pour récup chaque table)
 
@@ -49,9 +51,9 @@ If special == 3 (surarmement) & les 2 slots sont non vides:
 
 - [] Prépa Spé 4 : Reset (X%) to increase mult_spe & reset stacks
 
+- [] Prendre en compte le loot slot dans le calcul du butin
 - [] Rajout de bonus supplémentaires pour les spé
 - [] Complétion de la BDD des Monstres
-- [] Pouvoir attaquer avec le spécial
 - [] Complétion de la BDD des Butins
 - [] Loop pour Regen & Revive (Sauf première boucle) 5% toutes les Xmin
 - [] Timeout Behemoths (Fuite) - TBC
@@ -59,5 +61,4 @@ If special == 3 (surarmement) & les 2 slots sont non vides:
 - [] Ajout d' "Achievements" pour le monstre : Display le nombre de dégâts occasionnés aux Slayers ....
 - [] Canal pour afficher les dégâts infligés par les joueurs
 - [] Spawn aléatoire des Monstres
-- [] Stockage des items dans une table IDSlayers -> IDItems
 - [] Système d'autodelete des loots selon rareté (Dans la class Slayer)
