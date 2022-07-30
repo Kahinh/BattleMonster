@@ -8,11 +8,11 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
     self.bot = bot
     super().__init__()
   
-  @lib.app_commands.command(name="savebdd")
-  async def savebdd(self, interaction: lib.discord.Interaction) -> None:
-    """ Admin Only - Commande afin de lancer une save de la BDD avant un reboot du Bot Discord. """
-    logs = self.bot.slayers_list
-    await interaction.response.send_message(f"{logs}", ephemeral=True)
+  @lib.app_commands.command(name="updatebot")
+  async def updatebot(self, interaction: lib.discord.Interaction) -> None:
+    """ Admin Only - Commande afin de lancer un update du Bot. """
+    await self.bot.update_bot()
+    await interaction.response.send_message(f"Update réalisée !", ephemeral=True)
 
   @lib.app_commands.describe(rarity='Rareté du Monstre à apparaître')
   @lib.app_commands.describe(gamemode='Config du Gamemode')

@@ -40,10 +40,10 @@ class Buttons_Battle(lib.discord.ui.View):
 
 
 class Buttons_Loot(lib.discord.ui.View):
-    def __init__(self, Buttons_Battle, slayer_id, loot, isAlready, rPrice, rRarity):
+    def __init__(self, Buttons_Battle, Slayer, loot, isAlready, rPrice, rRarity):
         super().__init__(timeout=300)
         self.Buttons_Battle = Buttons_Battle
-        self.slayer_id = slayer_id
+        self.Slayer = Slayer
         self.loot = loot
         self.rPrice = rPrice
         self.rRarity = rRarity
@@ -67,8 +67,9 @@ class Buttons_Loot(lib.discord.ui.View):
         
     @lib.discord.ui.button(label='Équiper', style=lib.discord.ButtonStyle.blurple)
     async def equip(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
-        if self.slayer_id == interaction.user.id:
-            self.Buttons_Battle.Main.bot.slayers_list[interaction.user.id].slots[self.loot["slot"]] = self.loot["id"]
+        if self.Slayer.cSlayer.slayer_id == interaction.user.id:
+            await self.Slayer.inSlayerSlots_append(self.loot)
+            await self.Slayer.pushdB()
             await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(self.Buttons_Battle, interaction, True, "equip", self.loot, self.rPrice, self.rRarity)}', ephemeral=True)
 
             #Puis on désactive les autres boutons
@@ -82,9 +83,10 @@ class Buttons_Loot(lib.discord.ui.View):
 
     @lib.discord.ui.button(label='Vendre', style=lib.discord.ButtonStyle.red)
     async def sell(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
-        if self.slayer_id == interaction.user.id:
-            self.Buttons_Battle.Main.bot.slayers_list[interaction.user.id].money += 0
-            self.Buttons_Battle.Main.bot.slayers_list[interaction.user.id].inventory_items.remove(self.loot["id"])
+        if self.Slayer.cSlayer.slayer_id == interaction.user.id:
+            self.Slayer.cSlayer.money += self.rPrice
+            await self.Slayer.inSlayerInventory_remove(self.loot["id"])
+            await self.Slayer.pushdB()
             await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(self.Buttons_Battle, interaction, True, "sell", self.loot, self.rPrice, self.rRarity)}', ephemeral=True)
 
             #Puis on désactive les autres boutons

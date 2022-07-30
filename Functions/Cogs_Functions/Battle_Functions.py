@@ -1,22 +1,18 @@
 import lib
 
-async def spawn_handler(Main):
+async def spawn_handler(Main, Gamemode):
 
     async with Main.bot.db_pool.acquire() as conn:
-        rGamemodes = await conn.fetch(lib.qGameModes.SELECT_ALL)
         SlayerCount = await conn.fetchval(lib.qSlayers.COUNT)
-
-    for rGamemode in rGamemodes:
-        #Doit on faire spawn un monster ?
 
         #On calcule le behemoth a faire spawn en prenant random dans la liste.
         async with Main.bot.db_pool.acquire() as conn:
-            rarities = await conn.fetch(lib.qGameModes.SELECT_RARITY_POPULATION, rGamemode["name"])
-            weights = await conn.fetch(lib.qGameModes.SELECT_RARITY_WEIGHT, rGamemode["name"])
+            rarities = await conn.fetch(lib.qGameModes.SELECT_RARITY_POPULATION, Gamemode["name"])
+            weights = await conn.fetch(lib.qGameModes.SELECT_RARITY_WEIGHT, Gamemode["name"])
 
         if len(rarities) == len(weights) and rarities != []:
             rarity_to_spawn = lib.random.choices(list(rarities), weights=[float(dict(element)['spawn_rate']) for element in weights], k=1)[0]
-            embed, view, rChannels = await lib.Battle_Functions.create_battle(Main, rGamemode, next(rarity_to_spawn.values()))
+            embed, view, rChannels = await lib.Battle_Functions.create_battle(Main, Gamemode, next(rarity_to_spawn.values()))
             channel= Main.bot.get_channel(rChannels["channel_id"])
             message = await channel.send(embed=embed, view=view)
 
@@ -50,26 +46,28 @@ async def attack(Buttons_Battle, interaction, Hit):
     Slayer = lib.MSlayer(Buttons_Battle.Main.bot, interaction)
     await Slayer.constructClass()
 
-    #On documente la Class DamageDone
-    if interaction.user.id not in Buttons_Battle.cMonster.slayers_hits:
-        Buttons_Battle.cMonster.slayers_hits[interaction.user.id] = lib.DamageDone(eligible=False, total_damage=0, timestamp_next_hit=lib.datetime.datetime.timestamp(lib.datetime.datetime.now()))
-        canAttack = True
-    elif Buttons_Battle.cMonster.slayers_hits[interaction.user.id].timestamp_next_hit < lib.datetime.datetime.timestamp(lib.datetime.datetime.now()):
-        canAttack = True
+    if Slayer.cSlayer.dead == False:
+        #On documente la Class DamageDone
+        if interaction.user.id not in Buttons_Battle.cMonster.slayers_hits:
+            Buttons_Battle.cMonster.slayers_hits[interaction.user.id] = lib.DamageDone(eligible=False, total_damage=0, timestamp_next_hit=lib.datetime.datetime.timestamp(lib.datetime.datetime.now()))
+            canAttack = True
+        elif Buttons_Battle.cMonster.slayers_hits[interaction.user.id].timestamp_next_hit < lib.datetime.datetime.timestamp(lib.datetime.datetime.now()):
+            canAttack = True
 
-    if (canAttack and Hit != "S") or (Hit == "S" and Slayer.cSlayer.canSpecial()):
-        Damage, Stacks_Earned = Slayer.cSlayer.CalculateDamage(Hit, Buttons_Battle.cMonster)
-        Buttons_Battle.cMonster.slayers_hits[interaction.user.id].updateClass(Damage, None if Hit == "S" else Slayer.cSlayer.stats["total_cooldown"])
+        if (canAttack and Hit != "S") or (Hit == "S" and Slayer.cSlayer.canSpecial()):
+            Damage, Stacks_Earned = Slayer.cSlayer.CalculateDamage(Hit, Buttons_Battle.cMonster)
+            Buttons_Battle.cMonster.slayers_hits[interaction.user.id].updateClass(Damage, None if Hit == "S" else Slayer.cSlayer.stats["total_cooldown"])
+        else:
+            Damage, Stacks_Earned = 0, 0
+
+        #On met à jour les PVs du monstre
+        if Damage > 0: Buttons_Battle.cMonster.GetDamage(damage=Damage, hit=Hit, slayer_class=Slayer.cSlayer)
+        ephemeral_message = lib.Ephemeral.get_ephemeralAttack(Damage, Stacks_Earned, Hit, Buttons_Battle, Slayer.cSlayer, Buttons_Battle.cMonster, interaction.user.id, canAttack)  
     else:
-        Damage, Stacks_Earned = 0, 0
-
-    #On met à jour les PVs du monstre
-    if Damage > 0: Buttons_Battle.cMonster.GetDamage(damage=Damage, hit=Hit, slayer_class=Slayer.cSlayer)
-
-    #On met à jour les PVs du joueur
-    if Damage < 0: Slayer.cSlayer.GetDamage(Damage)
-
-    ephemeral_message = lib.Ephemeral.get_ephemeralAttack(Damage, Stacks_Earned, Hit, Buttons_Battle, Slayer.cSlayer, Buttons_Battle.cMonster, interaction.user.id, canAttack)
+        ephemeral_message = lib.Ephemeral.get_ephemeralAttack(0, 0, Hit, Buttons_Battle, Slayer.cSlayer, Buttons_Battle.cMonster, interaction.user.id, canAttack)  
+    
+    await Slayer.Slayer_update()
+    await Slayer.pushdB()
     await interaction.response.send_message(f'{ephemeral_message}', ephemeral=True)
 
     #On met à jour l'embed
@@ -88,6 +86,7 @@ async def calculate_loot(Slayer, Buttons_Battle, rRarities_Name, rRarities_Weigh
     for slayer_id in Buttons_Battle.cMonster.slayers_hits:
         #On ne considère que les éligibles
         if Buttons_Battle.cMonster.slayers_hits[slayer_id].eligible:
+            loots_list = []
 
             #On prend en compte le roll_dice
             for i in range(Buttons_Battle.cMonster.roll_dices):
@@ -104,14 +103,18 @@ async def calculate_loot(Slayer, Buttons_Battle, rRarities_Name, rRarities_Weigh
                         rChannels = await conn.fetchrow(lib.qChannels.SELECT_CHANNEL, lib.tokens.TestProd, "loots")
                         rRarity = await conn.fetchrow(lib.qRarities.SELECT_DISPLAY, next(rarity_loot[0].values()))
 
-                    if loot["id"] in Slayer.cSlayer.inventory_items:
+                    if loot["id"] in Slayer.cSlayer.inventory_items or loot["id"] in loots_list:
                         isAlready = True
                         Slayer.cSlayer.money += rPrice
+                        await Slayer.Slayer_update()
                     else:
-                        Slayer.cSlayer.inventory_items.append(loot["id"])
+                        loots_list.append(loot["id"])
+                        await Slayer.inSlayerInventory_append(loot["id"])            
                     
                     #On calcule l'embed à poster
-                    view = lib.Buttons.Buttons_Loot(Buttons_Battle, slayer_id, loot, isAlready, rPrice, rRarity)
+                    view = lib.Buttons.Buttons_Loot(Buttons_Battle, Slayer, loot, isAlready, rPrice, rRarity)
                     embed = lib.Embed.create_embed_loot(Buttons_Battle, loot, isAlready, rPrice, rRarity)
                     channel= Buttons_Battle.Main.bot.get_channel(rChannels["channel_id"])
                     view.message = await channel.send(content=f"<@{slayer_id}>", embed=embed, view=view)
+        
+        await Slayer.pushdB()  

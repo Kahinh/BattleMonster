@@ -24,9 +24,21 @@ class BattleMonster(lib.commands.Bot):
         ]
 
     async def setup_hook(self):
-        self.slayers_list = {}
+        await self.update_bot()
         for ext in self.initial_extensions:
             await self.load_extension(ext)
+    
+    async def update_bot(self):
+        async with self.db_pool.acquire() as conn:
+            self.rGamemodes = await conn.fetch(lib.qGameModes.SELECT_ALL)     
+            self.rBaseBonuses = await conn.fetch(lib.qBaseBonuses.SELECT_ALL)   
+            rChannels = await conn.fetch(lib.qChannels.SELECT_ALL, lib.tokens.TestProd)  
+            rElements = await conn.fetch(lib.qElements.SELECT_ALL)
+            rRarities = await conn.fetch(lib.qRarities.SELECT_ALL)
+
+        self.rElements = await lib.Toolbox.transformRecords(rElements)  
+        self.rRarities = await lib.Toolbox.transformRecords(rRarities)
+        self.rChannels = await lib.Toolbox.transformChannels(rChannels)
 
     async def on_ready(self):
         print('Bot is Ready!')

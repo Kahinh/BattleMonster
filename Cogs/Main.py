@@ -7,7 +7,11 @@ class Main(lib.commands.Cog):
 
     @lib.tasks.loop(minutes=1)
     async def battle_monster(self):
-        await lib.Battle_Functions.spawn_handler(self)
+
+        #Gamemodes
+        for Gamemode in self.bot.rGamemodes:
+            if Gamemode["autospawn"]:
+                await lib.Battle_Functions.spawn_handler(self, Gamemode)
 
     @battle_monster.before_loop
     async def before_battle_monster(self):

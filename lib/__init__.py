@@ -37,7 +37,7 @@ from Classes.Queries import qGameModes, qMonsters, qSlayers, qChannels, qBaseBon
 import Functions.Messages.Embed as Embed
 import Functions.Messages.Ephemeral as Ephemeral
 import Functions.Cogs_Functions.Battle_Functions as Battle_Functions
-import Functions.Cogs_Functions.Main_Properties as Main_Properties
 import Functions.Tools.Pickles as Pickles
+import Functions.Tools.Toolbox as Toolbox
 
 #Localisation
