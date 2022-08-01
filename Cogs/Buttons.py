@@ -4,38 +4,35 @@ import lib
 print("Buttons : √")
 
 class Buttons_Battle(lib.discord.ui.View):
-    def __init__(self, Main, cMonster, rElement, rRarity):
+    def __init__(self, Gamemode):
         super().__init__()
-        self.Main = Main
-        self.cMonster = cMonster
-        self.rElement = rElement
-        self.rRarity = rRarity
+        self.Gamemode = Gamemode
 
     @lib.discord.ui.button(label='Attaque Légère', style=lib.discord.ButtonStyle.green)
     async def light(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
-        isDead = await lib.Battle_Functions.attack(self, interaction, "L")
-        if isDead:
+        isEnd = await self.Gamemode.getAttack(interaction, "L")
+        if isEnd:
             for item in self.children:
                 item.disabled = True
-            del(self.cMonster)
+            await self.Gamemode.calculateLoot()
             self.stop()
 
     @lib.discord.ui.button(label='Attaque Lourde', style=lib.discord.ButtonStyle.blurple)
     async def heavy(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
-        isDead = await lib.Battle_Functions.attack(self, interaction, "H")
-        if isDead:
+        isEnd = await self.Gamemode.getAttack(interaction, "H")
+        if isEnd:
             for item in self.children:
                 item.disabled = True
-            del(self.cMonster)
+            await self.Gamemode.calculateLoot()
             self.stop()
 
     @lib.discord.ui.button(label='Spécial', style=lib.discord.ButtonStyle.red)
     async def special(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
-        isDead = await lib.Battle_Functions.attack(self, interaction, "S")
-        if isDead:
+        isEnd = await self.Gamemode.getAttack(interaction, "S")
+        if isEnd:
             for item in self.children:
                 item.disabled = True
-            del(self.cMonster)
+            await self.Gamemode.calculateLoot()
             self.stop()
 
 
@@ -68,7 +65,7 @@ class Buttons_Loot(lib.discord.ui.View):
     @lib.discord.ui.button(label='Équiper', style=lib.discord.ButtonStyle.blurple)
     async def equip(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
         if self.Slayer.cSlayer.slayer_id == interaction.user.id:
-            await self.Slayer.inSlayerSlots_append(self.loot)
+            self.Slayer.inSlayerSlots_append(self.loot)
             await self.Slayer.pushdB()
             await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(self.Buttons_Battle, interaction, True, "equip", self.loot, self.rPrice, self.rRarity)}', ephemeral=True)
 
@@ -85,7 +82,7 @@ class Buttons_Loot(lib.discord.ui.View):
     async def sell(self, interaction: lib.discord.Interaction, button: lib.discord.ui.Button):
         if self.Slayer.cSlayer.slayer_id == interaction.user.id:
             self.Slayer.cSlayer.money += self.rPrice
-            await self.Slayer.inSlayerInventory_remove(self.loot["id"])
+            self.Slayer.inSlayerInventory_remove(self.loot["id"])
             await self.Slayer.pushdB()
             await interaction.response.send_message(f'{lib.Ephemeral.get_ephemeralLootReaction(self.Buttons_Battle, interaction, True, "sell", self.loot, self.rPrice, self.rRarity)}', ephemeral=True)
 

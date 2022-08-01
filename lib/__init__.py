@@ -28,10 +28,10 @@ import Cogs.Commands_Admin as Commands_Admin
 #CLASSES
 from Classes.DamageDone import DamageDone
 from Classes.Items import Item
-from Classes.Monsters import Monster
 from Classes.MainSlayers import MSlayer, Slayer
+from Classes.MainBattles import Gamemode, Monster
 from Classes.Specialization import Specialization
-from Classes.Queries import qGameModes, qMonsters, qSlayers, qChannels, qBaseBonuses, qRaritiesLootRates, qItems, qElements, qRarities
+from Classes.Queries import qGameModes, qMonsters, qSlayers, qChannels, qBaseBonuses, qRaritiesLootRates, qItems, qElements, qRarities, qGameModesLootSlot, qGameModesSpawnRate, qLootSlot
 
 #FUNCTIONS
 import Functions.Messages.Embed as Embed

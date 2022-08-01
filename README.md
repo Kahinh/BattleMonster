@@ -41,8 +41,7 @@ Merci à vous de jouer et de partager le bot !
 - [X] Timeout View Items
 - [X] Pouvoir attaquer avec le spécial
 - [X] Stockage des items dans une table IDSlayers -> IDItems
-
-- [] PostgreSQL en self.table (Fonction pour récup chaque table)
+- [X] PostgreSQL en self.table (Fonction pour récup chaque table)
 
 - [] Spe 3 (Surarmement)
 Pour la deuxième attaque ->

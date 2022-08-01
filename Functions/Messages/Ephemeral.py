@@ -1,7 +1,8 @@
 import lib
 
-def get_ephemeralAttack(Damage, Stacks_Earned, Hit, Buttons_Battle, Slayer, cMonster, user_id, canAttack):
+def get_ephemeralAttack(Damage, Stacks_Earned, Hit, Slayer, Gamemode, user_id, canAttack):
 
+    cMonster = Gamemode.Monsters[Gamemode.count]
     ephemeral_message = ""
     if Hit == "L":
         Hit = "Attaque Légère"
@@ -19,12 +20,12 @@ def get_ephemeralAttack(Damage, Stacks_Earned, Hit, Buttons_Battle, Slayer, cMon
                 #Esquive
                 if Hit == "Spécial":
                     #on ne peut pas utiliser le sécial on n'a pas les stacks !
-                    ephemeral_message += f"\n\n> ☄️ Tu ne possèdes pas le nombre de charges nécessaires - Charge total : **{Buttons_Battle.Main.bot.slayers_list[user_id].special_stacks}/{Slayer.stats['total_stacks']}**"
+                    ephemeral_message += f"\n\n> ☄️ Tu ne possèdes pas le nombre de charges nécessaires - Charge total : **{Slayer.special_stacks}/{Slayer.stats['total_stacks']}**"
                 else:
                     ephemeral_message += f"**> Le monstre a évité ton attaque !**"
             elif Damage < 0:
                 #Les dégâts qu'on a subi
-                ephemeral_message += f"**> Le monstre a bloqué ton attaque, et tu t'es fait attaquer en retour !**\n> ⚔️ Dégâts subis : {abs(Damage)} - Vie restante : {Slayer.stats['total_current_health'] - Slayer.damage_taken}/{Slayer.stats['total_max_health']} ❤️"
+                ephemeral_message += f"**> Le monstre a bloqué ton attaque, et tu t'es fait attaquer en retour !**\n> ⚔️ Dégâts subis : {abs(Damage)} - Vie restante : {Slayer.stats['total_max_health'] - Slayer.damage_taken}/{Slayer.stats['total_max_health']} ❤️"
                 if Slayer.dead:
                     ephemeral_message += f"**\n> Tu es mort 💀"
             else:
@@ -33,6 +34,8 @@ def get_ephemeralAttack(Damage, Stacks_Earned, Hit, Buttons_Battle, Slayer, cMon
                 #Le monstre est il mort ?
                 if cMonster.base_hp == 0:
                     ephemeral_message += f"\n> Le monstre est mort ! 💀"
+                    if Gamemode.count < Gamemode.spawns_count - 1:
+                        ephemeral_message += f"\n> ⚠️ Le combat n'est pas fini, un autre monstre vient d'apparaître !"
                 else:     
                     ephemeral_message += f"\n> Le monstre possède désormais {cMonster.base_hp}/{cMonster.total_hp} ❤️"
                 #Si on a gagné des stacks
@@ -52,7 +55,7 @@ def get_ephemeralAttack(Damage, Stacks_Earned, Hit, Buttons_Battle, Slayer, cMon
             else:
                 ephemeral_message += f"\n\n> 🛑 **Tu n'es, pour l'instant, pas éligible à l'obtention de butin !**"
 
-            cooldown = Buttons_Battle.cMonster.slayers_hits[user_id].timestamp_next_hit - lib.datetime.datetime.timestamp(lib.datetime.datetime.now())
+            cooldown = cMonster.slayers_hits[user_id].timestamp_next_hit - lib.datetime.datetime.timestamp(lib.datetime.datetime.now())
 
             #Puis, on rajoute la vivacité !
             if cooldown <= 1:

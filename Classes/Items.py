@@ -47,3 +47,6 @@ class Item:
       "luck": rItem["luck"],
       "vivacity": rItem["vivacity"]
     }
+  
+  async def getDisplayStats(self):
+    pass

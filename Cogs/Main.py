@@ -9,9 +9,13 @@ class Main(lib.commands.Cog):
     async def battle_monster(self):
 
         #Gamemodes
-        for Gamemode in self.bot.rGamemodes:
-            if Gamemode["autospawn"]:
-                await lib.Battle_Functions.spawn_handler(self, Gamemode)
+        for gamemode in self.bot.rGamemodes:
+            if gamemode["autospawn"]:
+                #random si ça doit spawn
+                if True:
+                    #On crée la class et on construit
+                    Gamemode = lib.Gamemode(self.bot, gamemode)
+                    await Gamemode.constructGamemode()
 
     @battle_monster.before_loop
     async def before_battle_monster(self):

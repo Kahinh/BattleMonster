@@ -26,19 +26,21 @@ class MSlayer:
 
     async def extractdB(self):
         async with self.bot.db_pool.acquire() as conn:
-            self.rBaseBonuses = await conn.fetchrow(qBaseBonuses.SELECT_ALL)
-            self.rItemsSlayer = await conn.fetch(qSlayers.SELECT_SLAYER_ITEMS, self.interaction.user.id)
-            self.rSlayer = await conn.fetchrow(qSlayers.SELECT_SLAYER, self.interaction.user.id)
-            if self.rSlayer is not None:
-                self.rSlayerInventory = await conn.fetch(qSlayers.SELECT_SLAYER_INVENTORY, self.interaction.user.id)
-                self.rSlayerSpeInventory = await conn.fetch(qSlayers.SELECT_SLAYER_SPE_INVENTORY, self.interaction.user.id)
-                self.rSlayerSlots = await conn.fetch(qSlayers.SELECT_SLAYER_SLOTS, self.interaction.user.id)
+            async with conn.transaction():
+                self.rBaseBonuses = await conn.fetchrow(qBaseBonuses.SELECT_ALL)
+                self.rItemsSlayer = await conn.fetch(qSlayers.SELECT_SLAYER_ITEMS, self.interaction.user.id)
+                self.rSlayer = await conn.fetchrow(qSlayers.SELECT_SLAYER, self.interaction.user.id)
+                if self.rSlayer is not None:
+                    self.rSlayerInventory = await conn.fetch(qSlayers.SELECT_SLAYER_INVENTORY, self.interaction.user.id)
+                    self.rSlayerSpeInventory = await conn.fetch(qSlayers.SELECT_SLAYER_SPE_INVENTORY, self.interaction.user.id)
+                    self.rSlayerSlots = await conn.fetch(qSlayers.SELECT_SLAYER_SLOTS, self.interaction.user.id)
 
     async def pushdB(self):
         if self.requests != []:
             async with self.bot.db_pool.acquire() as conn:
-                for request in self.requests:
-                    await conn.execute(request)
+                async with conn.transaction():
+                    for request in self.requests:
+                        await conn.execute(request)
             self.requests = []
     
     async def constructClass(self):
@@ -60,37 +62,42 @@ class MSlayer:
                 specialization= self.rSlayer["specialization"],
                 inventory_items= [int(dict(item)['item_id']) for item in self.rSlayerInventory],
                 inventory_specializations=[int(dict(spe)['specialization_id']) for spe in self.rSlayerSpeInventory],
-                slots= await self.getSlots()
+                slots= self.getSlots()
             )
         self.cSlayer.stats = self.cSlayer.calculateStats(self.rBaseBonuses, self.rItemsSlayer)
     
-    async def getSlots(self):
+    def getSlots(self):
         slots = {}
         if self.rSlayerSlots != []:
             for row in self.rSlayerSlots:
                 slots[row["slot"]] = row["item_id"]
         return slots
 
-    async def Slayer_update(self):
+    def Slayer_update(self):
         self.requests.append('INSERT INTO "Slayers" (slayer_id, xp, money, damage_taken, special_stacks, faction, specialization, creation_date, name, dead)' \
             f" VALUES ({self.cSlayer.slayer_id}, {self.cSlayer.xp}, {self.cSlayer.money}, {self.cSlayer.damage_taken}, {self.cSlayer.special_stacks}, {self.cSlayer.faction}, {self.cSlayer.specialization}, {self.cSlayer.creation_date}, '{self.cSlayer.name}', {self.cSlayer.dead})" \
             ' ON CONFLICT (slayer_id) DO ' \
             f'UPDATE SET xp={self.cSlayer.xp}, money={self.cSlayer.money}, damage_taken={self.cSlayer.damage_taken}, special_stacks={self.cSlayer.special_stacks}, faction={self.cSlayer.faction}, specialization={self.cSlayer.specialization}, dead={self.cSlayer.dead}')
-    async def inSlayerInventory_append(self, item):
+    def inSlayerInventory_append(self, item):
         self.requests.append('INSERT INTO "Slayers_Inventory_Items" (slayer_id, item_id)' \
             f'VALUES ({self.cSlayer.slayer_id}, {item})')
-    async def inSlayerInventory_remove(self, item):
+    def inSlayerInventory_remove(self, item):
         self.requests.append(f'DELETE FROM "Slayers_Inventory_Items" WHERE slayer_id={self.cSlayer.slayer_id} AND item_id={item}')
-    async def inSlayerSlots_append(self, item):
+    def inSlayerSlots_append(self, item):
         if item["slot"] in self.cSlayer.slots:
             self.requests.append(f'UPDATE "Slayers_Slots" SET item_id = {item["id"]} WHERE slayer_id = {self.cSlayer.slayer_id} AND slot = {item["slot"]}')
+            #manquera le retrait de la vie de l'item déséquipé qu'on peut récup avec rItemSlayers & self.cSlayer.slots
+            #self.cSlayer.damage_taken = self.cSlayer.stats["total_max_health"] * (1 + item["health_per"]) + item["health"]
+            #self.Slayer_update
         else:
             self.requests.append(f'INSERT INTO "Slayers_Slots" (slayer_id, slot, item_id) VALUES ({self.cSlayer.slayer_id}, \'{item["slot"]}\', {item["id"]})')
-    async def inSlayerSlots_remove(self):
+            #self.cSlayer.damage_taken = self.cSlayer.stats["total_max_health"] * (1 + item["health_per"]) + item["health"]
+            #self.Slayer_update()
+    def inSlayerSlots_remove(self):
         pass
-    async def inSlayerSpeInventory_append(self):
+    def inSlayerSpeInventory_append(self):
         pass
-    async def inSlayerSpeInventory_remove(self):
+    def inSlayerSpeInventory_remove(self):
         pass            
 
 class Slayer:
@@ -179,7 +186,6 @@ class Slayer:
         stats = {
             "total_armor" : int(bonuses["armor"]*(1+bonuses["armor_per"])),
             "total_max_health" : int(bonuses["health"]*(1+bonuses["health_per"])),
-            "total_current_health" : int(bonuses["health"]*(1+bonuses["health_per"])) - self.damage_taken,
             "total_fail_L" : float(min(max(bonuses["fail_L"],0),1)),
             "total_fail_H" : float(min(max(bonuses["fail_H"],0),1)),
             "total_fail_S" : 0,
@@ -227,7 +233,7 @@ class Slayer:
             #On check si on est parrty
             isParry = False if Hit == "S" else random.choices(population=[True, False], weights=[min(max(cMonster.parry[f"parry_chance_{Hit}"] - self.stats[f"total_parry_{Hit}"], 0),1), 1-min(max(cMonster.parry[f"parry_chance_{Hit}"] - self.stats[f"total_parry_{Hit}"], 0), 1)], k=1)[0]
             if isParry:
-                Damage = -int(min(cMonster.damage * (1000/(1000 + (self.stats["total_armor"] * (1 - cMonster.letality_per) - cMonster.letality))), self.stats["total_current_health"]))
+                Damage = -int(min(cMonster.damage * (1000/(1000 + (self.stats["total_armor"] * (1 - cMonster.letality_per) - cMonster.letality))), self.stats["total_max_health"] - self.damage_taken))
                 Stacks_Earned = 0
                 #On subit les dégâts
                 self.damage_taken += abs(Damage)
