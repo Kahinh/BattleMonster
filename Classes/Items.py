@@ -3,6 +3,7 @@ class Item:
     self, 
     rItem
     ):
+    self.item_id = rItem["item_id"]
     self.name = rItem["name"]
     self.description = rItem["description"]
     self.slot = rItem["slot"]
@@ -16,6 +17,7 @@ class Item:
       "health_per" : rItem["health_per"],
       "parry_L" : rItem["parry_L"],
       "parry_H" : rItem["parry_H"],
+      "parry_S" : rItem["parry_S"],
       "fail_L" : rItem["fail_L"],
       "fail_H" : rItem["fail_H"],
       "damage_weapon" : rItem["damage_weapon"],
@@ -48,5 +50,22 @@ class Item:
       "vivacity": rItem["vivacity"]
     }
   
-  async def getDisplayStats(self):
-    pass
+  def getDisplayStats(self, cItem2=None):
+    desc_stat = ""
+    for bonus in self.bonuses:
+      if cItem2 is None:
+        if self.bonuses[bonus] != 0:
+          if bonus.find("_") != -1 and self.bonuses[bonus[:-1]+"L"] == self.bonuses[bonus[:-1]+"H"] == self.bonuses[bonus[:-1]+"S"]:
+            if bonus.find("L") != -1:
+              desc_stat += f"\n- {bonus[:-2]} : **{self.bonuses[bonus]}**"   
+          else:
+            desc_stat += f"\n- {bonus} : **{self.bonuses[bonus]}**"      
+      else:
+        if self.bonuses[bonus] != 0 or cItem2.bonuses[bonus] != 0:
+          if bonus.find("_") != -1 and self.bonuses[bonus[:-1]+"L"] == self.bonuses[bonus[:-1]+"H"] == self.bonuses[bonus[:-1]+"S"] and cItem2.bonuses[bonus[:-1]+"L"] == cItem2.bonuses[bonus[:-1]+"H"] == cItem2.bonuses[bonus[:-1]+"S"]:
+            if bonus.find("L") != -1:
+              desc_stat += f"\n- {bonus[:-2]} : **{self.bonuses[bonus]}** <- (**{cItem2.bonuses[bonus]}**)"
+          else:
+            desc_stat += f"\n- {bonus} : **{self.bonuses[bonus]}** <- (**{cItem2.bonuses[bonus]}**)"
+
+    return desc_stat

@@ -1,9 +1,20 @@
+from typing import KeysView
+
+
 def transformRaritiesANDElements(fetch):
     dict_record = {}
     for row in fetch:
         dict_record[list(dict(row).values())[0]] = {}
         for item in list(dict(row).keys())[1:len(list(dict(row).keys()))]:
             dict_record[list(dict(row).values())[0]][item] = row[item]
+    return dict_record
+
+def transformSlots(fetch):
+    dict_record = {}
+    for row in fetch:
+        dict_record[list(dict(row).values())[1]] = {}
+        for item in list(dict(row).keys())[2:len(list(dict(row).keys()))]:
+            dict_record[list(dict(row).values())[1]][item] = row[item]
     return dict_record
 
 def transformChannels(fetch):
@@ -36,3 +47,32 @@ def transformRaritiesLootRate(fetch):
             dict_record[row["rarities_name"]] = {}
         dict_record[row["rarities_name"]][row["rarities"]] = float(row["loot_rate"])
     return dict_record
+
+def disable_enable_InventoryView(children, len_list, index):
+    if index == len_list - 1:
+        for item in children:
+            if hasattr(item, "label"):
+                if item.label==">>":
+                    item.disabled = True   
+    if index > 0:
+        for item in children:
+            if hasattr(item, "label"):
+                if item.label=="<<":
+                    item.disabled = False 
+    if index == 0:
+        for item in children:
+            if hasattr(item, "label"):
+                if item.label=="<<":
+                    item.disabled = True
+    if index < len_list - 1:
+        for item in children:
+            if hasattr(item, "label"):
+                if item.label==">>":
+                    item.disabled = False
+
+def filter_items_list(items_list, slot=None, element=None, rarity=None):
+    filtered_list = []
+    for item in items_list:
+        if (item.slot == slot or slot is None) and (item.element == element or element is None) and (item.rarity == rarity or rarity is None):
+            filtered_list.append(item)
+    return filtered_list

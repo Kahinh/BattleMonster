@@ -42,6 +42,18 @@ Merci à vous de jouer et de partager le bot !
 - [X] Pouvoir attaquer avec le spécial
 - [X] Stockage des items dans une table IDSlayers -> IDItems
 - [X] PostgreSQL en self.table (Fonction pour récup chaque table)
+- [X] Prendre en compte le loot slot dans le calcul du butin
+- [X] Loop pour Regen & Revive (Sauf première boucle) 5% toutes les Xmin
+- [X] Multiplicateur pour les combats à plusieurs Monstres
+- [X] Enlever le rBaseBonuses de MSlayer
+- [X] Remettre le ratio armor
+- [X] Embed de fin de combat
+- [X] Remettre toutes les views, séparément, dans le dossier Views
+- [X] Timeout Behemoths (Fuite) - TBC
+- [X] Gérer quand on est full stack mais qu'on attaque quand même
+- [X] Details des items
+- [X] Distribution du butin
+- [X] Acceptation ou revente du butin
 
 - [] Spe 3 (Surarmement)
 Pour la deuxième attaque ->
@@ -50,12 +62,14 @@ If special == 3 (surarmement) & les 2 slots sont non vides:
 
 - [] Prépa Spé 4 : Reset (X%) to increase mult_spe & reset stacks
 
-- [] Prendre en compte le loot slot dans le calcul du butin
+- [] Affichage Stats Slayers (3 page : Stats / Items / Achievements)
+- [] InventorySlayer
+
+- [] Remove le pull rGamemode de Admin Commands
+- [] Parametize les requêts dans MainSlayers
 - [] Rajout de bonus supplémentaires pour les spé
 - [] Complétion de la BDD des Monstres
 - [] Complétion de la BDD des Butins
-- [] Loop pour Regen & Revive (Sauf première boucle) 5% toutes les Xmin
-- [] Timeout Behemoths (Fuite) - TBC
 - [] Ajout d' "Achievements" : Nombre de Monstres tués, ...
 - [] Ajout d' "Achievements" pour le monstre : Display le nombre de dégâts occasionnés aux Slayers ....
 - [] Canal pour afficher les dégâts infligés par les joueurs

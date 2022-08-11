@@ -1,5 +1,3 @@
-from ssl import Options
-from discord import Role
 import lib
 
 @lib.app_commands.default_permissions(administrator=True)
@@ -26,8 +24,8 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
 
     rGamemode = await self.bot.db_pool.fetchrow(lib.qGameModes.SELECT_GAMEMODE, gamemode.value)
     #On crée la class et on construit
-    Gamemode = lib.Gamemode(self.bot, rGamemode, interaction)
-    await Gamemode.constructGamemode()
+    Battle = lib.Battle(self.bot, rGamemode, interaction)
+    await Battle.constructGamemode()
 
 
 async def setup(bot: lib.commands.Bot) -> None:

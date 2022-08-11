@@ -1,31 +1,23 @@
-class Specialization:
+from copy import deepcopy
+
+class Spe:
   def __init__(
     self, 
-    name,
-    description,
-    damage,
-    stacks,
-    cost
+    rSpe
     ):
-    self.name = name
-    self.description = description
-    self.damage = damage
-    self.stacks = stacks
-    self.cost = cost
+    self.id = rSpe["id"]
+    self.name = rSpe["name"]
+    self.description = rSpe["description"]
+    self.damage = rSpe["damage"]
+    self.stacks = rSpe["stacks"]
+    self.cost = rSpe["cost"]
 
-Specializations = {
-  1: Specialization(
-      name = "Guerrier",
-      description = "test",
-      damage = 300,
-      stacks = 20,
-      cost = 0
-  ),
-  2: Specialization(
-      name = "Douleur",
-      description = "test",
-      damage = 400,
-      stacks = 20,
-      cost = 1000
-  )
-}
+  def adjust_slot_count(self, rSlots):
+    Slots = deepcopy(rSlots)
+    #SURAREMENT
+    if self.id == 1:
+      Slots["weapon"]["count"] = 2
+    #TEMPLIER
+    if self.id == 3:
+      Slots["shield"]["count"] = 1
+    return Slots

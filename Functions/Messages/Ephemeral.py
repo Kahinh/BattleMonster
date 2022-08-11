@@ -5,11 +5,11 @@ def get_ephemeralAttack(Damage, Stacks_Earned, Hit, Slayer, Gamemode, user_id, c
     cMonster = Gamemode.Monsters[Gamemode.count]
     ephemeral_message = ""
     if Hit == "L":
-        Hit = "Attaque Légère"
+        Hit = "Ton Attaque Légère"
     elif Hit == "H":
-        Hit = "Attaque Lourde"
+        Hit = "Ton Attaque Lourde"
     else: 
-        Hit = "Spécial"
+        Hit = "Ta Capacité Spéciale"
     if Slayer.dead:
         ephemeral_message += f"> Tu es mort ! Tu ne peux donc pas attaquer pour l'instant 💀"
     else:
@@ -18,7 +18,7 @@ def get_ephemeralAttack(Damage, Stacks_Earned, Hit, Slayer, Gamemode, user_id, c
         else:
             if Damage == 0:
                 #Esquive
-                if Hit == "Spécial":
+                if Hit == "Ta Capacité Spéciale":
                     #on ne peut pas utiliser le sécial on n'a pas les stacks !
                     ephemeral_message += f"\n\n> ☄️ Tu ne possèdes pas le nombre de charges nécessaires - Charge total : **{Slayer.special_stacks}/{Slayer.stats['total_stacks']}**"
                 else:
@@ -30,20 +30,21 @@ def get_ephemeralAttack(Damage, Stacks_Earned, Hit, Slayer, Gamemode, user_id, c
                     ephemeral_message += f"**\n> Tu es mort 💀"
             else:
                 #Dégâts infligés !
-                ephemeral_message += f"**> Ton {Hit} a touché le monstre avec succès !**\n> ⚔️ Dégâts infligés : {Damage}"
+                ephemeral_message += f"**> {Hit} a touché le monstre avec succès !**\n> ⚔️ Dégâts infligés : {int(Damage)}"
                 #Le monstre est il mort ?
                 if cMonster.base_hp == 0:
                     ephemeral_message += f"\n> Le monstre est mort ! 💀"
                     if Gamemode.count < Gamemode.spawns_count - 1:
                         ephemeral_message += f"\n> ⚠️ Le combat n'est pas fini, un autre monstre vient d'apparaître !"
                 else:     
-                    ephemeral_message += f"\n> Le monstre possède désormais {cMonster.base_hp}/{cMonster.total_hp} ❤️"
+                    ephemeral_message += f"\n> Le monstre possède désormais {int(cMonster.base_hp)}/{int(cMonster.total_hp)} ❤️"
                 #Si on a gagné des stacks
                 if Stacks_Earned > 0:
                     ephemeral_message += f"\n\n> ☄️ Charge obtenue : {Stacks_Earned} - Charge total : **{Slayer.special_stacks}/{Slayer.stats['total_stacks']}**"
                 if Stacks_Earned < 0:
                     ephemeral_message += f"\n\n> ☄️ Charge consommée : {abs(Stacks_Earned)} - Charge total : **{Slayer.special_stacks}/{Slayer.stats['total_stacks']}**"
-            
+                if Slayer.special_stacks == Slayer.stats['total_stacks']:
+                    ephemeral_message += f"\n\n> ☄️ Ta capacité spéciale est chargée : Charge total : **{Slayer.special_stacks}/{Slayer.stats['total_stacks']}**"
             #If Battle = already dealed damage, on affiche le total !
             if cMonster.slayers_hits[user_id].total_damage > Damage and cMonster.slayers_hits[user_id].total_damage > 0:
                 ephemeral_message += f"\n\n> 🔱 Dégâts infligés totaux : {cMonster.slayers_hits[user_id].total_damage}"
@@ -61,11 +62,11 @@ def get_ephemeralAttack(Damage, Stacks_Earned, Hit, Slayer, Gamemode, user_id, c
             if cooldown <= 1:
                 ephemeral_message += f"\n\n> Tu peux **attaquer avec une Attaque Légère ou une Attaque Lourde !**"
             else:
-                ephemeral_message += f"\n\n> Grâce à ta vivacité de {Slayer.stats['total_vivacity']}, tu pourras attaquer de nouveau dans **{cooldown}s**."
+                if cMonster.base_hp > 0:
+                    ephemeral_message += f"\n\n> Grâce à ta vivacité de {Slayer.stats['total_vivacity']}, tu pourras attaquer, ce monstre, de nouveau dans **{int(cooldown)}s**."
 
     return ephemeral_message
 
-def get_ephemeralLootReaction(Buttons_Loot, interaction, isGoodSlayer, reaction, loot, rPrice, rRarity):
-    ephemeral_message = ""
-    ephemeral_message += "Tu as cliqué !"
+def get_ephemeralLootReaction():
+    ephemeral_message = "Tu as cliqué !"
     return ephemeral_message

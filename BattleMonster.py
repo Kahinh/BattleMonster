@@ -20,11 +20,13 @@ class BattleMonster(lib.commands.Bot):
         self.initial_extensions = [
             'Cogs.Main',
             'Cogs.Commands_Admin',
-            'Cogs.Sync'
+            'Cogs.Sync',
+            'Cogs.Commands_Slayer'
         ]
 
     async def setup_hook(self):
         await self.update_bot()
+        self.active_cSlayer = {}
         for ext in self.initial_extensions:
             await self.load_extension(ext)
     
@@ -34,16 +36,18 @@ class BattleMonster(lib.commands.Bot):
                 self.rGamemodes = await conn.fetch(lib.qGameModes.SELECT_ALL)    
                 rGameModesLootSlot = await conn.fetch(lib.qGameModesLootSlot.SELECT_ALL) 
                 rGameModesSpawnRate = await conn.fetch(lib.qGameModesSpawnRate.SELECT_ALL)
-                self.rBaseBonuses = await conn.fetch(lib.qBaseBonuses.SELECT_ALL)   
+                self.rBaseBonuses = await conn.fetchrow(lib.qBaseBonuses.SELECT_ALL)   
                 rChannels = await conn.fetch(lib.qChannels.SELECT_ALL, lib.tokens.TestProd)  
                 rElements = await conn.fetch(lib.qElements.SELECT_ALL)
                 rRarities = await conn.fetch(lib.qRarities.SELECT_ALL)
                 rRaritiesLootRate = await conn.fetch(lib.qRaritiesLootRates.SELECT_ALL)
                 self.SlayerCount = await conn.fetchval(lib.qSlayers.COUNT)
+                rSlots = await conn.fetch(lib.qSlots.SELECT_ALL)
 
         self.rGameModesLootSlot = lib.Toolbox.transformGamemodesLootSlot(rGameModesLootSlot)
         self.rGameModesSpawnRate = lib.Toolbox.transformGamemodesSpawnRate(rGameModesSpawnRate)
-        self.rElements = lib.Toolbox.transformRaritiesANDElements(rElements)  
+        self.rSlots = lib.Toolbox.transformSlots(rSlots) 
+        self.rElements = lib.Toolbox.transformRaritiesANDElements(rElements) 
         self.rRarities = lib.Toolbox.transformRaritiesANDElements(rRarities)
         self.rRaritiesLootRate = lib.Toolbox.transformRaritiesLootRate(rRaritiesLootRate)
         self.rChannels = lib.Toolbox.transformChannels(rChannels)

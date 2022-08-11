@@ -21,22 +21,27 @@ import psycopg2
 import gitignore.tokens as tokens
 
 #COGS
-import Cogs.Buttons as Buttons
 import Cogs.Main as Main
 import Cogs.Commands_Admin as Commands_Admin
+
+#VIEWS
+from Views.Inventory import InventoryView
+from Views.Loot import LootView
+from Views.Battle import BattleView
+from Views.Slayer import SlayerView
+from Views.MultEquip import MultEquipView
 
 #CLASSES
 from Classes.DamageDone import DamageDone
 from Classes.Items import Item
 from Classes.MainSlayers import MSlayer, Slayer
-from Classes.MainBattles import Gamemode, Monster
-from Classes.Specialization import Specialization
-from Classes.Queries import qGameModes, qMonsters, qSlayers, qChannels, qBaseBonuses, qRaritiesLootRates, qItems, qElements, qRarities, qGameModesLootSlot, qGameModesSpawnRate, qLootSlot
+from Classes.MainBattles import Battle, Monster
+from Classes.Specialization import Spe
+from Classes.Queries import qGameModes, qMonsters, qSlayers, qChannels, qBaseBonuses, qRaritiesLootRates, qItems, qElements, qRarities, qGameModesLootSlot, qGameModesSpawnRate, qLootSlot, qSlayersInventoryItems, qSlots, qSpe
 
 #FUNCTIONS
 import Functions.Messages.Embed as Embed
 import Functions.Messages.Ephemeral as Ephemeral
-import Functions.Cogs_Functions.Battle_Functions as Battle_Functions
 import Functions.Tools.Pickles as Pickles
 import Functions.Tools.Toolbox as Toolbox
 
