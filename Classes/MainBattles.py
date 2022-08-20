@@ -95,49 +95,49 @@ class Battle:
     ephemeral_message = "ERREUR"
     Damage = 0
 
-    #On init le Slayer
-    Slayer = lib.MSlayer(self.bot, interaction)
-    await Slayer.constructClass()
+    Slayer, InterfaceReady = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name, "battle")
+    if InterfaceReady:
+      if Slayer.cSlayer.dead == False:
+        #On documente la Class DamageDone
+        if interaction.user.id not in self.Monsters[self.count].slayers_hits:
+          self.Monsters[self.count].slayers_hits[interaction.user.id] = lib.DamageDone(eligible=False, total_damage=0, timestamp_next_hit=lib.datetime.datetime.timestamp(lib.datetime.datetime.now()))
+          canAttack = True
+        elif self.Monsters[self.count].slayers_hits[interaction.user.id].timestamp_next_hit < lib.datetime.datetime.timestamp(lib.datetime.datetime.now()):
+          canAttack = True
+        else:
+          canAttack = False
 
-    if Slayer.cSlayer.dead == False:
-      #On documente la Class DamageDone
-      if interaction.user.id not in self.Monsters[self.count].slayers_hits:
-        self.Monsters[self.count].slayers_hits[interaction.user.id] = lib.DamageDone(eligible=False, total_damage=0, timestamp_next_hit=lib.datetime.datetime.timestamp(lib.datetime.datetime.now()))
-        canAttack = True
-      elif self.Monsters[self.count].slayers_hits[interaction.user.id].timestamp_next_hit < lib.datetime.datetime.timestamp(lib.datetime.datetime.now()):
-        canAttack = True
+        if (canAttack and Hit != "S") or (Hit == "S" and Slayer.cSlayer.canSpecial()):
+            self.stats["attacks"] += 1
+            Damage, Stacks_Earned = Slayer.cSlayer.CalculateDamage(Hit, self.Monsters[self.count])
+            self.Monsters[self.count].slayers_hits[interaction.user.id].updateClass(Damage, None if Hit == "S" else Slayer.cSlayer.stats["total_cooldown"], Slayer.cSlayer.stats["total_luck"])
+            if Damage > 0:
+              self.Monsters[self.count].base_hp = max(0, self.Monsters[self.count].base_hp - Damage)
+              #SI ON INFLIGE DES DEGATS
+              ephemeral_message = lib.Ephemeral.get_ephemeralAttack(Damage, Stacks_Earned, Hit, Slayer.cSlayer, self, interaction.user.id, canAttack) 
+              await self.updateBattle(Damage, Slayer, interaction)
+            else:
+              #SI FAIL OU PARRY
+              if Damage < 0:
+                if Slayer.cSlayer.dead == True:
+                  self.stats["kills"] += 1
+                self.stats["damage"] += abs(Damage)
+              ephemeral_message = lib.Ephemeral.get_ephemeralAttack(Damage, Stacks_Earned, Hit, Slayer.cSlayer, self, interaction.user.id, canAttack) 
+        else:
+            #SI ON PEUT PAS ATTAQUER
+            ephemeral_message = lib.Ephemeral.get_ephemeralAttack(0, 0, Hit, Slayer.cSlayer, self, interaction.user.id, canAttack) 
       else:
-        canAttack = False
-
-      if (canAttack and Hit != "S") or (Hit == "S" and Slayer.cSlayer.canSpecial()):
-          self.stats["attacks"] += 1
-          Damage, Stacks_Earned = Slayer.cSlayer.CalculateDamage(Hit, self.Monsters[self.count])
-          self.Monsters[self.count].slayers_hits[interaction.user.id].updateClass(Damage, None if Hit == "S" else Slayer.cSlayer.stats["total_cooldown"], Slayer.cSlayer.stats["total_luck"])
-          if Damage > 0:
-            self.Monsters[self.count].base_hp = max(0, self.Monsters[self.count].base_hp - Damage)
-            #SI ON INFLIGE DES DEGATS
-            ephemeral_message = lib.Ephemeral.get_ephemeralAttack(Damage, Stacks_Earned, Hit, Slayer.cSlayer, self, interaction.user.id, canAttack) 
-            await self.updateBattle(Damage, Slayer, interaction)
-          else:
-            #SI FAIL OU PARRY
-            if Damage < 0:
-              if Slayer.cSlayer.dead == True:
-                self.stats["kills"] += 1
-              self.stats["damage"] += abs(Damage)
-            ephemeral_message = lib.Ephemeral.get_ephemeralAttack(Damage, Stacks_Earned, Hit, Slayer.cSlayer, self, interaction.user.id, canAttack) 
-      else:
-          #SI ON PEUT PAS ATTAQUER
-          ephemeral_message = lib.Ephemeral.get_ephemeralAttack(0, 0, Hit, Slayer.cSlayer, self, interaction.user.id, canAttack) 
+          #SI ON EST MORT
+          ephemeral_message = lib.Ephemeral.get_ephemeralAttack(0, 0, Hit, Slayer.cSlayer, self, interaction.user.id, canAttack)  
+      
+      #Si Damage > 0 on a infligé donc stacks / si Damage < 0, on a subi, donc damage_taken à mettre à jour
+      if Damage != 0:
+          await Slayer.push_dB_Slayer()
+      await interaction.response.send_message(f'{ephemeral_message}', ephemeral=True)
     else:
-        #SI ON EST MORT
-        ephemeral_message = lib.Ephemeral.get_ephemeralAttack(0, 0, Hit, Slayer.cSlayer, self, interaction.user.id, canAttack)  
-    
-    #Si Damage > 0 on a infligé donc stacks / si Damage < 0, on a subi, donc damage_taken à mettre à jour
-    if Damage != 0:
-        Slayer.Slayer_update()
-        await Slayer.pushdB()
-    await interaction.response.send_message(f'{ephemeral_message}', ephemeral=True)
+      await interaction.response.send_message("Une interface est déjà ouverte", ephemeral=True)
 
+    self.bot.ActiveList.close_interface(interaction.user.id, "battle")
     return self.end
 
   async def updateBattle(self, Damage, Slayer, interaction):
@@ -182,8 +182,8 @@ class Battle:
           requests[k]["loot"] = await conn.fetchrow(lib.qItems.SELECT_RANDOM, requests[k]["rarity"], requests[k]["element"], self.lootslot)
           isAlready = await conn.fetchval(lib.qSlayersInventoryItems.SELECT_ALREADY, requests[k]["slayer-id"], requests[k]["loot"]["id"])
           if isAlready == None:
-            if requests[k]["slayer-id"] in self.bot.active_cSlayer:
-              self.bot.active_cSlayer["class"].inventory_items.append(lib.Item(requests[k]["loot"]))
+            if requests[k]["slayer-id"] in self.bot.ActiveList.active_slayers:
+              self.bot.ActiveList.active_slayers[requests[k]["slayer-id"]].Slayer.cSlayer.inventory_items.append(lib.Item(requests[k]["loot"]))
             await conn.execute(f'INSERT INTO "Slayers_Inventory_Items" (slayer_id, item_id) VALUES ({requests[k]["slayer-id"]}, {requests[k]["loot"]["id"]})')
           else:
             requests[k]["already"] = True

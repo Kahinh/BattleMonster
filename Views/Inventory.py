@@ -16,7 +16,7 @@ class Rarity_Dropdown(lib.discord.ui.Select):
         self.index = 0
 
         embed = lib.Embed.create_embed_item(self.view.bot, None if self.view.items_list_filtered == [] else self.view.items_list_filtered[self.view.index])
-        lib.Toolbox.disable_enable_InventoryView(self.view.children, len(self.view.items_list_filtered), self.view.index)
+        lib.Toolbox.disable_enable_InventoryView(self.view.children, self.view.items_list_filtered, self.view.index)
         view = self.view  
 
         for option in self.options:
@@ -43,7 +43,7 @@ class Element_Dropdown(lib.discord.ui.Select):
         self.index = 0
 
         embed = lib.Embed.create_embed_item(self.view.bot, None if self.view.items_list_filtered == [] else self.view.items_list_filtered[self.view.index])
-        lib.Toolbox.disable_enable_InventoryView(self.view.children, len(self.view.items_list_filtered), self.view.index)
+        lib.Toolbox.disable_enable_InventoryView(self.view.children, self.view.items_list_filtered, self.view.index)
         view = self.view  
 
         for option in self.options:
@@ -69,7 +69,7 @@ class Slot_Dropdown(lib.discord.ui.Select):
         self.index = 0
 
         embed = lib.Embed.create_embed_item(self.view.bot, None if self.view.items_list_filtered == [] else self.view.items_list_filtered[self.view.index])
-        lib.Toolbox.disable_enable_InventoryView(self.view.children, len(self.view.items_list_filtered), self.view.index)
+        lib.Toolbox.disable_enable_InventoryView(self.view.children, self.view.items_list_filtered, self.view.index)
         view = self.view  
 
         for option in self.options:
@@ -85,7 +85,7 @@ class Previous_Button(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         self.view.index -= 1
-        lib.Toolbox.disable_enable_InventoryView(self.view.children, len(self.view.items_list_filtered), self.view.index)
+        lib.Toolbox.disable_enable_InventoryView(self.view.children, self.view.items_list_filtered, self.view.index)
         
         embed = lib.Embed.create_embed_item(self.view.bot, None if self.view.items_list_filtered == [] else self.view.items_list_filtered[self.view.index])
         view = self.view
@@ -97,7 +97,7 @@ class Next_Button(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         self.view.index += 1 
-        lib.Toolbox.disable_enable_InventoryView(self.view.children, len(self.view.items_list_filtered), self.view.index)
+        lib.Toolbox.disable_enable_InventoryView(self.view.children, self.view.items_list_filtered, self.view.index)
 
         embed = lib.Embed.create_embed_item(self.view.bot, None if self.view.items_list_filtered == [] else self.view.items_list_filtered[self.view.index])
         view = self.view
@@ -111,13 +111,21 @@ class Equip_Button(lib.discord.ui.Button):
         isEquipped, List = await self.view.Slayer.equip_item(self.view.items_list_filtered[self.view.index])
 
         if isEquipped:
-            await interaction.response.send_message(content="L'objet a été équipé !", ephemeral=True)
+            lib.Toolbox.disable_enable_InventoryView(self.view.children, self.view.items_list_filtered, self.view.index)
+            view = self.view
+            await interaction.response.edit_message(view=view)   
+            await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
         else:
             if len(List) == 0:
                 await interaction.response.send_message(content="Une erreur est survenue !", ephemeral=True)
             else:
-                view = lib.MultEquipView(self.view, List)
-                await interaction.response.send_message(content="Tous les emplacements sont déjà utilisés, quel objet souhaitez-vous remplacer ?", view=view, ephemeral=True)
+                InterfaceReady = self.view.bot.ActiveList.add_interface(self.view.Slayer.cSlayer.slayer_id, "mult_equip")
+                if InterfaceReady:
+                    message = await self.view.interaction.original_message() 
+                    viewMult = lib.MultEquipView(self.view, List, interaction, self.view.items_list_filtered[self.view.index], message)
+                    await interaction.response.send_message(content="Tous les emplacements sont déjà utilisés, quel objet souhaitez-vous remplacer ?", view=viewMult, ephemeral=True)
+                else:
+                    await interaction.response.send_message(content="Une interface est déjà ouverte", ephemeral=True)
 
 class Sell_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -130,7 +138,7 @@ class Sell_Button(lib.discord.ui.Button):
             self.index = 0
 
             embed = lib.Embed.create_embed_item(self.view.bot, None if self.view.items_list_filtered == [] else self.view.items_list_filtered[self.view.index])
-            lib.Toolbox.disable_enable_InventoryView(self.view.children, len(self.view.items_list_filtered), self.view.index)
+            lib.Toolbox.disable_enable_InventoryView(self.view.children, self.view.items_list_filtered, self.view.index)
             view = self.view
             await interaction.response.edit_message(embed=embed, view=view)    
 
@@ -141,7 +149,7 @@ class Sell_Button(lib.discord.ui.Button):
 
 class InventoryView(lib.discord.ui.View):
     def __init__(self, bot, Slayer, interaction):
-        super().__init__(timeout=10)
+        super().__init__(timeout=120)
         self.bot = bot
         self.Slayer = Slayer
         self.interaction = interaction
@@ -162,11 +170,10 @@ class InventoryView(lib.discord.ui.View):
         self.add_item(Element_Dropdown(self.bot.rElements))
         self.add_item(Rarity_Dropdown(self.bot.rRarities))
 
-        lib.Toolbox.disable_enable_InventoryView(self.children, len(self.items_list_filtered), self.index)
+        lib.Toolbox.disable_enable_InventoryView(self.children, self.items_list_filtered, self.index)
 
     async def on_timeout(self) -> None:
-        self.bot.active_cSlayer[self.Slayer.cSlayer.slayer_id]["interfaces"]["inventory"] = False
-        self.bot.active_cSlayer.pop(self.Slayer.cSlayer.slayer_id)
+        self.bot.ActiveList.close_interface(self.Slayer.cSlayer.slayer_id, "inventory")
         message = await self.interaction.original_message()
         await message.edit(view=None)
         self.stop()

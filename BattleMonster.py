@@ -21,12 +21,14 @@ class BattleMonster(lib.commands.Bot):
             'Cogs.Main',
             'Cogs.Commands_Admin',
             'Cogs.Sync',
-            'Cogs.Commands_Slayer'
+            'Cogs.Commands_Slayer',
+            'Cogs.Context_Menus'
         ]
 
     async def setup_hook(self):
         await self.update_bot()
-        self.active_cSlayer = {}
+        self.ActiveList = lib.ActiveList(self)
+        self.dB = lib.dB(self)
         for ext in self.initial_extensions:
             await self.load_extension(ext)
     

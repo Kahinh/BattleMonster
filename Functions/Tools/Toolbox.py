@@ -48,7 +48,8 @@ def transformRaritiesLootRate(fetch):
         dict_record[row["rarities_name"]][row["rarities"]] = float(row["loot_rate"])
     return dict_record
 
-def disable_enable_InventoryView(children, len_list, index):
+def disable_enable_InventoryView(children, list, index):
+    len_list = len(list)
     if index == len_list - 1:
         for item in children:
             if hasattr(item, "label"):
@@ -69,10 +70,19 @@ def disable_enable_InventoryView(children, len_list, index):
             if hasattr(item, "label"):
                 if item.label==">>":
                     item.disabled = False
+    for item in children:
+        if hasattr(item, "label"):
+            if item.label=="Équiper":
+                if len(list) > 0 :
+                    if list[index].equipped:
+                        item.disabled = True
+                    else:
+                        item.disabled = False
+
 
 def filter_items_list(items_list, slot=None, element=None, rarity=None):
     filtered_list = []
-    for item in items_list:
-        if (item.slot == slot or slot is None) and (item.element == element or element is None) and (item.rarity == rarity or rarity is None):
-            filtered_list.append(item)
+    for item_id in items_list:
+        if (items_list[item_id].slot == slot or slot is None) and (items_list[item_id].element == element or element is None) and (items_list[item_id].rarity == rarity or rarity is None):
+            filtered_list.append(items_list[item_id])
     return filtered_list

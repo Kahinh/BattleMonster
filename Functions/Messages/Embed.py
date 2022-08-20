@@ -97,3 +97,58 @@ def create_embed_item(bot, cItem1, cItem2=None):
 
         embed.set_thumbnail(url=f"{cItem1.img_url}")
     return embed
+
+def create_embed_profil(Slayer, avatar):
+
+    description = \
+    "**__Statistiques__**" \
+    f"\n❤️ Vie : **{Slayer.cSlayer.stats['total_max_health'] - Slayer.cSlayer.damage_taken}/{Slayer.cSlayer.stats['total_max_health']}**" \
+    f"\n🛡️ Armure : **{Slayer.cSlayer.stats['total_armor']}**" \
+    f"\n🌪️ Vivacité : **{Slayer.cSlayer.stats['total_cooldown']}s**" \
+    f"\n☄️ Charge : **{Slayer.cSlayer.special_stacks}/{Slayer.cSlayer.stats['total_stacks']}**" \
+    f"\n🍀 Luck : **{Slayer.cSlayer.stats['total_luck']}**%"
+
+    embed=lib.discord.Embed(title=f"Profil de {Slayer.cSlayer.name}",
+    description=description,
+    color=0x1abc9c)   
+
+    for i in ("L", "H", "S"):
+        if i == "L":
+            name = "__Attaque Légère__"
+        elif i == "H":
+            name = "__Attaque Lourde__"
+        elif i == "S":
+            name = "__Capacité Spéciale__"
+        description = \
+        f"\n⚔️ Puissance : **{Slayer.cSlayer.stats['total_damage_' + i]}**" \
+        f"\n⚔️ Dégâts Finaux : **{Slayer.cSlayer.stats['total_final_damage_' + i]*100}**" \
+        f"\n☄️ Gains Charge : **{Slayer.cSlayer.stats['total_special_charge_' + i]}**" \
+        f"\n✨ Chance Critique : **{Slayer.cSlayer.stats['total_crit_chance_' + i]*100}**%" \
+        f"\n💢 Dégâts Critiques : **{Slayer.cSlayer.stats['total_crit_damage_' + i]*100}**%" \
+        f"\n🗡️ Létalité : **{Slayer.cSlayer.stats['total_letality_' + i]}**,  **{Slayer.cSlayer.stats['total_letality_per_' + i]*100}**%" \
+        f"\n🎯 Echec : **{Slayer.cSlayer.stats['total_fail_' + i]*100}**%" \
+        f"\n✊ Blocage : **{Slayer.cSlayer.stats['total_parry_' + i]*100}**"
+        embed.add_field(name=name, value=description, inline=False)
+
+    embed.set_thumbnail(url=avatar)
+    embed.set_footer(text=f'Chasse depuis le {Slayer.cSlayer.creation_date}')
+    return embed
+
+def create_embed_equipment(bot, Slayer, avatar):
+    description = f"Score d'équipement : **{Slayer.cSlayer.gearscore}**\n"
+    for slot in Slayer.cSlayer.slots_count:
+        if slot in Slayer.cSlayer.slots: nbr = len(Slayer.cSlayer.slots[slot])
+        else: nbr = 0
+        description += f"\n**{Slayer.cSlayer.slots_count[slot]['display_emote']} {Slayer.cSlayer.slots_count[slot]['display_text']}** - ({nbr}/{Slayer.cSlayer.slots_count[slot]['count']})"
+        if slot in Slayer.cSlayer.slots:
+            for item in Slayer.cSlayer.slots[slot]:
+                cItem = Slayer.cSlayer.inventory_items[item]
+                description += f"\n- {bot.rElements[cItem.element]['display_emote']} {bot.rRarities[cItem.rarity]['display_emote']} {cItem.name}"
+
+    embed=lib.discord.Embed(title=f"Équipement de {Slayer.cSlayer.name}",
+    description=description,
+    color=0x1abc9c)   
+
+    embed.set_thumbnail(url=avatar)
+    embed.set_footer(text=f'Chasse depuis le {Slayer.cSlayer.creation_date}')
+    return embed

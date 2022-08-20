@@ -59,9 +59,9 @@ class LootView(lib.discord.ui.View):
 
         # Adds the dropdown to our view object.
         self.add_item(Details_Button())
-        if request['already'] == False:
-            self.add_item(Equip_Button())
-            self.add_item(Sell_Button())
+        #if request['already'] == False:
+            #self.add_item(Equip_Button())
+            #self.add_item(Sell_Button())
 
     async def on_timeout(self) -> None:
         await self.message.edit(view=None)

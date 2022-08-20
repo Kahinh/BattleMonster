@@ -17,30 +17,32 @@ class MSlayer:
     def __init__(
         self,
         bot,
-        interaction
+        user_id,
+        user_name
         ):
         self.bot = bot
         self.isExist = False
-        self.interaction = interaction
+        self.user_id = user_id
+        self.user_name = user_name
         self.cSlayer = None
         self.requests = []
 
     async def extractdB(self):
         async with self.bot.db_pool.acquire() as conn:
             async with conn.transaction():
-                self.rItemsSlayer = await conn.fetch(qSlayers.SELECT_SLAYER_ITEMS, self.interaction.user.id)
-                self.rSlayer = await conn.fetchrow(qSlayers.SELECT_SLAYER, self.interaction.user.id)
+                self.rSlayer = await conn.fetchrow(qSlayers.SELECT_SLAYER, self.user_id)
                 if self.rSlayer is not None:
-                    self.rSlayerInventory = await conn.fetch(qSlayers.SELECT_SLAYER_ROW_INVENTORY, self.interaction.user.id)
-                    self.rSlayerSpeInventory = await conn.fetch(qSlayers.SELECT_SLAYER_SPE_INVENTORY, self.interaction.user.id)
-                    self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, 1)
-                else:
+                    self.rSlayerInventory = await conn.fetch(qSlayers.SELECT_SLAYER_ROW_INVENTORY, self.user_id)
+                    self.rSlayerSpeInventory = await conn.fetch(qSlayers.SELECT_SLAYER_SPE_INVENTORY, self.user_id)
                     self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, self.rSlayer["specialization"])
+                else:
+                    self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, 1)
     
     async def constructClass(self):
         await self.extractdB()
         if self.rSlayer is None:
-            self.cSlayer = Slayer(slayer_id=self.interaction.user.id, name=self.interaction.user.name, ratio_armor=self.bot.rBaseBonuses["ratio_armor"])
+            self.cSlayer = Slayer(slayer_id=self.user_id, name=self.user_name, ratio_armor=self.bot.rBaseBonuses["ratio_armor"])
+            await self.push_dB_Slayer()
         else:
             self.isExist = True
             self.cSlayer = Slayer(
@@ -56,109 +58,128 @@ class MSlayer:
                 faction= self.rSlayer["faction"],
                 specialization= self.rSlayer["specialization"],
                 inventory_specializations=[int(dict(spe)['specialization_id']) for spe in self.rSlayerSpeInventory],
-                slots= self.getSlots()
             )
-        for item in self.rSlayerInventory:
-            self.cSlayer.inventory_items.append(Item(item))
+        #On check qu'on a des items dans l'inventaire first.
+        if hasattr(self, "rSlayerInventory"):
+            #INVENTAIRE
+            for row in self.rSlayerInventory:
+                self.cSlayer.inventory_items[row["id"]] = Item(row)
+            #SLOTS
+            self.cSlayer.slots = self.getSlots()
         self.cSlayer.Spe = Spe(self.rSpe)
-        self.cSlayer.stats = self.cSlayer.calculateStats(self.bot.rBaseBonuses, self.rItemsSlayer)
+
+        self.cSlayer.calculateStats(self.bot.rBaseBonuses)
+        self.GetGearScore()
+
         self.cSlayer.slots_count = self.cSlayer.Spe.adjust_slot_count(self.bot.rSlots)
     
     def getSlots(self):
         slots = {}
-        if self.rItemsSlayer != []:
-            for row in self.rItemsSlayer:
-                if row["slot"] not in slots: slots[row["slot"]] = []
-                slots[row["slot"]].append(Item(row))
+        for item_id in self.cSlayer.inventory_items:
+            if self.cSlayer.inventory_items[item_id].equipped:
+                if self.cSlayer.inventory_items[item_id].slot not in slots: slots[self.cSlayer.inventory_items[item_id].slot] = []
+                slots[self.cSlayer.inventory_items[item_id].slot].append(item_id)
         return slots
 
-    async def pushdB(self):
-        if self.requests != []:
-            async with self.bot.db_pool.acquire() as conn:
-                async with conn.transaction():
-                    for request in self.requests:
-                        await conn.execute(request)
-            self.requests = []
-
     async def equip_item(self, cItem):
-        isEquipped = False
-        alreadyequipped_List = []
+        hasbeenequipped = False
+        alreadyequipped_list = []
         #D'ABORD ON CHECK QUE L'ITEM EST BIEN DANS L'INVENTAIRE
         if self.isinInventory(cItem):
             #SI ON PEUT EQUIPER QU'UNE FOIS UN ITEM, ON S'EN FOUT. ON UPDATE OU INSERT
             if self.cSlayer.slots_count[cItem.slot]["count"] == 1:
+                #ON A DEJA UN ITEM EQUIPER ET IL FAUT SWITCH
                 if cItem.slot in self.cSlayer.slots:
-                    async with self.bot.db_pool.acquire() as conn:
-                        await conn.execute(f'UPDATE "Slayers_Slots" SET item_id = {cItem.item_id} WHERE slayer_id = {self.cSlayer.slayer_id} AND slot = \'{cItem.slot}\'')
+                    #On sécurise si jamais l'item est déjà équippé
+                    if cItem.item_id not in self.cSlayer.slots[cItem.slot]:
+                        self.removefromSlots(self.cSlayer.inventory_items[self.cSlayer.slots[cItem.slot][0]])
+                        self.addtoSlots(cItem)
+                        await self.bot.dB.switch_item(self.cSlayer, cItem, self.cSlayer.inventory_items[self.cSlayer.slots[cItem.slot][0]])
+                        hasbeenequipped = True
+                #ON A PAS D'ITEM EQUIPER
                 else:
-                    async with self.bot.db_pool.acquire() as conn:
-                        await conn.execute(f'INSERT INTO "Slayers_Slots" (slayer_id, slot, item_id) VALUES ({self.cSlayer.slayer_id}, \'{cItem.slot}\', {cItem.item_id})')
-                isEquipped = True
+                    self.addtoSlots(cItem)
+                    await self.bot.dB.equip_item(self.cSlayer, cItem)
+                    hasbeenequipped = True
             #SI ON PEUT EQUIPER PLUSIEURS ITEMS SUR LE MEME EMPLACEMENT
-            elif self.cSlayer.slots_count[cItem.slot]["count"] > 1:
-                if cItem.slot in self.cSlayer.slots:
-                    #ON CHECK SI L'ITEM EST PAS DEJA EQUIPEE
-                    if not self.isinSlot(cItem):
-                        if len(self.cSlayer.slots[cItem.slot]) < self.cSlayer.slots_count[cItem.slot]["count"]:
-                            async with self.bot.db_pool.acquire() as conn:
-                                await conn.execute(f'INSERT INTO "Slayers_Slots" (slayer_id, slot, item_id) VALUES ({self.cSlayer.slayer_id}, \'{cItem.slot}\', {cItem.item_id})')             
-                            isEquipped = True
-                        else:
-                            isEquipped = False
-                            alreadyequipped_List = deepcopy(self.cSlayer.slots[cItem.slot])
-                    else:
-                        isEquipped = False
-                #SOIT ON A PAS ENCORE D'ITEMS DANS CET EMPLACEMENT ET Y A QUA INSERT
+            elif self.cSlayer.slots_count[cItem.slot]["count"] > 1:  
+                #SOIT ON A PAS ENCORE D'ITEMS
+                if cItem.slot not in self.cSlayer.slots:
+                    self.addtoSlots(cItem)
+                    await self.bot.dB.equip_item(self.cSlayer, cItem)
+                    hasbeenequipped = True    
+                #SOIT ON A ENCORE DE LA PLACE
                 else:
-                    async with self.bot.db_pool.acquire() as conn:
-                        await conn.execute(f'INSERT INTO "Slayers_Slots" (slayer_id, slot, item_id) VALUES ({self.cSlayer.slayer_id}, \'{cItem.slot}\', {cItem.item_id})')             
-                    isEquipped = True                
-            else:
-                isEquipped = False
-    
-        return isEquipped, alreadyequipped_List
+                    #On sécurise si jamais l'item est déjà équippé
+                    if cItem.item_id not in self.cSlayer.slots[cItem.slot]:
+                        if len(self.cSlayer.slots[cItem.slot]) < self.cSlayer.slots_count[cItem.slot]["count"]:
+                            self.addtoSlots(cItem)
+                            await self.bot.dB.equip_item(self.cSlayer, cItem)
+                            hasbeenequipped = True                   
+                        #SOIT ON A PLUS DE PLACE
+                        else:
+                            alreadyequipped_list = self.cSlayer.slots[cItem.slot]
+        if hasbeenequipped:
+            self.cSlayer.calculateStats(self.bot.rBaseBonuses)
+        return hasbeenequipped, alreadyequipped_list
 
     async def sell_item(self, cItem):
         #On update la BDD avec la vente
         if self.isinInventory(cItem):
-            async with self.bot.db_pool.acquire() as conn:
-                async with conn.transaction():
-                    await conn.execute(f'DELETE FROM "Slayers_Inventory_Items" WHERE slayer_id = {self.cSlayer.slayer_id} AND item_id = {cItem.item_id}')
-                    await conn.execute(f'DELETE FROM "Slayers_Slots" WHERE slayer_id = {self.cSlayer.slayer_id} AND item_id = {cItem.item_id}')
-                    await conn.execute(f'UPDATE "Slayers" SET money = money + {self.bot.rRarities[cItem.rarity]["price"]} WHERE slayer_id = {self.cSlayer.slayer_id}')
             self.removefromInventory(cItem)
+            currently_equipped = self.isinSlot(cItem)
             self.removefromSlots(cItem)
+            if currently_equipped:
+                self.cSlayer.calculateStats(self.bot.rBaseBonuses)
+            await self.bot.dB.sell_item(self.cSlayer, cItem)
             return True
         else:
             return False
 
     def isinInventory(self, cItem):
-        for item in self.cSlayer.inventory_items:
-            if cItem.item_id == item.item_id:
-                return True
-        return False
+        if cItem.item_id in self.cSlayer.inventory_items:
+            return True
+        else:
+            return False
 
     def isinSlot(self, cItem):
         if cItem.slot in self.cSlayer.slots:
-            for item in self.cSlayer.slots[cItem.slot]:
-                if cItem.item_id == item.item_id:
-                    return True
+            if cItem.item_id in self.cSlayer.slots[cItem.slot]:
+                return True
         return False
 
     def removefromInventory(self, cItem):
-        for item in self.cSlayer.inventory_items:
-            if cItem.item_id == item.item_id:
-                self.cSlayer.inventory_items.remove(item)
-                return
+        print(self.cSlayer.inventory_items)
+        self.cSlayer.inventory_items.pop(cItem.item_id)
+        print(self.cSlayer.inventory_items)
 
     def removefromSlots(self, cItem):
-        for item in self.cSlayer.slots[cItem.slot]:
-            if cItem.item_id == item.item_id:
-                self.cSlayer.slots[cItem.slot].remove(item)
-                return
+        print(self.cSlayer.slots)
+        if cItem.slot in self.cSlayer.slots:
+            self.cSlayer.slots[cItem.slot].remove(cItem.item_id)
+            self.cSlayer
+            cItem.equipped = False
+        self.cSlayer.damage_taken = max(self.cSlayer.damage_taken - cItem.bonuses["health"],0)
+        print(self.cSlayer.slots)
+    
+    def addtoSlots(self, cItem):
+        print(self.cSlayer.slots)
+        if cItem.slot not in self.cSlayer.slots: self.cSlayer.slots[cItem.slot] = []
+        self.cSlayer.slots[cItem.slot].append(cItem.item_id)
+        cItem.equipped = True
+        self.cSlayer.damage_taken += cItem.bonuses["health"]
+        print(self.cSlayer.slots)
 
-    def Slayer_update(self):
-        self.requests.append('INSERT INTO "Slayers" (slayer_id, xp, money, damage_taken, special_stacks, faction, specialization, creation_date, name, dead)' \
+    def GetGearScore(self):
+        gearscore = 0
+        for item in self.cSlayer.inventory_items:
+            if self.cSlayer.inventory_items[item].equipped:
+                gearscore += self.bot.rRarities[self.cSlayer.inventory_items[item].rarity]["gearscore"]
+        self.cSlayer.gearscore = gearscore
+
+    async def push_dB_Slayer(self):
+        async with self.bot.db_pool.acquire() as conn:
+            await conn.execute('INSERT INTO "Slayers" (slayer_id, xp, money, damage_taken, special_stacks, faction, specialization, creation_date, name, dead)' \
             f" VALUES ({self.cSlayer.slayer_id}, {self.cSlayer.xp}, {self.cSlayer.money}, {self.cSlayer.damage_taken}, {self.cSlayer.special_stacks}, {self.cSlayer.faction}, {self.cSlayer.specialization}, {self.cSlayer.creation_date}, '{self.cSlayer.name}', {self.cSlayer.dead})" \
             ' ON CONFLICT (slayer_id) DO ' \
             f'UPDATE SET xp={self.cSlayer.xp}, money={self.cSlayer.money}, damage_taken={self.cSlayer.damage_taken}, special_stacks={self.cSlayer.special_stacks}, faction={self.cSlayer.faction}, specialization={self.cSlayer.specialization}, dead={self.cSlayer.dead}')      
@@ -178,7 +199,7 @@ class Slayer:
         faction=0,
         specialization=1,
         Spe=None,
-        inventory_items=[],
+        inventory_items={},
         inventory_specializations=[1],
         slots={},
         stats = {},
@@ -202,7 +223,7 @@ class Slayer:
         self.stats = stats
         self.slots_count = slots_count
 
-    def calculateBonuses(self, rBaseBonuses, rItemsSlayer):
+    def calculateBonuses(self, rBaseBonuses):
         bonuses = {
             "armor" : rBaseBonuses["armor"],
             "armor_per" : 0,
@@ -243,16 +264,16 @@ class Slayer:
             "vivacity": rBaseBonuses["vivacity"]
         }
 
-        if rItemsSlayer is not None:
-            for row in rItemsSlayer:
-                cItem = Item(row)
-                for bonus in cItem.bonuses:
-                    bonuses[bonus] += cItem.bonuses[bonus]
-        return bonuses
+        for item_id in self.inventory_items:
+            if self.inventory_items[item_id].equipped:
+                for bonus in self.inventory_items[item_id].bonuses:
+                    bonuses[bonus] += self.inventory_items[item_id].bonuses[bonus]
+        self.bonuses = bonuses
 
-    def calculateStats(self, rBaseBonuses, rItemsSlayer=None):
+    def calculateStats(self, rBaseBonuses):
 
-        bonuses = self.calculateBonuses(rBaseBonuses, rItemsSlayer)
+        self.calculateBonuses(rBaseBonuses)
+        bonuses = self.bonuses
         stats = {
             "total_armor" : int(bonuses["armor"]*(1+bonuses["armor_per"])),
             "total_max_health" : int(bonuses["health"]*(1+bonuses["health_per"])),
@@ -291,7 +312,7 @@ class Slayer:
         }
         if stats["total_max_health"] == self.damage_taken:
             self.dead = True
-        return stats
+        self.stats = stats
 
     def CalculateDamage(self, Hit, cMonster):
         #On check si on fail
@@ -330,8 +351,38 @@ class Slayer:
             return True
         return False
 
-    def GetGearScore(self):
-        pass
+    def isFail(self, hit):
+        isFail = False if hit == "S" else random.choices(population=[True, False], weights=[self.stats[f"total_fail_{hit}"], 1-self.stats[f"total_fail_{hit}"]], k=1)[0]
+        return isFail
+    
+    def isCrit(self, hit):
+        isCrit = random.choices(population=[True, False], weights=[float(self.stats[f"total_crit_chance_{hit}"]), float(1-self.stats[f"total_crit_chance_{hit}"])], k=1)[0]
+        return isCrit
+
+    def dealDamage(self, hit, isCrit):
+        damage = int((((self.stats[f"total_damage_{hit}"]*(1 + (self.stats[f"total_crit_damage_{hit}"] if isCrit else 0)) * (1 + self.stats[f"total_final_damage_{hit}"])))))
+        return damage
+    
+    def reduceArmor(self, hit, armor):
+        armor = max(((armor*(1-self.stats[f"total_letality_per_{hit}"]))-self.stats[f"total_letality_{hit}"]),0)
+        return armor
+    
+    def reduceDamage(self, damage, armor):
+        damage = -int(min(damage * (1000/(1000 + (armor))), self.stats["total_max_health"] - self.damage_taken))
+        return damage
+
+    def getStacks(self, hit):
+        self.special_stacks = min(self.stats["total_stacks"] - self.special_stacks, self.stats[f"total_special_charge_{hit}"])
+
+    def useStacks(self, hit):
+        if hit == "S":
+            self.special_stacks = 0
+
+    def isDead(self):
+        if self.dead:
+            return True
+        else:
+            return False
 
 
 

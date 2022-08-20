@@ -1,31 +1,58 @@
 from pstats import Stats
 import lib
 
-class Stats_Button(lib.discord.ui.Button):
+class Profil_Button(lib.discord.ui.Button):
     def __init__(self):
-        super().__init__(label="<<", style=lib.discord.ButtonStyle.blurple)
+        super().__init__(label="Profil", style=lib.discord.ButtonStyle.blurple)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        await interaction.response.edit_message(content="Test", ephemeral=True)
+        embed = self.view.embed_Profil
+        for item in self.view.children:
+            if item.label=="Profil":
+                item.disabled = True
+            if item.label=="Équipement":
+                item.disabled = False
+        await interaction.response.edit_message(embed=embed, view=self.view)
 
-class Items_Button(lib.discord.ui.Button):
+class Equipment_Button(lib.discord.ui.Button):
     def __init__(self):
-        super().__init__(label=">>", style=lib.discord.ButtonStyle.green)
+        super().__init__(label="Équipement", style=lib.discord.ButtonStyle.green)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        await interaction.response.edit_message(content="Test", ephemeral=True)
+        embed = self.view.embed_Equipment
+        for item in self.view.children:
+            if item.label=="Équipement":
+                item.disabled = True
+            if item.label=="Profil":
+                item.disabled = False
+        await interaction.response.edit_message(embed=embed, view=self.view)
 
 class Achievements_Button(lib.discord.ui.Button):
     def __init__(self):
-        super().__init__(label="Équiper", style=lib.discord.ButtonStyle.red)
+        super().__init__(label="Succès", style=lib.discord.ButtonStyle.red)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        await interaction.response.edit_message(content="Test", ephemeral=True)
+        await interaction.response.edit_message(content="Test")
 
 class SlayerView(lib.discord.ui.View):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, bot, Slayer, interaction, avatar):
+        super().__init__(timeout=30)
+        self.bot = bot
+        self.interaction = interaction
+        self.Slayer = Slayer
+        self.embed_Profil = lib.Embed.create_embed_profil(Slayer, avatar)
+        self.embed_Equipment = lib.Embed.create_embed_equipment(bot, Slayer, avatar)
 
-        self.add_item(Stats_Button())
-        self.add_item(Items_Button())
-        self.add_item(Achievements_Button())
+        self.add_item(Profil_Button())
+        self.add_item(Equipment_Button())
+        #self.add_item(Achievements_Button())
+
+        for item in self.children:
+            if item.label=="Profil":
+                item.disabled = True
+
+    async def on_timeout(self) -> None:
+        self.bot.ActiveList.close_interface(self.Slayer.cSlayer.slayer_id, "profil")
+        message = await self.interaction.original_message()
+        await message.edit(view=None)
+        self.stop()

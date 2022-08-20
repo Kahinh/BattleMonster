@@ -33,6 +33,8 @@ from Views.MultEquip import MultEquipView
 
 #CLASSES
 from Classes.DamageDone import DamageDone
+from Classes.dBManager import dB
+from Classes.ActiveList import ActiveList
 from Classes.Items import Item
 from Classes.MainSlayers import MSlayer, Slayer
 from Classes.MainBattles import Battle, Monster
