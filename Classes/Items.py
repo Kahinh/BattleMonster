@@ -4,6 +4,7 @@ class Item:
     rItem
     ):
     self.item_id = rItem["id"]
+    self.level = rItem["level"]
     self.name = rItem["name"]
     self.description = rItem["description"]
     self.slot = rItem["slot"]

@@ -101,12 +101,13 @@ def create_embed_item(bot, cItem1, cItem2=None):
 def create_embed_profil(Slayer, avatar):
 
     description = \
-    "**__Statistiques__**" \
+    f"**📯 {Slayer.cSlayer.Spe.name}**" \
+    "\n\n**__Statistiques__**" \
     f"\n❤️ Vie : **{Slayer.cSlayer.stats['total_max_health'] - Slayer.cSlayer.damage_taken}/{Slayer.cSlayer.stats['total_max_health']}**" \
     f"\n🛡️ Armure : **{Slayer.cSlayer.stats['total_armor']}**" \
     f"\n🌪️ Vivacité : **{Slayer.cSlayer.stats['total_cooldown']}s**" \
     f"\n☄️ Charge : **{Slayer.cSlayer.special_stacks}/{Slayer.cSlayer.stats['total_stacks']}**" \
-    f"\n🍀 Luck : **{Slayer.cSlayer.stats['total_luck']}**%"
+    f"\n🍀 Luck : **{Slayer.cSlayer.stats['total_luck'] * 100}**%"
 
     embed=lib.discord.Embed(title=f"Profil de {Slayer.cSlayer.name}",
     description=description,
@@ -143,7 +144,10 @@ def create_embed_equipment(bot, Slayer, avatar):
         if slot in Slayer.cSlayer.slots:
             for item in Slayer.cSlayer.slots[slot]:
                 cItem = Slayer.cSlayer.inventory_items[item]
-                description += f"\n- {bot.rElements[cItem.element]['display_emote']} {bot.rRarities[cItem.rarity]['display_emote']} {cItem.name}"
+                if cItem.level > 1:
+                    description += f"\n- {bot.rElements[cItem.element]['display_emote']} [{cItem.level}] {cItem.name} - *{bot.rRarities[cItem.rarity]['display_text']}*"
+                else:
+                    description += f"\n- {bot.rElements[cItem.element]['display_emote']} {cItem.name} - *{bot.rRarities[cItem.rarity]['display_text']}*"
 
     embed=lib.discord.Embed(title=f"Équipement de {Slayer.cSlayer.name}",
     description=description,

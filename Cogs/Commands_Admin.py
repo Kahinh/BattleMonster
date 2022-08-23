@@ -12,7 +12,6 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
     await self.bot.update_bot()
     await interaction.response.send_message(f"Update réalisée !", ephemeral=True)
 
-  @lib.app_commands.describe(gamemode='Config du Gamemode')
   @lib.app_commands.choices(
     gamemode=[
       lib.Choice(name='Chasse', value="hunts"),
@@ -27,6 +26,13 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
     Battle = lib.Battle(self.bot, rGamemode, interaction)
     await Battle.constructGamemode()
 
+  @lib.app_commands.command(name="test")
+  async def updatebot(self, interaction: lib.discord.Interaction) -> None:
+    """ Test. """
+    data = ([("commun", "blaze", ["weapon"]),("legendary", "blaze", ["weapon"])])
+    query = await self.bot.dB.pull_loots(data)
+    print(query)
+    await interaction.response.send_message(f"C'est fait !", ephemeral=True)
 
 async def setup(bot: lib.commands.Bot) -> None:
   await bot.add_cog(Commands_Admin(bot))

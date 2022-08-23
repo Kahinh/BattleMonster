@@ -35,7 +35,7 @@ class Special_Button(lib.discord.ui.Button):
 
 class BattleView(lib.discord.ui.View):
     def __init__(self, Battle):
-        super().__init__(timeout=10)
+        super().__init__(timeout=600)
         self.Battle = Battle
 
         # Adds the dropdown to our view object.

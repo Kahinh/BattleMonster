@@ -36,19 +36,17 @@ class MSlayer:
                     self.rSlayerSpeInventory = await conn.fetch(qSlayers.SELECT_SLAYER_SPE_INVENTORY, self.user_id)
                     self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, self.rSlayer["specialization"])
                 else:
-                    self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, 1)
+                    self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, 2)
     
     async def constructClass(self):
         await self.extractdB()
         if self.rSlayer is None:
-            self.cSlayer = Slayer(slayer_id=self.user_id, name=self.user_name, ratio_armor=self.bot.rBaseBonuses["ratio_armor"])
+            self.cSlayer = Slayer(slayer_id=self.user_id, name=self.user_name, bot=self.bot)
             await self.push_dB_Slayer()
         else:
-            self.isExist = True
             self.cSlayer = Slayer(
                 slayer_id= self.rSlayer["slayer_id"],
                 name= self.rSlayer["name"],
-                ratio_armor=self.bot.rBaseBonuses["ratio_armor"],
                 creation_date= self.rSlayer["creation_date"],
                 dead= self.rSlayer["dead"],
                 xp= self.rSlayer["xp"],
@@ -57,7 +55,9 @@ class MSlayer:
                 special_stacks= self.rSlayer["special_stacks"],
                 faction= self.rSlayer["faction"],
                 specialization= self.rSlayer["specialization"],
+                inventory_items={},
                 inventory_specializations=[int(dict(spe)['specialization_id']) for spe in self.rSlayerSpeInventory],
+                bot = self.bot
             )
         #On check qu'on a des items dans l'inventaire first.
         if hasattr(self, "rSlayerInventory"):
@@ -72,7 +72,11 @@ class MSlayer:
         self.GetGearScore()
 
         self.cSlayer.slots_count = self.cSlayer.Spe.adjust_slot_count(self.bot.rSlots)
-    
+
+    def updateSlayer(self):
+        self.cSlayer.calculateStats(self.bot.rBaseBonuses)
+        self.GetGearScore()
+
     def getSlots(self):
         slots = {}
         for item_id in self.cSlayer.inventory_items:
@@ -120,7 +124,7 @@ class MSlayer:
                         else:
                             alreadyequipped_list = self.cSlayer.slots[cItem.slot]
         if hasbeenequipped:
-            self.cSlayer.calculateStats(self.bot.rBaseBonuses)
+            self.updateSlayer()
         return hasbeenequipped, alreadyequipped_list
 
     async def sell_item(self, cItem):
@@ -130,7 +134,7 @@ class MSlayer:
             currently_equipped = self.isinSlot(cItem)
             self.removefromSlots(cItem)
             if currently_equipped:
-                self.cSlayer.calculateStats(self.bot.rBaseBonuses)
+                self.updateSlayer()
             await self.bot.dB.sell_item(self.cSlayer, cItem)
             return True
         else:
@@ -138,6 +142,12 @@ class MSlayer:
 
     def isinInventory(self, cItem):
         if cItem.item_id in self.cSlayer.inventory_items:
+            return True
+        else:
+            return False
+
+    def isinInventory_withID(self, item_id):
+        if item_id in self.cSlayer.inventory_items:
             return True
         else:
             return False
@@ -189,7 +199,7 @@ class Slayer:
         self,
         slayer_id,
         name,
-        ratio_armor,
+        bot,
         creation_date=datetime.datetime.timestamp(datetime.datetime.now()),
         dead=False,
         xp=0,
@@ -197,7 +207,7 @@ class Slayer:
         damage_taken=0,
         special_stacks=0,
         faction=0,
-        specialization=1,
+        specialization=2,
         Spe=None,
         inventory_items={},
         inventory_specializations=[1],
@@ -207,7 +217,6 @@ class Slayer:
         ):
         self.slayer_id = slayer_id
         self.name = name
-        self.ratio_armor = ratio_armor
         self.creation_date = creation_date
         self.dead = dead
         self.xp = xp
@@ -222,6 +231,7 @@ class Slayer:
         self.slots = slots
         self.stats = stats
         self.slots_count = slots_count
+        self.bot = bot
 
     def calculateBonuses(self, rBaseBonuses):
         bonuses = {
@@ -348,20 +358,38 @@ class Slayer:
 
     def canSpecial(self):
         if self.stats["total_stacks"] == self.special_stacks:
-            return True
-        return False
+            return True, ""
+        else:
+            return False, f"\n> ☄️ Tu ne possèdes pas le nombre de charges nécessaires - Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
 
-    def isFail(self, hit):
-        isFail = False if hit == "S" else random.choices(population=[True, False], weights=[self.stats[f"total_fail_{hit}"], 1-self.stats[f"total_fail_{hit}"]], k=1)[0]
-        return isFail
+    def isSuccess(self, hit):
+        isFail = random.choices(population=[True, False], weights=[self.stats[f"total_fail_{hit}"], 1-self.stats[f"total_fail_{hit}"]], k=1)[0]
+        if isFail :
+            return False, f"\n> - **Attaque esquivée !**"
+        else:
+            return True, ""
     
     def isCrit(self, hit):
         isCrit = random.choices(population=[True, False], weights=[float(self.stats[f"total_crit_chance_{hit}"]), float(1-self.stats[f"total_crit_chance_{hit}"])], k=1)[0]
         return isCrit
 
-    def dealDamage(self, hit, isCrit):
-        damage = int((((self.stats[f"total_damage_{hit}"]*(1 + (self.stats[f"total_crit_damage_{hit}"] if isCrit else 0)) * (1 + self.stats[f"total_final_damage_{hit}"])))))
-        return damage
+    def dealDamage(self, hit, cMonster):
+        armor = self.reduceArmor(hit, cMonster.armor)
+        protect_crit = cMonster.protect_crit
+        stacks_earned = self.getStacks(hit)
+        if self.isCrit(hit):
+            damage = min(max(int(self.stats[f"total_damage_{hit}"]*(1 + (self.stats[f"total_crit_damage_{hit}"])) * (1 + self.stats[f"total_final_damage_{hit}"])),0), cMonster.base_hp)
+            if damage == 0:
+                content = f"\n> Le montre est déjà mort."
+            else:
+                content = f"\n> ⚔️ {hit} Dégâts infligés : {int(damage)} ‼️ [+{stacks_earned}☄️]"
+        else:
+            damage = min(max(int(self.stats[f"total_damage_{hit}"] * (1 + self.stats[f"total_final_damage_{hit}"])), 0), cMonster.base_hp)
+            if damage == 0:
+                content = f"\n> Le montre est déjà mort."
+            else:
+                content = f"\n> ⚔️ {hit} Dégâts infligés : {int(damage)} [+{stacks_earned}☄️]"
+        return damage, content
     
     def reduceArmor(self, hit, armor):
         armor = max(((armor*(1-self.stats[f"total_letality_per_{hit}"]))-self.stats[f"total_letality_{hit}"]),0)
@@ -372,18 +400,39 @@ class Slayer:
         return damage
 
     def getStacks(self, hit):
-        self.special_stacks = min(self.stats["total_stacks"] - self.special_stacks, self.stats[f"total_special_charge_{hit}"])
+        stacks_earned = min(self.stats["total_stacks"] - self.special_stacks, self.stats[f"total_special_charge_{hit}"])
+        self.special_stacks += stacks_earned
+        return stacks_earned
 
     def useStacks(self, hit):
         if hit == "S":
+            content = f"\n> ☄️ Charge consommée : {self.special_stacks} - Charge total : **0/{self.stats['total_stacks']}**"
             self.special_stacks = 0
+            return content
 
-    def isDead(self):
+    def getDamage(self, damage):
+        self.damage_taken += damage
+
+    def isAlive(self):
         if self.dead:
-            return True
+            return False, "> Tu es mort ! Tu ne peux donc pas attaquer pour l'instant 💀"
         else:
-            return False
+            return True, ""
 
+    def getNbrHit(self):
+        return self.Spe.nbr_hit(self.bot.rBaseBonuses["hit_number"])
 
+    def recapStacks(self):
+        if self.stats["total_stacks"] == self.special_stacks:
+            content = f"\n\n> ☄️ Ta capacité spéciale est chargée : Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
+        else:
+            content = f"\n\n ☄️ Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
+        return content
 
-
+    def recapHealth(self, parries):
+        content = f"\n\n> Le monstre t'a infligé {sum(parries)} dégâts."
+        if self.stats["total_max_health"] == self.damage_taken:
+            content += f"\n> Tu es mort !"
+        else:
+            content += f"\n> Il te reste {self.stats['total_max_health'] - self.damage_taken}/{self.stats['total_max_health']} ❤️ !"
+        return content
