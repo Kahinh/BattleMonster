@@ -51,11 +51,10 @@ class Sell_Button(lib.discord.ui.Button):
             await interaction.response.send_message("Ce n'est pas ton butin !", ephemeral=True)
 
 class LootView(lib.discord.ui.View):
-    def __init__(self, bot, request):
+    def __init__(self, bot, cItem):
         super().__init__(timeout=10)
-        self.request = request
         self.bot = bot
-        self.cItem = lib.Item(request['loot'])
+        self.cItem = cItem
 
         # Adds the dropdown to our view object.
         self.add_item(Details_Button())

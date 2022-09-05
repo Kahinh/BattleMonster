@@ -48,26 +48,37 @@ def create_embed_end_battle(Battle, End):
     embed.set_thumbnail(url='https://images-ext-2.discordapp.net/external/K5FrBGB9d-8IbCg_bnZyheglS9Q61aXohV4hJSMiImA/%3Fcb%3D20200801054948/https/static.wikia.nocookie.net/dauntless_gamepedia_en/images/1/13/Hunt_Icon.png/revision/latest')
     return embed
 
-def create_embed_loot(request):
+def create_embed_new_loot():
 
-    Description = "Félicitations ! Vous avez obtenu un butin !" \
-        f"\n{request['loot']['description']}"
+    Description = "Félicitations ! Vous avez obtenu un butin !"
     #Setup Description
-    if request['already']:
-        Description += f"\n\nMalheureusement, tu possèdes déjà cet objet. Il a donc été vendu pour **10** 🪙."
-    else:
-        Description += f"\n\nQue souhaites-tu faire désormais ? L'équiper ? Le vendre pour 10 🪙? Le laisser dans ton inventaire ?"
+    Description += f"\n\nQue souhaites-tu faire désormais ? L'équiper ? Le vendre pour 10 🪙? Le laisser dans ton inventaire ?"
 
 
-    embed=lib.discord.Embed(title=f"{request['loot']['name']}",
+    embed=lib.discord.Embed(title=f"NEW LOOT",
     description= \
         f"{Description}",
     #color=int(rarity_color, 16)
     )
 
-    if request['loot']['img_url'] is not None:
-        embed.set_thumbnail(url=f"{request['loot']['img_url']}")
     #embed.set_footer(text="")
+    return embed
+
+def create_embed_money_loot(bot, Slayer, cItem, Price):
+
+    #Setup Description
+    description = \
+        f"*{bot.rElements[cItem.element]['display_emote']} {bot.rSlots[cItem.slot]['display_text']} {bot.rRarities[cItem.rarity]['display_text']}*" \
+        f"\n\n{cItem.description}" \
+        f"\n\nVous possédez déjà ce casque ! Il a dont été vendu pour **10 🪙**"
+
+    embed=lib.discord.Embed(title=f"{cItem.name}",
+    description=description,
+    color=int(bot.rRarities[cItem.rarity]["display_color"], 16)
+    )
+
+    embed.set_thumbnail(url=cItem.img_url)
+
     return embed
 
 def create_embed_item(bot, cItem1, cItem2=None):

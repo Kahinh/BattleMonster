@@ -28,6 +28,7 @@ class Battle:
     self.spawns_count = gamemode["spawns_count"]
     self.count = 0
     self.Monsters = {}
+    self.LootTable = {}
 
     self.scaling = {
       'hp': gamemode["hp_scaling"],
@@ -55,7 +56,8 @@ class Battle:
     async with self.bot.db_pool.acquire() as conn:
       async with conn.transaction():
         for i in self.Monsters:
-          self.Monsters[i] = await conn.fetchrow(lib.qMonsters.SELECT_RANDOM_ADVANCED, raritiestospawn[i], elementstospawn[i])    
+          self.Monsters[i] = await conn.fetchrow(lib.qMonsters.SELECT_RANDOM_ADVANCED, raritiestospawn[i], elementstospawn[i])   
+          self.LootTable[i] = await self.bot.dB.pull_loottable(self.Monsters[i]["element"], self.Monsters[i]["rarity"], self.lootslot) 
   
   def getclassMonster(self):
     for i in self.Monsters:
@@ -67,6 +69,7 @@ class Battle:
       elementstospawn = []
       for i in range(self.spawns_count):
         self.Monsters[i] = {}
+        self.LootTable[i] = {}
         raritiestospawn.append(random.choices(list(self.bot.rGameModesSpawnRate[self.name].keys()), list(self.bot.rGameModesSpawnRate[self.name].values()), k=1)[0])
         elementstospawn.append(random.choice(list(self.bot.rElements.keys())))
       await self.fetchMonsters(raritiestospawn, elementstospawn)
@@ -197,7 +200,7 @@ class Battle:
     await message.edit(embed=embed, view=None)
 
   async def calculateLoot(self):
-    requests = {}
+    loots = {}
     #On fait le tour des Monstres.
     for i in self.Monsters:
       if self.Monsters[i].base_hp == 0:
@@ -211,32 +214,46 @@ class Battle:
                   isLoot = random.choices(population=[True, False], weights=[self.Monsters[i].slayers_hits[slayer_id].luck, 1-self.Monsters[i].slayers_hits[slayer_id].luck], k=1)[0]
                   if isLoot:
                     self.stats["loots"] += 1
-                    if slayer_id not in requests: requests[slayer_id] = []
-                    requests[slayer_id].append((self.Monsters[i].element, self.Monsters[i].rarity, self.lootslot))
+                    if slayer_id not in loots: loots[slayer_id] = []
+                    loots[slayer_id].append(lib.random.choice(self.LootTable[i]))
     #On requete les items dans la dB
-    await self.getrowLoot(requests)
+    await self.getrowLoot(loots)
 
-  async def getrowLoot(self, requests):
-    requests = await self.bot.dB.pull_loots(requests)
-    money_request = []
-    insert_request = []
-    for slayer_id in requests:
-      Slayer = await self.bot.ActiveList.get_Slayer(slayer_id, "", "receiveLoot")
-      for row in requests[slayer_id]:
-        if Slayer.isinInventory_withID(row["id"]):
-          money_request.append(("MONEY", slayer_id))
-        else:
-          insert_request.append((slayer_id, row["id"], 1, False))
-      self.bot.ActiveList.close_interface(slayer_id, "receiveLoot")
-    #await self.distribLoot(requests)
+  async def getrowLoot(self, loots):
 
-  async def distribLoot(self, requests):
-    #Embed and view
     channel = self.bot.get_channel(self.bot.rChannels["loots"])
-    for k in requests:
-      embed = lib.Embed.create_embed_loot(requests[k])
-      view = lib.LootView(self.bot, requests[k])
-      view.message = await channel.send(content=f"<@{requests[k]['slayer-id']}>", embed=embed, view=view)
+    money_request = []
+    loots_request = []
+
+    for slayer_id in loots:
+      Slayer, InterfaceReady = await self.bot.ActiveList.get_Slayer(slayer_id, "", "receiveLoot")
+
+      for row in loots[slayer_id]:
+
+        cItem = lib.Item(row)
+
+        #ON VEND AUTOMATIQUEMENT L'ITEM
+        if Slayer.isinInventory_withID(cItem.item_id):
+          money_request.append((self.bot.rRarities[cItem.rarity]["price"], slayer_id))
+          Slayer.addMoney(self.bot.rRarities[cItem.rarity]["price"])
+
+          embed = lib.Embed.create_embed_money_loot(self.bot, Slayer, cItem, self.bot.rRarities[cItem.rarity]["price"])
+          view = lib.LootView(self.bot, cItem)
+          view.message = await channel.send(content=f"<@{slayer_id}>", embed=embed, view=view)
+
+        #ON AJOUTE DANS LA DB INVENTAIRE
+        else:
+          loots_request.append((slayer_id, cItem.item_id, 1, False))
+          Slayer.addtoInventory(cItem)
+
+          embed = lib.Embed.create_embed_new_loot()
+          #view = lib.LootView(self.bot, requests[k])
+          await channel.send(content=f"<@{slayer_id}>", embed=embed)
+
+      self.bot.ActiveList.close_interface(slayer_id, "receiveLoot")
+
+    await self.bot.dB.push_loots_money(loots_request, money_request)
+    #await self.distribLoot(requests)
 
 class Monster:
   def __init__(

@@ -73,17 +73,12 @@ class MSlayer:
 
         self.cSlayer.slots_count = self.cSlayer.Spe.adjust_slot_count(self.bot.rSlots)
 
-    def updateSlayer(self):
-        self.cSlayer.calculateStats(self.bot.rBaseBonuses)
-        self.GetGearScore()
-
-    def getSlots(self):
-        slots = {}
-        for item_id in self.cSlayer.inventory_items:
-            if self.cSlayer.inventory_items[item_id].equipped:
-                if self.cSlayer.inventory_items[item_id].slot not in slots: slots[self.cSlayer.inventory_items[item_id].slot] = []
-                slots[self.cSlayer.inventory_items[item_id].slot].append(item_id)
-        return slots
+    async def push_dB_Slayer(self):
+        async with self.bot.db_pool.acquire() as conn:
+            await conn.execute('INSERT INTO "Slayers" (slayer_id, xp, money, damage_taken, special_stacks, faction, specialization, creation_date, name, dead)' \
+            f" VALUES ({self.cSlayer.slayer_id}, {self.cSlayer.xp}, {self.cSlayer.money}, {self.cSlayer.damage_taken}, {self.cSlayer.special_stacks}, {self.cSlayer.faction}, {self.cSlayer.specialization}, {self.cSlayer.creation_date}, '{self.cSlayer.name}', {self.cSlayer.dead})" \
+            ' ON CONFLICT (slayer_id) DO ' \
+            f'UPDATE SET xp={self.cSlayer.xp}, money={self.cSlayer.money}, damage_taken={self.cSlayer.damage_taken}, special_stacks={self.cSlayer.special_stacks}, faction={self.cSlayer.faction}, specialization={self.cSlayer.specialization}, dead={self.cSlayer.dead}')      
 
     async def equip_item(self, cItem):
         hasbeenequipped = False
@@ -140,6 +135,18 @@ class MSlayer:
         else:
             return False
 
+    def updateSlayer(self):
+        self.cSlayer.calculateStats(self.bot.rBaseBonuses)
+        self.GetGearScore()
+
+    def getSlots(self):
+        slots = {}
+        for item_id in self.cSlayer.inventory_items:
+            if self.cSlayer.inventory_items[item_id].equipped:
+                if self.cSlayer.inventory_items[item_id].slot not in slots: slots[self.cSlayer.inventory_items[item_id].slot] = []
+                slots[self.cSlayer.inventory_items[item_id].slot].append(item_id)
+        return slots
+
     def isinInventory(self, cItem):
         if cItem.item_id in self.cSlayer.inventory_items:
             return True
@@ -179,6 +186,12 @@ class MSlayer:
         cItem.equipped = True
         self.cSlayer.damage_taken += cItem.bonuses["health"]
         print(self.cSlayer.slots)
+    
+    def addtoInventory(self, cItem):
+        self.cSlayer.inventory_items[cItem.item_id] = cItem
+
+    def addMoney(self, money):
+        self.cSlayer.money += money
 
     def GetGearScore(self):
         gearscore = 0
@@ -186,13 +199,6 @@ class MSlayer:
             if self.cSlayer.inventory_items[item].equipped:
                 gearscore += self.bot.rRarities[self.cSlayer.inventory_items[item].rarity]["gearscore"]
         self.cSlayer.gearscore = gearscore
-
-    async def push_dB_Slayer(self):
-        async with self.bot.db_pool.acquire() as conn:
-            await conn.execute('INSERT INTO "Slayers" (slayer_id, xp, money, damage_taken, special_stacks, faction, specialization, creation_date, name, dead)' \
-            f" VALUES ({self.cSlayer.slayer_id}, {self.cSlayer.xp}, {self.cSlayer.money}, {self.cSlayer.damage_taken}, {self.cSlayer.special_stacks}, {self.cSlayer.faction}, {self.cSlayer.specialization}, {self.cSlayer.creation_date}, '{self.cSlayer.name}', {self.cSlayer.dead})" \
-            ' ON CONFLICT (slayer_id) DO ' \
-            f'UPDATE SET xp={self.cSlayer.xp}, money={self.cSlayer.money}, damage_taken={self.cSlayer.damage_taken}, special_stacks={self.cSlayer.special_stacks}, faction={self.cSlayer.faction}, specialization={self.cSlayer.specialization}, dead={self.cSlayer.dead}')      
 
 class Slayer:
     def __init__(
