@@ -52,6 +52,12 @@ class Item:
       "vivacity": rItem["vivacity"] * self.level
     }
   
+  def equip(self):
+      self.equipped = True
+
+  def unequip(self):
+      self.equipped = False
+  
   def getDisplayStats(self, cItem2=None):
     desc_stat = ""
     for bonus in self.bonuses:

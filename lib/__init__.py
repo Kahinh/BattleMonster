@@ -43,7 +43,6 @@ from Classes.Queries import qGameModes, qMonsters, qSlayers, qChannels, qBaseBon
 
 #FUNCTIONS
 import Functions.Messages.Embed as Embed
-import Functions.Messages.Ephemeral as Ephemeral
 import Functions.Tools.Pickles as Pickles
 import Functions.Tools.Toolbox as Toolbox
 

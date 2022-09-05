@@ -17,50 +17,36 @@ class ActiveList:
     self.bot = bot
     self.active_slayers = {}
 
-  def add_active_slayer(self, slayer_id, Slayer, interface):
+  async def get_Slayer(self, user_id, user_name):
+    if user_id not in self.active_slayers:
+      #On init le Slayer
+      Slayer = MSlayer(self.bot, user_id, user_name)
+      await Slayer.constructClass()
+      self.add_active_slayer(user_id, Slayer)
+      return Slayer
+    else:
+      Slayer = self.active_slayers[user_id].Slayer
+      self.active_slayers[user_id].timestamp = datetime.datetime.timestamp(datetime.datetime.now())
+      return Slayer
+
+  async def add_interface(self, slayer_id, interface_name, interface_class):
+    #On check si on peut add une interface, et on retourne si elle est déjà utilisée
+    if interface_name in self.active_slayers[slayer_id].interfaces:
+      await self.active_slayers[slayer_id].interfaces[interface_name].close_view()
+      self.active_slayers[slayer_id].interfaces[interface_name] = interface_class
+    else:
+      self.active_slayers[slayer_id].interfaces[interface_name] = interface_class
+  
+  async def update_interface(self, slayer_id, interface_name):
+    if slayer_id in self.active_slayers:
+      if interface_name in self.active_slayers[slayer_id].interfaces:
+        await self.active_slayers[slayer_id].interfaces[interface_name].update_view()
+
+  def add_active_slayer(self, slayer_id, Slayer):
     self.active_slayers[slayer_id] = ActiveSlayer(Slayer)
-    self.active_slayers[slayer_id].interfaces[interface] = True
 
   def close_interface(self, slayer_id, interface):
-    self.active_slayers[slayer_id].interfaces[interface] = False
-  
-  def add_interface(self, slayer_id, interface):
-    #On check si on peut add une interface, et on retourne si elle est déjà utilisée
-    if interface in self.active_slayers[slayer_id].interfaces:
-      if self.active_slayers[slayer_id].interfaces[interface] == True:
-        return False
-      else:
-        self.active_slayers[slayer_id].interfaces[interface] = True
-        return True
-    else:
-      self.active_slayers[slayer_id].interfaces[interface] = True
-      return True
-
-  async def get_Slayer(self, user_id, user_name, interface):
-    if user_id not in self.active_slayers:
-        #On init le Slayer
-        Slayer = MSlayer(self.bot, user_id, user_name)
-        await Slayer.constructClass()
-        self.add_active_slayer(user_id, Slayer, interface)
-        InterfaceReady = True
-        return Slayer, InterfaceReady
-    else:
-      try:
-        if self.active_slayers[user_id].interfaces[interface] == True:
-          Slayer = self.active_slayers[user_id].Slayer
-          InterfaceReady = False
-          return Slayer, InterfaceReady
-        else:
-          Slayer = self.active_slayers[user_id].Slayer
-          InterfaceReady = True
-          return Slayer, InterfaceReady      
-      except:
-        #On refresh le timestamp et on récupère le Slayer
-        Slayer = self.active_slayers[user_id].Slayer
-        self.active_slayers[user_id].interfaces[interface] = True
-        self.active_slayers[user_id].timestamp = datetime.datetime.timestamp(datetime.datetime.now())
-        InterfaceReady = True
-        return Slayer, InterfaceReady
+    self.active_slayers[slayer_id].interfaces.pop(interface)
 
 class ActiveSlayer:
   def __init__(

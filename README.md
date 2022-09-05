@@ -54,16 +54,8 @@ Merci à vous de jouer et de partager le bot !
 - [X] Details des items
 - [X] Distribution du butin
 - [X] Acceptation ou revente du butin
-
-- [] Spe 3 (Surarmement)
-Pour la deuxième attaque ->
-If special == 3 (surarmement) & les 2 slots sont non vides:
-    Damage, Stacks_Earned += … (après le parry_fail)
-
-- [] Prépa Spé 4 : Reset (X%) to increase mult_spe & reset stacks
-
-- [] Affichage Stats Slayers (3 page : Stats / Items / Achievements)
-- [] InventorySlayer
+- [X] Affichage Stats Slayers (3 page : Stats / Items / Achievements)
+- [X] InventorySlayer
 
 - [] Remove le pull rGamemode de Admin Commands
 - [] Parametize les requêts dans MainSlayers

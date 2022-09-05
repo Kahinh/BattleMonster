@@ -10,6 +10,7 @@ class dB:
         async with conn.transaction():
             await conn.execute(f'DELETE FROM "Slayers_Inventory_Items" WHERE slayer_id = {cSlayer.slayer_id} AND item_id = {cItem.item_id}')
             await conn.execute(f'UPDATE "Slayers" SET money = money + {self.bot.rRarities[cItem.rarity]["price"]} WHERE slayer_id = {cSlayer.slayer_id}')
+
   async def equip_item(self, cSlayer, cItem):
     async with self.bot.db_pool.acquire() as conn:
         async with conn.transaction():
@@ -41,4 +42,11 @@ class dB:
           await conn.executemany('INSERT INTO "Slayers_Inventory_Items" (slayer_id, item_id, level, equipped) VALUES ($1, $2, $3, $4)', data_loots)
         if data_money != []:
           await conn.executemany('UPDATE "Slayers" SET money = money + $1 WHERE slayer_id = $2', data_money)
+  
+  async def push_slayer_data(self, cSlayer):
+    async with self.bot.db_pool.acquire() as conn:
+      await conn.execute('INSERT INTO "Slayers" (slayer_id, xp, money, damage_taken, special_stacks, faction, specialization, creation_date, name, dead)' \
+            f" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)" \
+            ' ON CONFLICT (slayer_id) DO ' \
+            f"UPDATE SET xp=$2, money=$3, damage_taken=$4, special_stacks=$5, faction=$6, specialization=$7, dead=$10", cSlayer.slayer_id, cSlayer.xp, cSlayer.money, cSlayer.damage_taken, cSlayer.special_stacks, cSlayer.faction, cSlayer.specialization, cSlayer.creation_date, cSlayer.name, cSlayer.dead)
 

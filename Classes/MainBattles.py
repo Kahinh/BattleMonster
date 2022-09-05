@@ -94,96 +94,91 @@ class Battle:
 
   async def getAttack(self, interaction, hit):
     #ON RECUPERE LES DONNEES
-    Slayer, InterfaceReady = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name, "battle")
+    Slayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
     cMonster = self.Monsters[self.count]
 
-    if InterfaceReady:
-      content = "**__Rapport de Combat :__**\n"
+    content = "**__Rapport de Combat :__**\n"
 
-      #On check si on est vivant ou mort.
-      if Slayer.cSlayer.isAlive()[0]:
-        damage = [] 
-        parries = []
+    #On check si on est vivant ou mort.
+    if Slayer.cSlayer.isAlive()[0]:
+      damage = [] 
+      parries = []
 
-        #Si on fait le spécial
-        if hit == "S":
-          if Slayer.cSlayer.canSpecial()[0]:
-            for i in range(Slayer.cSlayer.getNbrHit()):
-              attack = Slayer.cSlayer.dealDamage(hit, cMonster)[0]
-              damage.append(attack)
-              content += Slayer.cSlayer.dealDamage(hit, cMonster)[1]
-              cMonster.getDamage(attack)
-            
-            #Spéciaux
-              #PAIN
-            attack, message, cMonster.last_hits = Slayer.cSlayer.Spe.pain(cMonster)
-            if message != "":
-              cMonster.getDamage(attack)
-              damage.append(attack)
+      #Si on fait le spécial
+      if hit == "S":
+        if Slayer.cSlayer.canSpecial()[0]:
+          for i in range(Slayer.cSlayer.getNbrHit()):
+            attack = Slayer.cSlayer.dealDamage(hit, cMonster)[0]
+            damage.append(attack)
+            content += Slayer.cSlayer.dealDamage(hit, cMonster)[1]
+            cMonster.getDamage(attack)
+          
+          #Spéciaux
+            #PAIN
+          attack, message, cMonster.last_hits = Slayer.cSlayer.Spe.pain(cMonster)
+          if message != "":
+            cMonster.getDamage(attack)
+            damage.append(attack)
+            content += message
+
+          #RESETTIMER
+          cMonster.slayers_hits, message = Slayer.cSlayer.Spe.resetTimer(cMonster)
+          if message != "":
+            content += message
+
+          #Recap fin des attaques
+          content += cMonster.recapDamageTaken(sum(damage))
+          cMonster.storeLastHits(sum(damage))
+          content += Slayer.cSlayer.useStacks(hit)
+          dump = Slayer.cSlayer.recapStacks()
+          content += cMonster.slayer_storeAttack(Slayer.cSlayer, sum(damage), hit)
+        else:
+          content += Slayer.cSlayer.canSpecial()[1]
+        
+      #Si on fait les autres attaques
+      else:
+        if cMonster.slayer_canAttack(Slayer.cSlayer)[0]:
+          for i in range(Slayer.cSlayer.getNbrHit()):
+            #On touche ou on fail ?
+            isSuccess, message = Slayer.cSlayer.isSuccess(hit)
+            if isSuccess:
+              #on est parry ou on hit ?
+              if cMonster.isParry(hit, Slayer):
+                parry, message = cMonster.dealDamage(Slayer)
+                Slayer.cSlayer.getDamage(parry)
+                parries.append(parry)
+                content += message
+              else:
+                attack = Slayer.cSlayer.dealDamage(hit, cMonster)[0]
+                damage.append(attack)
+                content += Slayer.cSlayer.dealDamage(hit, cMonster)[1]
+                cMonster.getDamage(attack)
+            else:
               content += message
 
-            #RESETTIMER
-            cMonster.slayers_hits, message = Slayer.cSlayer.Spe.resetTimer(cMonster)
-            if message != "":
-              content += message
-
-            #Recap fin des attaques
+          #Recap fin des attaques
+          if sum(damage) > 0:
             content += cMonster.recapDamageTaken(sum(damage))
             cMonster.storeLastHits(sum(damage))
-            content += Slayer.cSlayer.useStacks(hit)
-            dump = Slayer.cSlayer.recapStacks()
-            content += cMonster.slayer_storeAttack(Slayer.cSlayer, sum(damage), hit)
-          else:
-            content += Slayer.cSlayer.canSpecial()[1]
-          
-        #Si on fait les autres attaques
+            content += Slayer.cSlayer.recapStacks()
+          if sum(parries) > 0:
+            content += Slayer.cSlayer.recapHealth(parries)
+          content += cMonster.slayer_storeAttack(Slayer.cSlayer, sum(damage), hit)
+
         else:
-          if cMonster.slayer_canAttack(Slayer.cSlayer)[0]:
-            for i in range(Slayer.cSlayer.getNbrHit()):
-              #On touche ou on fail ?
-              isSuccess, message = Slayer.cSlayer.isSuccess(hit)
-              if isSuccess:
-                #on est parry ou on hit ?
-                if cMonster.isParry(hit, Slayer):
-                  parry, message = cMonster.dealDamage(Slayer)
-                  Slayer.cSlayer.getDamage(parry)
-                  parries.append(parry)
-                  content += message
-                else:
-                  attack = Slayer.cSlayer.dealDamage(hit, cMonster)[0]
-                  damage.append(attack)
-                  content += Slayer.cSlayer.dealDamage(hit, cMonster)[1]
-                  cMonster.getDamage(attack)
-              else:
-                content += message
+          content += cMonster.slayer_canAttack(Slayer.cSlayer)[1]
 
-            #Recap fin des attaques
-            if sum(damage) > 0:
-              content += cMonster.recapDamageTaken(sum(damage))
-              cMonster.storeLastHits(sum(damage))
-              content += Slayer.cSlayer.recapStacks()
-            if sum(parries) > 0:
-              content += Slayer.cSlayer.recapHealth(parries)
-            content += cMonster.slayer_storeAttack(Slayer.cSlayer, sum(damage), hit)
-
-          else:
-            content += cMonster.slayer_canAttack(Slayer.cSlayer)[1]
-
-      else:
-        content += Slayer.cSlayer.isAlive()[1]
-
-      #On update l'embed du combat
-      await self.updateBattle(interaction)
-
-      #On répond au joueur
-      await interaction.response.send_message(content=content, ephemeral=True)
-
-      #On clôture l'action
-      self.bot.ActiveList.close_interface(interaction.user.id, "battle")
-      return self.end
     else:
-      await interaction.response.send_message("Une interface est déjà ouverte", ephemeral=True)
-      return self.end
+      content += Slayer.cSlayer.isAlive()[1]
+
+    #On update l'embed du combat
+    await self.updateBattle(interaction)
+
+    #On répond au joueur
+    await interaction.response.send_message(content=content, ephemeral=True)
+
+    #On clôture l'action
+    return self.end
 
   async def updateBattle(self, interaction):
     if self.Monsters[self.count].base_hp == 0:
@@ -226,19 +221,19 @@ class Battle:
     loots_request = []
 
     for slayer_id in loots:
-      Slayer, InterfaceReady = await self.bot.ActiveList.get_Slayer(slayer_id, "", "receiveLoot")
+      Slayer = await self.bot.ActiveList.get_Slayer(slayer_id, "")
 
       for row in loots[slayer_id]:
 
         cItem = lib.Item(row)
 
         #ON VEND AUTOMATIQUEMENT L'ITEM
-        if Slayer.isinInventory_withID(cItem.item_id):
+        if Slayer.isinInventory(cItem.item_id):
           money_request.append((self.bot.rRarities[cItem.rarity]["price"], slayer_id))
           Slayer.addMoney(self.bot.rRarities[cItem.rarity]["price"])
 
-          embed = lib.Embed.create_embed_money_loot(self.bot, Slayer, cItem, self.bot.rRarities[cItem.rarity]["price"])
-          view = lib.LootView(self.bot, cItem)
+          embed = lib.Embed.create_embed_money_loot(self.bot, Slayer, cItem)
+          view = lib.LootView(self.bot, Slayer, cItem)
           view.message = await channel.send(content=f"<@{slayer_id}>", embed=embed, view=view)
 
         #ON AJOUTE DANS LA DB INVENTAIRE
@@ -246,14 +241,13 @@ class Battle:
           loots_request.append((slayer_id, cItem.item_id, 1, False))
           Slayer.addtoInventory(cItem)
 
-          embed = lib.Embed.create_embed_new_loot()
-          #view = lib.LootView(self.bot, requests[k])
-          await channel.send(content=f"<@{slayer_id}>", embed=embed)
+          await self.bot.ActiveList.update_interface(slayer_id, "inventaire")
 
-      self.bot.ActiveList.close_interface(slayer_id, "receiveLoot")
+          embed = lib.Embed.create_embed_new_loot(self.bot, Slayer, cItem)
+          view = lib.LootView(self.bot, Slayer, cItem, True)
+          view.message = await channel.send(content=f"<@{slayer_id}>", embed=embed, view=view)
 
     await self.bot.dB.push_loots_money(loots_request, money_request)
-    #await self.distribLoot(requests)
 
 class Monster:
   def __init__(

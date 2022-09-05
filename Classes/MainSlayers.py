@@ -37,12 +37,13 @@ class MSlayer:
                     self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, self.rSlayer["specialization"])
                 else:
                     self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, 2)
+                    self.rSlayerInventory = []
     
     async def constructClass(self):
         await self.extractdB()
         if self.rSlayer is None:
             self.cSlayer = Slayer(slayer_id=self.user_id, name=self.user_name, bot=self.bot)
-            await self.push_dB_Slayer()
+            await self.bot.dB.push_slayer_data(self.cSlayer)
         else:
             self.cSlayer = Slayer(
                 slayer_id= self.rSlayer["slayer_id"],
@@ -59,52 +60,48 @@ class MSlayer:
                 inventory_specializations=[int(dict(spe)['specialization_id']) for spe in self.rSlayerSpeInventory],
                 bot = self.bot
             )
-        #On check qu'on a des items dans l'inventaire first.
-        if hasattr(self, "rSlayerInventory"):
-            #INVENTAIRE
-            for row in self.rSlayerInventory:
-                self.cSlayer.inventory_items[row["id"]] = Item(row)
+
+        for row in self.rSlayerInventory:
+            self.cSlayer.inventory_items[row["id"]] = Item(row)
+
+        await self.updateSlayer()   
+
+    async def updateSlayer(self):
             #SLOTS
-            self.cSlayer.slots = self.getSlots()
+        self.cSlayer.slots = self.getSlots()
         self.cSlayer.Spe = Spe(self.rSpe)
+        self.cSlayer.slots_count = self.cSlayer.Spe.adjust_slot_count(self.bot.rSlots)
 
         self.cSlayer.calculateStats(self.bot.rBaseBonuses)
         self.GetGearScore()
 
-        self.cSlayer.slots_count = self.cSlayer.Spe.adjust_slot_count(self.bot.rSlots)
-
-    async def push_dB_Slayer(self):
-        async with self.bot.db_pool.acquire() as conn:
-            await conn.execute('INSERT INTO "Slayers" (slayer_id, xp, money, damage_taken, special_stacks, faction, specialization, creation_date, name, dead)' \
-            f" VALUES ({self.cSlayer.slayer_id}, {self.cSlayer.xp}, {self.cSlayer.money}, {self.cSlayer.damage_taken}, {self.cSlayer.special_stacks}, {self.cSlayer.faction}, {self.cSlayer.specialization}, {self.cSlayer.creation_date}, '{self.cSlayer.name}', {self.cSlayer.dead})" \
-            ' ON CONFLICT (slayer_id) DO ' \
-            f'UPDATE SET xp={self.cSlayer.xp}, money={self.cSlayer.money}, damage_taken={self.cSlayer.damage_taken}, special_stacks={self.cSlayer.special_stacks}, faction={self.cSlayer.faction}, specialization={self.cSlayer.specialization}, dead={self.cSlayer.dead}')      
+        await self.bot.ActiveList.update_interface(self.cSlayer.slayer_id, "profil")
 
     async def equip_item(self, cItem):
         hasbeenequipped = False
         alreadyequipped_list = []
         #D'ABORD ON CHECK QUE L'ITEM EST BIEN DANS L'INVENTAIRE
-        if self.isinInventory(cItem):
+        if self.isinInventory(cItem.item_id):
             #SI ON PEUT EQUIPER QU'UNE FOIS UN ITEM, ON S'EN FOUT. ON UPDATE OU INSERT
             if self.cSlayer.slots_count[cItem.slot]["count"] == 1:
                 #ON A DEJA UN ITEM EQUIPER ET IL FAUT SWITCH
                 if cItem.slot in self.cSlayer.slots:
                     #On sécurise si jamais l'item est déjà équippé
                     if cItem.item_id not in self.cSlayer.slots[cItem.slot]:
-                        self.removefromSlots(self.cSlayer.inventory_items[self.cSlayer.slots[cItem.slot][0]])
-                        self.addtoSlots(cItem)
+                        self.cSlayer.inventory_items[self.cSlayer.slots[cItem.slot][0]].unequip()
+                        cItem.equip()
                         await self.bot.dB.switch_item(self.cSlayer, cItem, self.cSlayer.inventory_items[self.cSlayer.slots[cItem.slot][0]])
                         hasbeenequipped = True
                 #ON A PAS D'ITEM EQUIPER
                 else:
-                    self.addtoSlots(cItem)
+                    cItem.equip()
                     await self.bot.dB.equip_item(self.cSlayer, cItem)
                     hasbeenequipped = True
             #SI ON PEUT EQUIPER PLUSIEURS ITEMS SUR LE MEME EMPLACEMENT
             elif self.cSlayer.slots_count[cItem.slot]["count"] > 1:  
                 #SOIT ON A PAS ENCORE D'ITEMS
                 if cItem.slot not in self.cSlayer.slots:
-                    self.addtoSlots(cItem)
+                    cItem.equip()
                     await self.bot.dB.equip_item(self.cSlayer, cItem)
                     hasbeenequipped = True    
                 #SOIT ON A ENCORE DE LA PLACE
@@ -112,32 +109,25 @@ class MSlayer:
                     #On sécurise si jamais l'item est déjà équippé
                     if cItem.item_id not in self.cSlayer.slots[cItem.slot]:
                         if len(self.cSlayer.slots[cItem.slot]) < self.cSlayer.slots_count[cItem.slot]["count"]:
-                            self.addtoSlots(cItem)
+                            cItem.equip()
                             await self.bot.dB.equip_item(self.cSlayer, cItem)
                             hasbeenequipped = True                   
                         #SOIT ON A PLUS DE PLACE
                         else:
                             alreadyequipped_list = self.cSlayer.slots[cItem.slot]
         if hasbeenequipped:
-            self.updateSlayer()
+            await self.updateSlayer()
         return hasbeenequipped, alreadyequipped_list
 
     async def sell_item(self, cItem):
         #On update la BDD avec la vente
-        if self.isinInventory(cItem):
+        if self.isinInventory(cItem.item_id):
             self.removefromInventory(cItem)
-            currently_equipped = self.isinSlot(cItem)
-            self.removefromSlots(cItem)
-            if currently_equipped:
-                self.updateSlayer()
+            await self.updateSlayer()
             await self.bot.dB.sell_item(self.cSlayer, cItem)
             return True
         else:
             return False
-
-    def updateSlayer(self):
-        self.cSlayer.calculateStats(self.bot.rBaseBonuses)
-        self.GetGearScore()
 
     def getSlots(self):
         slots = {}
@@ -147,51 +137,23 @@ class MSlayer:
                 slots[self.cSlayer.inventory_items[item_id].slot].append(item_id)
         return slots
 
-    def isinInventory(self, cItem):
-        if cItem.item_id in self.cSlayer.inventory_items:
-            return True
-        else:
-            return False
-
-    def isinInventory_withID(self, item_id):
+    def isinInventory(self, item_id):
         if item_id in self.cSlayer.inventory_items:
             return True
         else:
             return False
-
-    def isinSlot(self, cItem):
-        if cItem.slot in self.cSlayer.slots:
-            if cItem.item_id in self.cSlayer.slots[cItem.slot]:
-                return True
-        return False
-
-    def removefromInventory(self, cItem):
-        print(self.cSlayer.inventory_items)
-        self.cSlayer.inventory_items.pop(cItem.item_id)
-        print(self.cSlayer.inventory_items)
-
-    def removefromSlots(self, cItem):
-        print(self.cSlayer.slots)
-        if cItem.slot in self.cSlayer.slots:
-            self.cSlayer.slots[cItem.slot].remove(cItem.item_id)
-            self.cSlayer
-            cItem.equipped = False
-        self.cSlayer.damage_taken = max(self.cSlayer.damage_taken - cItem.bonuses["health"],0)
-        print(self.cSlayer.slots)
-    
-    def addtoSlots(self, cItem):
-        print(self.cSlayer.slots)
-        if cItem.slot not in self.cSlayer.slots: self.cSlayer.slots[cItem.slot] = []
-        self.cSlayer.slots[cItem.slot].append(cItem.item_id)
-        cItem.equipped = True
-        self.cSlayer.damage_taken += cItem.bonuses["health"]
-        print(self.cSlayer.slots)
     
     def addtoInventory(self, cItem):
         self.cSlayer.inventory_items[cItem.item_id] = cItem
 
+    def removefromInventory(self, cItem):
+        self.cSlayer.inventory_items.pop(cItem.item_id)
+
     def addMoney(self, money):
         self.cSlayer.money += money
+    
+    def removeMoney(self, money):
+        self.cSlayer.monney -= money
 
     def GetGearScore(self):
         gearscore = 0
@@ -433,6 +395,7 @@ class Slayer:
             content = f"\n\n> ☄️ Ta capacité spéciale est chargée : Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
         else:
             content = f"\n\n ☄️ Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
+        
         return content
 
     def recapHealth(self, parries):

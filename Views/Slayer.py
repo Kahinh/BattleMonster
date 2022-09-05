@@ -35,9 +35,10 @@ class Achievements_Button(lib.discord.ui.Button):
         await interaction.response.edit_message(content="Test")
 
 class SlayerView(lib.discord.ui.View):
-    def __init__(self, bot, Slayer, interaction, avatar):
+    def __init__(self, bot, Slayer, interaction, avatar, interface_name="profil"):
         super().__init__(timeout=30)
         self.bot = bot
+        self.interface_name=interface_name
         self.interaction = interaction
         self.Slayer = Slayer
         self.embed_Profil = lib.Embed.create_embed_profil(Slayer, avatar)
@@ -51,8 +52,15 @@ class SlayerView(lib.discord.ui.View):
             if item.label=="Profil":
                 item.disabled = True
 
-    async def on_timeout(self) -> None:
-        self.bot.ActiveList.close_interface(self.Slayer.cSlayer.slayer_id, "profil")
+    async def update_view(self):
+        pass
+
+    async def close_view(self):
+        if self.interface_name == "profil":
+            self.bot.ActiveList.close_interface(self.Slayer.cSlayer.slayer_id, "profil")
         message = await self.interaction.original_message()
         await message.edit(view=None)
         self.stop()
+
+    async def on_timeout(self) -> None:
+        await self.close_view()
