@@ -172,6 +172,7 @@ class Battle:
       content += Slayer.cSlayer.isAlive()[1]
 
     #On update l'embed du combat
+    await self.bot.dB.push_slayer_data(Slayer.cSlayer)
     await self.updateBattle(interaction)
 
     #On répond au joueur
@@ -245,6 +246,7 @@ class Battle:
 
           embed = lib.Embed.create_embed_new_loot(self.bot, Slayer, cItem)
           view = lib.LootView(self.bot, Slayer, cItem, True)
+          await self.bot.ActiveList.add_interface(slayer_id, cItem.item_id, view)
           view.message = await channel.send(content=f"<@{slayer_id}>", embed=embed, view=view)
 
     await self.bot.dB.push_loots_money(loots_request, money_request)
@@ -282,11 +284,15 @@ class Monster:
 
   def dealDamage(self, Slayer):
     armor = self.reduceArmor(Slayer.cSlayer.stats["total_armor"])
-    damage = min(max(int(self.damage * (1000/(1000 + armor))),0), Slayer.cSlayer.stats["total_max_health"] - Slayer.cSlayer.damage_taken)
+    damage = self.damage
+    #Armor
+    damage = max(damage * 1000/(1000+armor), 0)
+    #Max HP
+    damage = min(damage, Slayer.cSlayer.stats["total_max_health"] - Slayer.cSlayer.damage_taken)
     return damage, f"\n> - Attaque contrée : Le monstre t'a infligé {damage} dégâts"
 
   def reduceArmor(self, armor):
-      armor = max(((armor*(1-self.letality_per))-self.letality), 0)
+      armor = max(((armor*(1-float(self.letality_per)))-self.letality), 0)
       return armor
 
   def storeLastHits(self, damage):
@@ -302,7 +308,7 @@ class Monster:
       return False
 
   def getDamage(self, damage):
-    self.base_hp -= damage
+    self.base_hp -= int(damage)
 
   def recapDamageTaken(self, damage):  
     if self.base_hp == 0:

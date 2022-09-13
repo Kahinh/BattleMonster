@@ -18,16 +18,10 @@ class Equip_Button(lib.discord.ui.Button):
             Slayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, "")
             isEquipped, List = await Slayer.equip_item(self.view.items_list_filtered[self.view.index])
 
-            #On désactive
-            for item in self.view.children:
-                if item.label=="Équiper" or item.label=="Vendre":
-                    item.disabled = True
-            await interaction.response.edit_message(view=self.view)
-
             if isEquipped:
                 #On update le Inventoryview ?
                 await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.slayer_id, "inventaire")
-                await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
+                await interaction.response.send_message(content="L'objet a été équipé !", ephemeral=True) 
             else:
                 if len(List) == 0:
                     await interaction.response.send_message(content="Une erreur est survenue !", ephemeral=True)
@@ -51,16 +45,10 @@ class Sell_Button(lib.discord.ui.Button):
             Sold = await Slayer.sell_item(self.view.cItem)
             await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.slayer_id, "inventaire")
 
-            #On désactive
-            for item in self.view.children:
-                if item.label=="Équiper" or item.label=="Vendre":
-                    item.disabled = True
-            await interaction.response.edit_message(view=self.view)
-
             if Sold:
-                await interaction.followup.send("L'objet a été vendu !")
+                await interaction.response.send_message("L'objet a été vendu !", ephemeral=True)
             else:
-                await interaction.followup.send("Une erreur s'est produite !")
+                await interaction.response.send_message("Une erreur s'est produite !", ephemeral=True)
             
         else:
             await interaction.response.send_message("Ce n'est pas ton butin !", ephemeral=True)
@@ -78,9 +66,17 @@ class LootView(lib.discord.ui.View):
             self.add_item(Equip_Button())
             self.add_item(Sell_Button())
 
-    async def close_view(self):
+    async def end_view(self):
+        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.slayer_id, self.cItem.item_id)
         await self.message.edit(view=None)
         self.stop()
 
+    async def close_view(self):
+        #On désactive
+        for item in self.children:
+            if item.label=="Équiper" or item.label=="Vendre":
+                item.disabled = True
+        await self.message.edit(view=self)
+
     async def on_timeout(self) -> None:
-        await self.close_view()
+        await self.end_view()

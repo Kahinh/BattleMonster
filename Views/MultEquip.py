@@ -16,12 +16,13 @@ class Equiped_Dropdown(lib.discord.ui.Select):
         #On update le Inventoryview ?
         await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.slayer_id, "inventaire")
 
-        self.view.bot.ActiveList.close_interface(self.view.Slayer.cSlayer.slayer_id, "mult_equip")
+        self.view.bot.ActiveList.remove_interface(self.view.Slayer.cSlayer.slayer_id, "mult_equip")
         message = await self.view.interaction.original_message()
         await message.edit(view=None)
         self.view.stop()
         
         self.view.Slayer.cSlayer.calculateStats(self.view.bot.rBaseBonuses)
+        await self.view.bot.ActiveList.close_interface(self.view.Slayer.cSlayer.slayer_id, self.view.cItem.item_id)
         await interaction.response.send_message(content="L'objet a été équipé !", ephemeral=True) 
 
 class MultEquipView(lib.discord.ui.View):
@@ -39,7 +40,7 @@ class MultEquipView(lib.discord.ui.View):
         self.add_item(Equiped_Dropdown(self.List))
 
     async def close_view(self):
-        self.bot.ActiveList.close_interface(self.Slayer.cSlayer.slayer_id, "mult_equip")
+        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.slayer_id, "mult_equip")
         message = await self.interaction.original_message()
         await message.edit(view=None)
         self.stop()

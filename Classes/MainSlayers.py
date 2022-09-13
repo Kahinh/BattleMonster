@@ -116,6 +116,7 @@ class MSlayer:
                         else:
                             alreadyequipped_list = self.cSlayer.slots[cItem.slot]
         if hasbeenequipped:
+            await self.bot.ActiveList.close_interface(self.cSlayer.slayer_id, cItem.item_id)
             await self.updateSlayer()
         return hasbeenequipped, alreadyequipped_list
 
@@ -123,6 +124,7 @@ class MSlayer:
         #On update la BDD avec la vente
         if self.isinInventory(cItem.item_id):
             self.removefromInventory(cItem)
+            await self.bot.ActiveList.close_interface(self.cSlayer.slayer_id, cItem.item_id)
             await self.updateSlayer()
             await self.bot.dB.sell_item(self.cSlayer, cItem)
             return True
@@ -292,38 +294,6 @@ class Slayer:
             self.dead = True
         self.stats = stats
 
-    def CalculateDamage(self, Hit, cMonster):
-        #On check si on fail
-        isFail = False if Hit == "S" else random.choices(population=[True, False], weights=[self.stats[f"total_fail_{Hit}"], 1-self.stats[f"total_fail_{Hit}"]], k=1)[0]
-        isFail = False
-        if isFail:
-            Damage = 0
-            Stacks_Earned = 0
-        else: 
-            #On check si on est parrty
-            isParry = False if Hit == "S" else random.choices(population=[True, False], weights=[min(max(cMonster.parry[f"parry_chance_{Hit}"] - self.stats[f"total_parry_{Hit}"], 0),1), 1-min(max(cMonster.parry[f"parry_chance_{Hit}"] - self.stats[f"total_parry_{Hit}"], 0), 1)], k=1)[0]
-            isParry = False
-            if isParry:
-                Damage = -int(min(cMonster.damage * (1000/(1000 + (self.stats["total_armor"] * (1 - cMonster.letality_per) - cMonster.letality))), self.stats["total_max_health"] - self.damage_taken))
-                Stacks_Earned = 0
-                #On subit les dégâts
-                self.damage_taken += abs(Damage)
-                if self.damage_taken == self.stats["total_max_health"]:
-                    self.dead = True
-            else:
-                #On check si on crit
-                isCrit = random.choices(population=[True, False], weights=[float(self.stats[f"total_crit_chance_{Hit}"]), float(1-self.stats[f"total_crit_chance_{Hit}"])], k=1)
-
-                #Calcul des dégâts
-                Damage = min(int(max((((self.stats[f"total_damage_{Hit}"]*(1 + (self.stats[f"total_crit_damage_{Hit}"] if isCrit[0] else 0)) * (1 + self.stats[f"total_final_damage_{Hit}"]))) - (cMonster.protect_crit if isCrit[0] else 0)), 0)*(1000/(1000+max(((cMonster.armor*(1-self.stats[f"total_letality_per_{Hit}"]))-self.stats[f"total_letality_{Hit}"]),0)))), cMonster.base_hp)
-                if Hit == "S":
-                    Stacks_Earned = -self.special_stacks
-                else:
-                    Stacks_Earned = min(self.stats["total_stacks"] - self.special_stacks, self.stats[f"total_special_charge_{Hit}"])
-                self.special_stacks += Stacks_Earned
-
-        return Damage, Stacks_Earned
-
     def canSpecial(self):
         if self.stats["total_stacks"] == self.special_stacks:
             return True, ""
@@ -346,13 +316,28 @@ class Slayer:
         protect_crit = cMonster.protect_crit
         stacks_earned = self.getStacks(hit)
         if self.isCrit(hit):
-            damage = min(max(int(self.stats[f"total_damage_{hit}"]*(1 + (self.stats[f"total_crit_damage_{hit}"])) * (1 + self.stats[f"total_final_damage_{hit}"])),0), cMonster.base_hp)
+
+            #Calcul des dégâts avec crit
+            damage = int(self.stats[f"total_damage_{hit}"]*(1 + (self.stats[f"total_crit_damage_{hit}"])) * (1 + self.stats[f"total_final_damage_{hit}"]))
+            #ProtectCrit
+            damage = max(damage - protect_crit, 0)
+            #Armor
+            damage = max(damage * 1000/(1000+armor), 0)
+            #Vie du monstre
+            damage = min(damage, cMonster.base_hp)
+
             if damage == 0:
                 content = f"\n> Le montre est déjà mort."
             else:
                 content = f"\n> ⚔️ {hit} Dégâts infligés : {int(damage)} ‼️ [+{stacks_earned}☄️]"
         else:
-            damage = min(max(int(self.stats[f"total_damage_{hit}"] * (1 + self.stats[f"total_final_damage_{hit}"])), 0), cMonster.base_hp)
+            #Calcul des dégâts sans crit
+            damage = int(self.stats[f"total_damage_{hit}"] * (1 + self.stats[f"total_final_damage_{hit}"]))
+            #Armor
+            damage = max(damage * 1000/(1000+armor), 0)
+            #Vie du monstre
+            damage = min(damage, cMonster.base_hp)            
+            
             if damage == 0:
                 content = f"\n> Le montre est déjà mort."
             else:

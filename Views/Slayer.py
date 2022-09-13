@@ -57,7 +57,7 @@ class SlayerView(lib.discord.ui.View):
 
     async def close_view(self):
         if self.interface_name == "profil":
-            self.bot.ActiveList.close_interface(self.Slayer.cSlayer.slayer_id, "profil")
+            self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.slayer_id, "profil")
         message = await self.interaction.original_message()
         await message.edit(view=None)
         self.stop()

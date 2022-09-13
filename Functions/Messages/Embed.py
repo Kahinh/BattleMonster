@@ -13,9 +13,9 @@ def create_embed_battle(self):
     )
     embed.add_field(name="Statistiques Avancées", \
         value= \
-            f"✊ Chance de blocage - Attaque Légère : **{self.Monsters[self.count].parry['parry_chance_L'] * 100}%**\n" \
-            f"✊ Chance de blocage - Attaque Lourde : **{self.Monsters[self.count].parry['parry_chance_H'] * 100}%**\n" \
-            f"🗡️ Létalité : **({int(self.Monsters[self.count].letality)}, {self.Monsters[self.count].letality_per *100}%)**\n" \
+            f"✊ Chance de blocage - Attaque Légère : **{int(self.Monsters[self.count].parry['parry_chance_L'] * 100)}%**\n" \
+            f"✊ Chance de blocage - Attaque Lourde : **{int(self.Monsters[self.count].parry['parry_chance_H'] * 100)}%**\n" \
+            f"🗡️ Létalité : **({int(self.Monsters[self.count].letality)}, {int(self.Monsters[self.count].letality_per *100)}%)**\n" \
             f"💠 Résistance Critique : **{self.Monsters[self.count].protect_crit}**\n", \
         inline=False)
     if self.Monsters[self.count].img_url_normal is not None:

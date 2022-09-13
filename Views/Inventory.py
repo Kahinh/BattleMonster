@@ -160,7 +160,7 @@ class InventoryView(lib.discord.ui.View):
             await interaction.response.edit_message(embed=embed, view=view) 
 
     async def close_view(self):
-        self.bot.ActiveList.close_interface(self.Slayer.cSlayer.slayer_id, "inventaire")
+        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.slayer_id, "inventaire")
         message = await self.interaction.original_message()
         await message.edit(view=None)
         self.stop()

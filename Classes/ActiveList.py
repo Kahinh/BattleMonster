@@ -45,8 +45,14 @@ class ActiveList:
   def add_active_slayer(self, slayer_id, Slayer):
     self.active_slayers[slayer_id] = ActiveSlayer(Slayer)
 
-  def close_interface(self, slayer_id, interface):
-    self.active_slayers[slayer_id].interfaces.pop(interface)
+  def remove_interface(self, slayer_id, interface):
+    if interface in self.active_slayers[slayer_id].interfaces:
+      self.active_slayers[slayer_id].interfaces.pop(interface)
+
+  async def close_interface(self, slayer_id, interface):
+    if interface in self.active_slayers[slayer_id].interfaces:
+      await self.active_slayers[slayer_id].interfaces[interface].close_view()
+      self.active_slayers[slayer_id].interfaces.pop(interface)
 
 class ActiveSlayer:
   def __init__(
