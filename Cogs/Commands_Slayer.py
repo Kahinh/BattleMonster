@@ -27,6 +27,15 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
     await self.bot.ActiveList.add_interface(interaction.user.id, "profil", view)
     await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
+  @lib.app_commands.command(name="specialite")
+  async def stats(self, interaction: lib.discord.Interaction) -> None:
+    """ Affiche les spécialités disponibles pour acheter ou équiper """
+    Slayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
+    #embed = lib.Embed.create_embed_profil(Slayer, interaction.user.display_avatar)
+    #view = lib.SlayerView(self.bot, Slayer, interaction, interaction.user.display_avatar)
+    #await self.bot.ActiveList.add_interface(interaction.user.id, "profil", view)
+    await interaction.response.send_message(content="Bruh", ephemeral=True)
+
 async def setup(bot: lib.commands.Bot) -> None:
   await bot.add_cog(Commands_Slayer(bot))
   print("Commands_Slayer : √")
