@@ -62,3 +62,4 @@ class qSlots:
 
 class qSpe:
     SELECT_SPE = 'SELECT * FROM "Specializations" WHERE id = $1'
+    SELECT_ALL = 'SELECT * FROM "Specializations"'

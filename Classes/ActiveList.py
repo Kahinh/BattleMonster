@@ -42,17 +42,26 @@ class ActiveList:
       if interface_name in self.active_slayers[slayer_id].interfaces:
         await self.active_slayers[slayer_id].interfaces[interface_name].update_view()
 
+  async def close_interface(self, slayer_id, interface):
+    if interface in self.active_slayers[slayer_id].interfaces:
+      await self.active_slayers[slayer_id].interfaces[interface].close_view()
+      self.active_slayers[slayer_id].interfaces.pop(interface)
+
   def add_active_slayer(self, slayer_id, Slayer):
     self.active_slayers[slayer_id] = ActiveSlayer(Slayer)
 
   def remove_interface(self, slayer_id, interface):
     if interface in self.active_slayers[slayer_id].interfaces:
       self.active_slayers[slayer_id].interfaces.pop(interface)
+    
+  def regen_health_all(self):
+    for slayer_id in self.active_slayers:
+      self.active_slayers[slayer_id].Slayer.cSlayer.regenHealth(self.bot.rBaseBonuses["regen"])
 
-  async def close_interface(self, slayer_id, interface):
-    if interface in self.active_slayers[slayer_id].interfaces:
-      await self.active_slayers[slayer_id].interfaces[interface].close_view()
-      self.active_slayers[slayer_id].interfaces.pop(interface)
+  def rez_all(self):
+    for slayer_id in self.active_slayers:
+      self.active_slayers[slayer_id].Slayer.cSlayer.regenHealth(self.bot.rBaseBonuses["regen"])
+      self.active_slayers[slayer_id].Slayer.cSlayer.rez()
 
 class ActiveSlayer:
   def __init__(

@@ -13,12 +13,14 @@ class Main(lib.commands.Cog):
         if self.cd_regen == self.bot.rBaseBonuses["cd_regen"]:
             async with self.bot.db_pool.acquire() as conn:
                 await conn.execute(f'UPDATE "Slayers" SET damage_taken = GREATEST(damage_taken - {self.bot.rBaseBonuses["regen"]}, 0) WHERE dead = false AND damage_taken > 0')
+            self.bot.ActiveList.regen_health_all()
             channel = self.bot.get_channel(self.bot.rChannels["logs"])
             await channel.send("Régen effectuée")
             self.cd_regen = 1
         if self.cd_rez == self.bot.rBaseBonuses["cd_rez"]:
             async with self.bot.db_pool.acquire() as conn:
                 await conn.execute(f'UPDATE "Slayers" SET damage_taken = GREATEST(damage_taken - {self.bot.rBaseBonuses["regen"]}, 0), dead = false WHERE dead = true AND damage_taken > 0')            
+            self.bot.ActiveList.rez_all()
             channel = self.bot.get_channel(self.bot.rChannels["logs"])
             await channel.send("Résurrection effectuée")            
             self.cd_rez = 1

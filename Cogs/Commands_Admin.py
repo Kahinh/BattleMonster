@@ -26,14 +26,6 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
     Battle = lib.Battle(self.bot, rGamemode, interaction)
     await Battle.constructGamemode()
 
-  @lib.app_commands.command(name="test")
-  async def updatebot(self, interaction: lib.discord.Interaction) -> None:
-    """ Test. """
-    data = ([("commun", "blaze", ["weapon"]),("legendary", "blaze", ["weapon"])])
-    query = await self.bot.dB.pull_loots(data)
-    print(query)
-    await interaction.response.send_message(f"C'est fait !", ephemeral=True)
-
 async def setup(bot: lib.commands.Bot) -> None:
   await bot.add_cog(Commands_Admin(bot))
   print("Commands_Admin : √")

@@ -30,6 +30,7 @@ from Views.Loot import LootView
 from Views.Battle import BattleView
 from Views.Slayer import SlayerView
 from Views.MultEquip import MultEquipView
+from Views.Spe import SpeView
 
 #CLASSES
 from Classes.DamageDone import DamageDone

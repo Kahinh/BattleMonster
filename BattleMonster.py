@@ -44,6 +44,7 @@ class BattleMonster(lib.commands.Bot):
                 rRarities = await conn.fetch(lib.qRarities.SELECT_ALL)
                 self.SlayerCount = await conn.fetchval(lib.qSlayers.COUNT)
                 rSlots = await conn.fetch(lib.qSlots.SELECT_ALL)
+                self.rSpe = await conn.fetch(lib.qSpe.SELECT_ALL)
 
         self.rGameModesLootSlot = lib.Toolbox.transformGamemodesLootSlot(rGameModesLootSlot)
         self.rGameModesSpawnRate = lib.Toolbox.transformGamemodesSpawnRate(rGameModesSpawnRate)

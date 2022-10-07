@@ -172,3 +172,15 @@ def create_embed_equipment(bot, Slayer, avatar):
     embed.set_thumbnail(url=avatar)
     embed.set_footer(text=f'Chasse depuis le {Slayer.cSlayer.creation_date}')
     return embed
+
+def create_embed_spe(Slayer, rowSpe):
+    embed=lib.discord.Embed(title=rowSpe["name"],
+    description= \
+        f"{rowSpe['description']}" \
+        f"\n\n Dégâts : {rowSpe['damage']}" \
+        f"\n Charges : {rowSpe['stacks']}" \
+        "\n\n LA COMMANDE N'EST PAS TERMINEE", \
+    color=0xe74c3c
+    )        
+    #embed.set_thumbnail(url="")
+    return embed    

@@ -36,7 +36,7 @@ class MSlayer:
                     self.rSlayerSpeInventory = await conn.fetch(qSlayers.SELECT_SLAYER_SPE_INVENTORY, self.user_id)
                     self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, self.rSlayer["specialization"])
                 else:
-                    self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, 2)
+                    self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, 1)
                     self.rSlayerInventory = []
     
     async def constructClass(self):
@@ -177,7 +177,7 @@ class Slayer:
         damage_taken=0,
         special_stacks=0,
         faction=0,
-        specialization=2,
+        specialization=1,
         Spe=None,
         inventory_items={},
         inventory_specializations=[1],
@@ -390,3 +390,9 @@ class Slayer:
         else:
             content += f"\n> Il te reste {self.stats['total_max_health'] - self.damage_taken}/{self.stats['total_max_health']} ❤️ !"
         return content
+    
+    def regenHealth(self, amount):
+        self.damage_taken -= amount
+
+    def rez(self):
+        self.dead = False

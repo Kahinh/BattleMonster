@@ -16,7 +16,7 @@ class Spe:
   def adjust_slot_count(self, rSlots):
     Slots = deepcopy(rSlots)
     #SURAREMENT
-    if self.id == 1:
+    if self.id == 2:
       Slots["weapon"]["count"] = 2
     #TEMPLIER
     if self.id == 3:
@@ -25,7 +25,7 @@ class Spe:
 
   def nbr_hit(self, standard):
     base = deepcopy(standard)
-    if self.id == 1:
+    if self.id == 2:
       base += 1
     return base
   
