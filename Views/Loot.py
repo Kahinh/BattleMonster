@@ -16,7 +16,7 @@ class Equip_Button(lib.discord.ui.Button):
         if self.view.Slayer.cSlayer.slayer_id == interaction.user.id:
             #On call la fonction
             Slayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, "")
-            isEquipped, List = await Slayer.equip_item(self.view.items_list_filtered[self.view.index])
+            isEquipped, List = await Slayer.equip_item(self.view.cItem)
 
             if isEquipped:
                 #On update le Inventoryview ?

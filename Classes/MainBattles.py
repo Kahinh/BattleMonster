@@ -62,6 +62,7 @@ class Battle:
   def getclassMonster(self):
     for i in self.Monsters:
       self.Monsters[i] = Monster(i, self, self.bot.SlayerCount)
+      print(self.Monsters[i].slayers_hits)
 
   async def constructGamemode(self):
     if self.isDataOK():
@@ -173,27 +174,15 @@ class Battle:
 
     #On update l'embed du combat
     await self.bot.dB.push_slayer_data(Slayer.cSlayer)
-    await self.updateBattle(interaction)
 
-    #On répond au joueur
-    await interaction.response.send_message(content=content, ephemeral=True)
+    if self.Monsters[self.count].base_hp == 0:
+        if self.count == self.spawns_count - 1:
+            self.end = True
+        else:
+            self.count += 1
 
     #On clôture l'action
-    return self.end
-
-  async def updateBattle(self, interaction):
-    if self.Monsters[self.count].base_hp == 0:
-      if self.count == self.spawns_count - 1:
-        self.end = True
-      else:
-        self.count += 1
-        await self.spawnBattle(interaction)
-    else:
-      await self.spawnBattle(interaction)
-
-  async def endBattle(self, message, isEnd=True):
-    embed = lib.Embed.create_embed_end_battle(self, isEnd)
-    await message.edit(embed=embed, view=None)
+    return content
 
   async def calculateLoot(self):
     loots = {}
@@ -292,7 +281,7 @@ class Monster:
     return damage, f"\n> - Attaque contrée : Le monstre t'a infligé {damage} dégâts"
 
   def reduceArmor(self, armor):
-      armor = max(((armor*(1-float(self.letality_per)))-self.letality), 0)
+      armor = max((int(armor*(1-float(self.letality_per)))-int(self.letality)), 0)
       return armor
 
   def storeLastHits(self, damage):
@@ -301,7 +290,8 @@ class Monster:
       self.last_hits.pop(0)
 
   def isParry(self, hit, Slayer):
-    isParry = random.choices(population=[True, False], weights=[min(max(self.parry[f"parry_chance_{hit}"] - Slayer.cSlayer.stats[f"total_parry_{hit}"], 0),1), 1-min(max(self.parry[f"parry_chance_{hit}"] - Slayer.cSlayer.stats[f"total_parry_{hit}"], 0), 1)], k=1)[0]
+    ParryChance = min(max(self.parry[f"parry_chance_{hit}"] - Slayer.cSlayer.stats[f"total_parry_{hit}"], 0), 1)
+    isParry = random.choices(population=[True, False], weights=[ParryChance, 1-ParryChance], k=1)[0]
     if isParry:
       return True
     else:

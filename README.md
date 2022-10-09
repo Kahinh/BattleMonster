@@ -12,8 +12,6 @@ Une fois le monstre abattu, les joueurs peuvent acquérir des butins pour améli
 - 
 -
 
-MTAyODA2MTM1NDMyMzYwNzY2Mg.GlvWA-.HlKF2OZhsZUXFiG1btrWP8ZW4DfZbm0rgNkq9E
-
 ## A propos:
 
 

@@ -36,7 +36,7 @@ class Achievements_Button(lib.discord.ui.Button):
 
 class SlayerView(lib.discord.ui.View):
     def __init__(self, bot, Slayer, interaction, avatar, interface_name="profil"):
-        super().__init__(timeout=30)
+        super().__init__(timeout=120)
         self.bot = bot
         self.interface_name=interface_name
         self.interaction = interaction
@@ -58,7 +58,7 @@ class SlayerView(lib.discord.ui.View):
     async def close_view(self):
         if self.interface_name == "profil":
             self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.slayer_id, "profil")
-        message = await self.interaction.original_message()
+        message = await self.interaction.original_response()
         await message.edit(view=None)
         self.stop()
 

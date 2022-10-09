@@ -154,14 +154,14 @@ class InventoryView(lib.discord.ui.View):
         view = self  
 
         if interaction is None:
-            message = await self.interaction.original_message()
+            message = await self.interaction.original_response()
             await message.edit(embed=embed, view=view)
         else:
             await interaction.response.edit_message(embed=embed, view=view) 
 
     async def close_view(self):
         self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.slayer_id, "inventaire")
-        message = await self.interaction.original_message()
+        message = await self.interaction.original_response()
         await message.edit(view=None)
         self.stop()
 

@@ -345,7 +345,7 @@ class Slayer:
         return damage, content
     
     def reduceArmor(self, hit, armor):
-        armor = max(((armor*(1-self.stats[f"total_letality_per_{hit}"]))-self.stats[f"total_letality_{hit}"]),0)
+        armor = max(((armor*(1-float(self.stats[f"total_letality_per_{hit}"])))-int(self.stats[f"total_letality_{hit}"])),0)
         return armor
     
     def reduceDamage(self, damage, armor):

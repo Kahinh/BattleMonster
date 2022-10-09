@@ -52,14 +52,14 @@ class SpeView(lib.discord.ui.View):
         lib.Toolbox.disable_enable_SpeView(self.children, self.bot.rSpe, self.index)
         view = self  
         if interaction is None:
-            message = await self.interaction.original_message()
+            message = await self.interaction.original_response()
             await message.edit(embed=embed, view=view)
         else:
             await interaction.response.edit_message(embed=embed, view=view) 
 
     async def close_view(self):
         self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.slayer_id, "inventaire_spe")
-        message = await self.interaction.original_message()
+        message = await self.interaction.original_response()
         await message.edit(view=None)
         self.stop()
 

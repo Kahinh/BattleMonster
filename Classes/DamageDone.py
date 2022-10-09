@@ -17,7 +17,7 @@ class DamageDone:
   def checkStatus(self, damage, monster_base_hp):
     content = ""
     if self.total_damage > damage and self.total_damage > 0:
-        content += f"\n> 🔱 Dégâts infligés totaux : {self.total_damage}"
+        content += f"\n> 🔱 Dégâts infligés totaux : {int(self.total_damage)}"
     #If Battle.eligible == False, on rajoute que le mec est pas éligible ! Sinon on affiche qu'il est éligible !
     if self.eligible:
         #En ayant infligé des dégâts au Monstre, tu es éligible !

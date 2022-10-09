@@ -5,33 +5,32 @@ class Light_Button(lib.discord.ui.Button):
         super().__init__(label="Attaque Légère", style=lib.discord.ButtonStyle.blurple)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        isEnd = await self.view.Battle.getAttack(interaction, "L")
-        if isEnd:
-            await self.view.Battle.calculateLoot()
-            await self.view.Battle.endBattle(interaction.message)
-            self.view.stop()
+        content = await self.view.Battle.getAttack(interaction, "L")
+        #On répond au joueur
+        await interaction.response.send_message(content=content, ephemeral=True)
+        await self.view.updateBattle()
 
 class Heavy_Button(lib.discord.ui.Button):
     def __init__(self):
         super().__init__(label="Attaque Lourde", style=lib.discord.ButtonStyle.green)
         
     async def callback(self, interaction: lib.discord.Interaction):
-        isEnd = await self.view.Battle.getAttack(interaction, "H")
-        if isEnd:
-            await self.view.Battle.calculateLoot()
-            await self.view.Battle.endBattle(interaction.message)
-            self.view.stop()
+        content = await self.view.Battle.getAttack(interaction, "H")
+        #On répond au joueur
+        await interaction.response.send_message(content=content, ephemeral=True)
+        await self.view.updateBattle()
+
 
 class Special_Button(lib.discord.ui.Button):
     def __init__(self):
         super().__init__(label="Capacité Spéciale", style=lib.discord.ButtonStyle.red)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        isEnd = await self.view.Battle.getAttack(interaction, "S")
-        if isEnd:
-            await self.view.Battle.calculateLoot()
-            await self.view.Battle.endBattle(interaction.message)
-            self.view.stop()
+        content = await self.view.Battle.getAttack(interaction, "S")
+        #On répond au joueur
+        await interaction.response.send_message(content=content, ephemeral=True)
+        await self.view.updateBattle()
+        
 
 class BattleView(lib.discord.ui.View):
     def __init__(self, Battle):
@@ -43,9 +42,21 @@ class BattleView(lib.discord.ui.View):
         self.add_item(Heavy_Button())
         self.add_item(Special_Button())
 
-    async def on_timeout(self) -> None:
-        if hasattr(self, "interaction"): message = await self.interaction.original_message()
+    async def updateBattle(self, timeout=False):
+        if hasattr(self, "interaction"): message = await self.interaction.original_response()
         if hasattr(self, "message"): message = self.message
-        await self.Battle.calculateLoot()
-        await self.Battle.endBattle(message, False)
+        if self.Battle.end or timeout:
+            if self.Battle.end:
+                await self.Battle.calculateLoot()
+            embed = lib.Embed.create_embed_end_battle(self.Battle, timeout)
+            view = None
+        else:
+            embed = lib.Embed.create_embed_battle(self.Battle)
+            view = self
+        await message.edit(embed=embed, view=view)
+        if self.Battle.end or timeout:
+            self.stop()
+
+    async def on_timeout(self) -> None:
+        await self.updateBattle(True)
         self.stop()

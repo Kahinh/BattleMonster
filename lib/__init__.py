@@ -1,4 +1,4 @@
-#python3.8 -m pip install -U git+https://github.com/Rapptz/discord.py
+#python3.10 -m pip install -U git+https://github.com/Rapptz/discord.py
 #pip3 install nest_asyncio
 #pip install asyncpg
 
@@ -15,7 +15,6 @@ import pickle
 import random
 import datetime
 from copy import deepcopy
-import psycopg2
 
 #folders & files
 import gitignore.tokens as tokens

@@ -17,7 +17,7 @@ class Equiped_Dropdown(lib.discord.ui.Select):
         await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.slayer_id, "inventaire")
 
         self.view.bot.ActiveList.remove_interface(self.view.Slayer.cSlayer.slayer_id, "mult_equip")
-        message = await self.view.interaction.original_message()
+        message = await self.view.interaction.original_response()
         await message.edit(view=None)
         self.view.stop()
         
@@ -41,7 +41,7 @@ class MultEquipView(lib.discord.ui.View):
 
     async def close_view(self):
         self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.slayer_id, "mult_equip")
-        message = await self.interaction.original_message()
+        message = await self.interaction.original_response()
         await message.edit(view=None)
         self.stop()
 
