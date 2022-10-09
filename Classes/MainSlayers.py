@@ -384,11 +384,11 @@ class Slayer:
         return content
 
     def recapHealth(self, parries):
-        content = f"\n\n> Le monstre t'a infligé {sum(parries)} dégâts."
+        content = f"\n\n> Le monstre t'a infligé {int(sum(parries))} dégâts."
         if self.stats["total_max_health"] == self.damage_taken:
             content += f"\n> Tu es mort !"
         else:
-            content += f"\n> Il te reste {self.stats['total_max_health'] - self.damage_taken}/{self.stats['total_max_health']} ❤️ !"
+            content += f"\n> Il te reste {int(self.stats['total_max_health'] - self.damage_taken)}/{self.stats['total_max_health']} ❤️ !"
         return content
     
     def regenHealth(self, amount):

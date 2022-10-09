@@ -278,7 +278,7 @@ class Monster:
     damage = max(damage * 1000/(1000+armor), 0)
     #Max HP
     damage = min(damage, Slayer.cSlayer.stats["total_max_health"] - Slayer.cSlayer.damage_taken)
-    return damage, f"\n> - Attaque contrée : Le monstre t'a infligé {damage} dégâts"
+    return damage, f"\n> - Attaque contrée : Le monstre t'a infligé {int(damage)} dégâts"
 
   def reduceArmor(self, armor):
       armor = max((int(armor*(1-float(self.letality_per)))-int(self.letality)), 0)
