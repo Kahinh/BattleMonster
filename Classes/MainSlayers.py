@@ -320,11 +320,11 @@ class Slayer:
             #Calcul des dégâts avec crit
             damage = int(self.stats[f"total_damage_{hit}"]*(1 + (self.stats[f"total_crit_damage_{hit}"])) * (1 + self.stats[f"total_final_damage_{hit}"]))
             #ProtectCrit
-            damage = max(damage - protect_crit, 0)
+            damage = int(max(damage - protect_crit, 0))
             #Armor
-            damage = max(damage * 1000/(1000+armor), 0)
+            damage = int(max(damage * 1000/(1000+armor), 0))
             #Vie du monstre
-            damage = min(damage, cMonster.base_hp)
+            damage = int(min(damage, cMonster.base_hp))
 
             if damage == 0:
                 content = f"\n> Le montre est déjà mort."
@@ -334,9 +334,9 @@ class Slayer:
             #Calcul des dégâts sans crit
             damage = int(self.stats[f"total_damage_{hit}"] * (1 + self.stats[f"total_final_damage_{hit}"]))
             #Armor
-            damage = max(damage * 1000/(1000+armor), 0)
+            damage = int(max(damage * 1000/(1000+armor), 0))
             #Vie du monstre
-            damage = min(damage, cMonster.base_hp)            
+            damage = int(min(damage, cMonster.base_hp))          
             
             if damage == 0:
                 content = f"\n> Le montre est déjà mort."
@@ -346,7 +346,7 @@ class Slayer:
     
     def reduceArmor(self, hit, armor):
         armor = max(((armor*(1-float(self.stats[f"total_letality_per_{hit}"])))-int(self.stats[f"total_letality_{hit}"])),0)
-        return armor
+        return int(armor)
     
     def reduceDamage(self, damage, armor):
         damage = -int(min(damage * (1000/(1000 + (armor))), self.stats["total_max_health"] - self.damage_taken))

@@ -31,7 +31,7 @@ class Spe:
   
   def pain(self, cMonster):
     if self.id == 4:
-      damage = min(sum(cMonster.last_hits), cMonster.base_hp)
+      damage = int(min(sum(cMonster.last_hits), cMonster.base_hp))
       if damage == 0:
         return 0, f"\n> Il n'y avait pas d'attaques chargées.", []
       else:

@@ -109,7 +109,7 @@ class Battle:
       if hit == "S":
         if Slayer.cSlayer.canSpecial()[0]:
           for i in range(Slayer.cSlayer.getNbrHit()):
-            attack = Slayer.cSlayer.dealDamage(hit, cMonster)[0]
+            attack = int(Slayer.cSlayer.dealDamage(hit, cMonster)[0])
             damage.append(attack)
             content += Slayer.cSlayer.dealDamage(hit, cMonster)[1]
             cMonster.getDamage(attack)
@@ -150,7 +150,7 @@ class Battle:
                 parries.append(parry)
                 content += message
               else:
-                attack = Slayer.cSlayer.dealDamage(hit, cMonster)[0]
+                attack = int(Slayer.cSlayer.dealDamage(hit, cMonster)[0])
                 damage.append(attack)
                 content += Slayer.cSlayer.dealDamage(hit, cMonster)[1]
                 cMonster.getDamage(attack)
