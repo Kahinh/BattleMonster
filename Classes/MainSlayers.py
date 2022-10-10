@@ -287,7 +287,7 @@ class Slayer:
             "total_stacks_reduction" : int(bonuses["stacks_reduction"]),
             "total_stacks" : int(max(self.Spe.stacks - bonuses["stacks_reduction"], 1)),
             "total_vivacity" : int(bonuses["vivacity"]),
-            "total_cooldown" : int(min(rBaseBonuses["cooldown"] - bonuses["vivacity"], 1)),
+            "total_cooldown" : int(max(rBaseBonuses["cooldown"] - bonuses["vivacity"], 1)),
             "total_luck" : float(min(max(bonuses["luck"],0),1))
         }
         if stats["total_max_health"] == self.damage_taken:
@@ -347,10 +347,6 @@ class Slayer:
     def reduceArmor(self, hit, armor):
         armor = max(((armor*(1-float(self.stats[f"total_letality_per_{hit}"])))-int(self.stats[f"total_letality_{hit}"])),0)
         return int(armor)
-    
-    def reduceDamage(self, damage, armor):
-        damage = -int(min(damage * (1000/(1000 + (armor))), self.stats["total_max_health"] - self.damage_taken))
-        return damage
 
     def getStacks(self, hit):
         stacks_earned = min(self.stats["total_stacks"] - self.special_stacks, self.stats[f"total_special_charge_{hit}"])
@@ -392,7 +388,7 @@ class Slayer:
         return content
     
     def regenHealth(self, amount):
-        self.damage_taken -= amount
+        self.damage_taken = max(self.damage_taken - amount, 0)
 
     def rez(self):
         self.dead = False

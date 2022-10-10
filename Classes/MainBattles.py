@@ -122,6 +122,13 @@ class Battle:
             damage.append(attack)
             content += message
 
+            #TEMPLAR
+          attack, message = Slayer.cSlayer.Spe.shieldslam(cMonster, Slayer)
+          if message != "":
+            cMonster.getDamage(attack)
+            damage.append(attack)
+            content += message
+
           #RESETTIMER
           cMonster.slayers_hits, message = Slayer.cSlayer.Spe.resetTimer(cMonster)
           if message != "":

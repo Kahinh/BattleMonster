@@ -39,6 +39,16 @@ class Spe:
     else:
       return 0, "", cMonster.last_hits
   
+  def shieldslam(self, cMonster, Slayer):
+    if self.id == 3:
+      damage = int(min(Slayer.cSlayer.stats["total_armor"], cMonster.base_hp))
+      if damage == 0:
+        return 0, f"\n> Oups, à côté !."
+      else: 
+        return damage, f"\n> Impact de Bouclier : Dégâts infligés {damage}"
+    else:
+      return 0, ""
+  
   def resetTimer(self, cMonster):
     if self.id == 5:
       for slayer_id in cMonster.slayers_hits:
