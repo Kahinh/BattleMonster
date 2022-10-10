@@ -287,7 +287,7 @@ class Slayer:
             "total_stacks_reduction" : int(bonuses["stacks_reduction"]),
             "total_stacks" : int(max(self.Spe.stacks - bonuses["stacks_reduction"], 1)),
             "total_vivacity" : int(bonuses["vivacity"]),
-            "total_cooldown" : int(rBaseBonuses["cooldown"] - bonuses["vivacity"]),
+            "total_cooldown" : int(min(rBaseBonuses["cooldown"] - bonuses["vivacity"], 1)),
             "total_luck" : float(min(max(bonuses["luck"],0),1))
         }
         if stats["total_max_health"] == self.damage_taken:

@@ -66,7 +66,9 @@ class Item:
           if bonus.find("_") != -1 and bonus[-1:] in ["L", "H", "S"]:
             if self.bonuses[bonus[:-1]+"L"] == self.bonuses[bonus[:-1]+"H"] == self.bonuses[bonus[:-1]+"S"]:
               if bonus.find("L") != -1:
-                desc_stat += f"\n- {bonus[:-2]} : **{self.bonuses[bonus]}**"   
+                desc_stat += f"\n- {bonus[:-2]} : **{self.bonuses[bonus]}**" 
+            else:
+                desc_stat += f"\n- {bonus} : **{self.bonuses[bonus]}**"
           else:
             desc_stat += f"\n- {bonus} : **{self.bonuses[bonus]}**"      
       else:
@@ -75,6 +77,8 @@ class Item:
             if self.bonuses[bonus[:-1]+"L"] == self.bonuses[bonus[:-1]+"H"] == self.bonuses[bonus[:-1]+"S"] and cItem2.bonuses[bonus[:-1]+"L"] == cItem2.bonuses[bonus[:-1]+"H"] == cItem2.bonuses[bonus[:-1]+"S"]:
               if bonus.find("L") != -1:
                 desc_stat += f"\n- {bonus[:-2]} : **{self.bonuses[bonus]}** <- (**{cItem2.bonuses[bonus]}**)"
+            else:
+              desc_stat += f"\n- {bonus} : **{self.bonuses[bonus]}** <- (**{cItem2.bonuses[bonus]}**)"
           else:
             desc_stat += f"\n- {bonus} : **{self.bonuses[bonus]}** <- (**{cItem2.bonuses[bonus]}**)"
 

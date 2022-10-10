@@ -109,9 +109,9 @@ class Battle:
       if hit == "S":
         if Slayer.cSlayer.canSpecial()[0]:
           for i in range(Slayer.cSlayer.getNbrHit()):
-            attack = int(Slayer.cSlayer.dealDamage(hit, cMonster)[0])
+            attack, contents = Slayer.cSlayer.dealDamage(hit, cMonster)
+            content += contents
             damage.append(attack)
-            content += Slayer.cSlayer.dealDamage(hit, cMonster)[1]
             cMonster.getDamage(attack)
           
           #Spéciaux
@@ -150,7 +150,8 @@ class Battle:
                 parries.append(parry)
                 content += message
               else:
-                attack, content = Slayer.cSlayer.dealDamage(hit, cMonster)
+                attack, contents = Slayer.cSlayer.dealDamage(hit, cMonster)
+                content += contents
                 damage.append(attack)
                 cMonster.getDamage(attack)
             else:
@@ -289,7 +290,7 @@ class Monster:
       self.last_hits.pop(0)
 
   def isParry(self, hit, Slayer):
-    ParryChance = min(max(self.parry[f"parry_chance_{hit}"] - Slayer.cSlayer.stats[f"total_parry_{hit}"], 0), 1)
+    ParryChance = min(max(self.parry[f"parry_chance_{hit}"] + Slayer.cSlayer.stats[f"total_parry_{hit}"], 0), 1)
     isParry = random.choices(population=[True, False], weights=[ParryChance, 1-ParryChance], k=1)[0]
     if isParry:
       return True
