@@ -35,7 +35,7 @@ class Spe:
       if damage == 0:
         return 0, f"\n> Il n'y avait pas d'attaques chargées.", []
       else:
-        return damage, f"\n> Compétence Pain : Dégâts infligés {damage}", []
+        return damage, f"\n> Vaillance du chef : Dégâts infligés {damage}", []
     else:
       return 0, "", cMonster.last_hits
   

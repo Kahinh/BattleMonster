@@ -150,9 +150,8 @@ class Battle:
                 parries.append(parry)
                 content += message
               else:
-                attack = int(Slayer.cSlayer.dealDamage(hit, cMonster)[0])
+                attack, content = Slayer.cSlayer.dealDamage(hit, cMonster)
                 damage.append(attack)
-                content += Slayer.cSlayer.dealDamage(hit, cMonster)[1]
                 cMonster.getDamage(attack)
             else:
               content += message
@@ -272,17 +271,17 @@ class Monster:
     self.slayers_hits = {}
 
   def dealDamage(self, Slayer):
-    armor = self.reduceArmor(Slayer.cSlayer.stats["total_armor"])
-    damage = self.damage
+    armor = int(self.reduceArmor(Slayer.cSlayer.stats["total_armor"]))
+    damage = int(self.damage)
     #Armor
-    damage = max(damage * 1000/(1000+armor), 0)
+    damage = int(max(damage * 1000/(1000+armor), 0))
     #Max HP
-    damage = min(damage, Slayer.cSlayer.stats["total_max_health"] - Slayer.cSlayer.damage_taken)
+    damage = int(min(damage, Slayer.cSlayer.stats["total_max_health"] - Slayer.cSlayer.damage_taken))
     return damage, f"\n> - Attaque contrée : Le monstre t'a infligé {int(damage)} dégâts"
 
   def reduceArmor(self, armor):
       armor = max((int(armor*(1-float(self.letality_per)))-int(self.letality)), 0)
-      return armor
+      return int(armor)
 
   def storeLastHits(self, damage):
     self.last_hits.append(damage)

@@ -63,16 +63,18 @@ class Item:
     for bonus in self.bonuses:
       if cItem2 is None:
         if self.bonuses[bonus] != 0:
-          if bonus.find("_") != -1 and self.bonuses[bonus[:-1]+"L"] == self.bonuses[bonus[:-1]+"H"] == self.bonuses[bonus[:-1]+"S"]:
-            if bonus.find("L") != -1:
-              desc_stat += f"\n- {bonus[:-2]} : **{self.bonuses[bonus]}**"   
+          if bonus.find("_") != -1 and bonus[-1:] in ["L", "H", "S"]:
+            if self.bonuses[bonus[:-1]+"L"] == self.bonuses[bonus[:-1]+"H"] == self.bonuses[bonus[:-1]+"S"]:
+              if bonus.find("L") != -1:
+                desc_stat += f"\n- {bonus[:-2]} : **{self.bonuses[bonus]}**"   
           else:
             desc_stat += f"\n- {bonus} : **{self.bonuses[bonus]}**"      
       else:
         if self.bonuses[bonus] != 0 or cItem2.bonuses[bonus] != 0:
-          if bonus.find("_") != -1 and self.bonuses[bonus[:-1]+"L"] == self.bonuses[bonus[:-1]+"H"] == self.bonuses[bonus[:-1]+"S"] and cItem2.bonuses[bonus[:-1]+"L"] == cItem2.bonuses[bonus[:-1]+"H"] == cItem2.bonuses[bonus[:-1]+"S"]:
-            if bonus.find("L") != -1:
-              desc_stat += f"\n- {bonus[:-2]} : **{self.bonuses[bonus]}** <- (**{cItem2.bonuses[bonus]}**)"
+          if bonus.find("_") != -1 and bonus[-1:] in ["L", "H", "S"]:
+            if self.bonuses[bonus[:-1]+"L"] == self.bonuses[bonus[:-1]+"H"] == self.bonuses[bonus[:-1]+"S"] and cItem2.bonuses[bonus[:-1]+"L"] == cItem2.bonuses[bonus[:-1]+"H"] == cItem2.bonuses[bonus[:-1]+"S"]:
+              if bonus.find("L") != -1:
+                desc_stat += f"\n- {bonus[:-2]} : **{self.bonuses[bonus]}** <- (**{cItem2.bonuses[bonus]}**)"
           else:
             desc_stat += f"\n- {bonus} : **{self.bonuses[bonus]}** <- (**{cItem2.bonuses[bonus]}**)"
 

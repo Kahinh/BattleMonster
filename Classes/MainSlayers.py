@@ -380,13 +380,13 @@ class Slayer:
             content = f"\n\n> ☄️ Ta capacité spéciale est chargée : Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
         else:
             content = f"\n\n ☄️ Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
-        
         return content
 
     def recapHealth(self, parries):
         content = f"\n\n> Le monstre t'a infligé {int(sum(parries))} dégâts."
         if self.stats["total_max_health"] == self.damage_taken:
             content += f"\n> Tu es mort !"
+            self.dead = True
         else:
             content += f"\n> Il te reste {int(self.stats['total_max_health'] - self.damage_taken)}/{self.stats['total_max_health']} ❤️ !"
         return content
