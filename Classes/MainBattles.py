@@ -62,7 +62,6 @@ class Battle:
   def getclassMonster(self):
     for i in self.Monsters:
       self.Monsters[i] = Monster(i, self, len(self.bot.ActiveList.active_slayers)+1)
-      print(self.Monsters[i].slayers_hits)
 
   async def constructGamemode(self):
     if self.isDataOK():
