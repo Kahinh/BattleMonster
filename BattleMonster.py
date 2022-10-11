@@ -42,7 +42,6 @@ class BattleMonster(lib.commands.Bot):
                 rChannels = await conn.fetch(lib.qChannels.SELECT_ALL, lib.tokens.TestProd)  
                 rElements = await conn.fetch(lib.qElements.SELECT_ALL)
                 rRarities = await conn.fetch(lib.qRarities.SELECT_ALL)
-                self.SlayerCount = await conn.fetchval(lib.qSlayers.COUNT)
                 rSlots = await conn.fetch(lib.qSlots.SELECT_ALL)
                 self.rSpe = await conn.fetch(lib.qSpe.SELECT_ALL)
 

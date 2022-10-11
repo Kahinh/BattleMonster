@@ -10,7 +10,7 @@ class Equiped_Dropdown(lib.discord.ui.Select):
     async def callback(self, interaction: lib.discord.Interaction):
         self.view.Slayer.cSlayer.inventory_items[int(self.values[0])].unequip()
         self.view.cItem.equip()
-        self.view.Slayer.updateSlayer()
+        await self.view.Slayer.updateSlayer()
         await self.view.bot.dB.switch_item(self.view.Slayer.cSlayer, self.view.cItem, self.view.Slayer.cSlayer.inventory_items[int(self.values[0])])
 
         #On update le Inventoryview ?

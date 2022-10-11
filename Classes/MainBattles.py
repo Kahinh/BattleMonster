@@ -57,11 +57,11 @@ class Battle:
       async with conn.transaction():
         for i in self.Monsters:
           self.Monsters[i] = await conn.fetchrow(lib.qMonsters.SELECT_RANDOM_ADVANCED, raritiestospawn[i], elementstospawn[i])   
-          self.LootTable[i] = await self.bot.dB.pull_loottable(self.Monsters[i]["element"], self.Monsters[i]["rarity"], self.lootslot) 
+          self.LootTable[i] = await self.bot.dB.pull_loottable(self.Monsters[i]["name"], self.lootslot) 
   
   def getclassMonster(self):
     for i in self.Monsters:
-      self.Monsters[i] = Monster(i, self, self.bot.SlayerCount)
+      self.Monsters[i] = Monster(i, self, len(self.bot.ActiveList.active_slayers)+1)
       print(self.Monsters[i].slayers_hits)
 
   async def constructGamemode(self):
@@ -189,7 +189,7 @@ class Battle:
             self.count += 1
 
     #On clôture l'action
-    return content
+    return content, damage
 
   async def calculateLoot(self):
     loots = {}
@@ -267,7 +267,7 @@ class Monster:
     }
     self.damage = Battle.Monsters[i]["damage"] * Battle.scaling["damage"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])
     self.letality = Battle.Monsters[i]["letality"] * Battle.scaling["letality"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])
-    self.letality_per = Battle.Monsters[i]["letality_per"] * Battle.scaling["letality"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])
+    self.letality_per = min(Battle.Monsters[i]["letality_per"] * int(Battle.scaling["letality"]/3) * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]),1)
     self.armor = Battle.Monsters[i]["armor"] * Battle.scaling["armor"] * (1 + i * float(Battle.bot.rBaseBonuses["mult_battle"]))
     self.protect_crit = Battle.Monsters[i]["protect_crit"] * Battle.scaling["protect_crit"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])
     self.img_url_normal = Battle.Monsters[i]["img_url_normal"]

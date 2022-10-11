@@ -12,7 +12,7 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
     if len(Slayer.cSlayer.inventory_items) > 0:
         #On init le message
         view = lib.InventoryView(self.bot, Slayer, interaction)
-        embed = lib.Embed.create_embed_item(self.bot, Slayer.cSlayer.inventory_items[list(Slayer.cSlayer.inventory_items.keys())[0]])
+        embed = lib.Embed.create_embed_item(self.bot, Slayer.cSlayer.inventory_items[list(Slayer.cSlayer.inventory_items.keys())[0]], Slayer)
         await self.bot.ActiveList.add_interface(interaction.user.id, "inventaire", view)
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
     else:

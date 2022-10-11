@@ -30,9 +30,9 @@ class dB:
             await conn.execute(f'UPDATE "Slayers_Inventory_Items" SET equipped = False WHERE slayer_id = {cSlayer.slayer_id} AND item_id = {cItem2.item_id}')
             await conn.execute(f'UPDATE "Slayers" SET damage_taken = {cSlayer.damage_taken} WHERE slayer_id = {cSlayer.slayer_id}')
   
-  async def pull_loottable(self, element, rarity, lootslot):
+  async def pull_loottable(self, monster, lootslot):
     async with self.bot.db_pool.acquire() as conn:
-      loottable = await conn.fetch('SELECT * FROM "Items" WHERE element = $1 AND rarity =$2 AND slot = ANY($3::text[])', element, rarity, lootslot)
+      loottable = await conn.fetch('SELECT * FROM "Items" WHERE monster = $1 AND slot = ANY($2::text[])', monster, lootslot)
     return loottable
 
   async def push_loots_money(self, data_loots, data_money):

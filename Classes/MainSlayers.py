@@ -164,6 +164,20 @@ class MSlayer:
                 gearscore += self.bot.rRarities[self.cSlayer.inventory_items[item].rarity]["gearscore"]
         self.cSlayer.gearscore = gearscore
 
+    def equippedonSlot(self, slot):
+        items_list = ""
+        for item_id in self.cSlayer.inventory_items:
+            cItem = self.cSlayer.inventory_items[item_id]
+            if cItem.equipped and cItem.slot == slot:
+                items_list += f"\n- {self.bot.rElements[cItem.element]['display_emote']} {cItem.name} - *{self.bot.rRarities[cItem.rarity]['display_text']}*"
+        
+        if items_list != "":
+            description = "\n\n__Objet(s) actuellement équipés à cet emplacement :__" + items_list
+        else:
+            description = ""
+        return description
+
+
 class Slayer:
     def __init__(
         self,
@@ -295,7 +309,7 @@ class Slayer:
         self.stats = stats
 
     def canSpecial(self):
-        if self.stats["total_stacks"] == self.special_stacks:
+        if self.stats["total_stacks"] >= self.special_stacks:
             return True, ""
         else:
             return False, f"\n> ☄️ Tu ne possèdes pas le nombre de charges nécessaires - Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
@@ -387,8 +401,9 @@ class Slayer:
             content += f"\n> Il te reste {int(self.stats['total_max_health'] - self.damage_taken)}/{self.stats['total_max_health']} ❤️ !"
         return content
     
-    def regenHealth(self, amount):
-        self.damage_taken = max(self.damage_taken - amount, 0)
+    def regenHealth(self, amount, isDead):
+        if self.dead == isDead:
+            self.damage_taken = max(self.damage_taken - amount, 0)
 
     def rez(self):
         self.dead = False

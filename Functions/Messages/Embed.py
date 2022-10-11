@@ -8,6 +8,7 @@ def create_embed_battle(self):
         f"⚔️ Puissance : **{int(self.Monsters[self.count].damage)}** {self.bot.rElements[self.Monsters[self.count].element]['display_emote']}\n" \
         f"🛡️ Armure : **{int(self.Monsters[self.count].armor)}**\n" \
         f"🎲 Butin Disponible : **{self.Monsters[self.count].roll_dices}**\n\n" \
+        f"TEST LOOTTABLE : **{len(self.LootTable[self.count])}**\n\n" \
         f"{self.Monsters[self.count].description}", \
     color=int(self.bot.rRarities[self.Monsters[self.count].rarity]['display_color'], 16)
     )
@@ -50,10 +51,16 @@ def create_embed_end_battle(Battle, timeout):
 
 def create_embed_new_loot(bot, Slayer, cItem):
 
+    content = Slayer.equippedonSlot(cItem.slot)
     #Setup Description
     description = \
         f"*{bot.rElements[cItem.element]['display_emote']} {bot.rSlots[cItem.slot]['display_text']} {bot.rRarities[cItem.rarity]['display_text']}*" \
-        f"\n\n{cItem.description}" \
+        f"\n\n{cItem.description}"
+
+    if content != "":
+        description += content
+
+    description += \
         f"\n\n📑 Détails - Afficher les statistiques de l'équipement" \
         f"\n👚 Equiper - Equiper l'objet." \
         f"\n🪙 Vendre - Vendre l'objet pour obtenir **{bot.rRarities[cItem.rarity]['price']} 🪙**"
@@ -70,11 +77,18 @@ def create_embed_new_loot(bot, Slayer, cItem):
 
 def create_embed_money_loot(bot, Slayer, cItem):
 
+    content = Slayer.equippedonSlot(cItem.slot)
+
     #Setup Description
     description = \
         f"*{bot.rElements[cItem.element]['display_emote']} {bot.rSlots[cItem.slot]['display_text']} {bot.rRarities[cItem.rarity]['display_text']}*" \
-        f"\n\n{cItem.description}" \
-        f"\n\nVous possédez déjà ce {cItem.slot} ! Il a dont été vendu pour **{bot.rRarities[cItem.rarity]['price']} 🪙**" \
+        f"\n\n{cItem.description}"
+
+    if content != "":
+        description += content
+
+    description += \
+        f"\n\nVous possédez déjà ce {bot.rSlots[cItem.slot]['display_text']} ! Il a dont été vendu pour **{bot.rRarities[cItem.rarity]['price']} 🪙**" \
         f"\n\n📑 Détails - Afficher les statistiques de l'équipement"
 
     embed=lib.discord.Embed(title=f"{cItem.name}",
@@ -86,7 +100,7 @@ def create_embed_money_loot(bot, Slayer, cItem):
 
     return embed
 
-def create_embed_item(bot, cItem1, cItem2=None):
+def create_embed_item(bot, cItem1, Slayer, cItem2=None):
     #cItem1 = Celui qu'on regarde
     #cItem2 = Celui qu'on possède
     if cItem1 == None:
@@ -97,11 +111,12 @@ def create_embed_item(bot, cItem1, cItem2=None):
         )        
     else:
         desc_stat = cItem1.getDisplayStats(cItem2)
+        content = Slayer.equippedonSlot(cItem1.slot)
 
         description = f"__Description :__\n{cItem1.description}"
 
-        if cItem2 is not None:
-            description += f"\n\n__Objet équipé à cet emplacement :__\n{bot.rElements[cItem2.element]['display_emote']} {cItem2.name} ({cItem2.slot} / {bot.rRarities[cItem2.rarity]['display_text']})"
+        if content != "":
+            description += content
 
         description += f"\n\n__Statistiques :__{desc_stat}"
         
@@ -118,6 +133,7 @@ def create_embed_profil(Slayer, avatar):
 
     description = \
     f"**📯 {Slayer.cSlayer.Spe.name}**" \
+    f"\n**🪙 Coin : **{int(Slayer.cSlayer.money)}**" \
     "\n\n**__Statistiques__**" \
     f"\n❤️ Vie : **{int(Slayer.cSlayer.stats['total_max_health'] - Slayer.cSlayer.damage_taken)}/{Slayer.cSlayer.stats['total_max_health']}**" \
     f"\n🛡️ Armure : **{Slayer.cSlayer.stats['total_armor']}**" \

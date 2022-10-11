@@ -5,20 +5,22 @@ class Light_Button(lib.discord.ui.Button):
         super().__init__(label="Attaque Légère", style=lib.discord.ButtonStyle.blurple)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        content = await self.view.Battle.getAttack(interaction, "L")
+        content, damage = await self.view.Battle.getAttack(interaction, "L")
         #On répond au joueur
         await interaction.response.send_message(content=content, ephemeral=True)
-        await self.view.updateBattle()
+        if damage != []:
+            await self.view.updateBattle()
 
 class Heavy_Button(lib.discord.ui.Button):
     def __init__(self):
         super().__init__(label="Attaque Lourde", style=lib.discord.ButtonStyle.green)
         
     async def callback(self, interaction: lib.discord.Interaction):
-        content = await self.view.Battle.getAttack(interaction, "H")
+        content, damage = await self.view.Battle.getAttack(interaction, "H")
         #On répond au joueur
         await interaction.response.send_message(content=content, ephemeral=True)
-        await self.view.updateBattle()
+        if damage != []:
+            await self.view.updateBattle()
 
 
 class Special_Button(lib.discord.ui.Button):
@@ -26,10 +28,11 @@ class Special_Button(lib.discord.ui.Button):
         super().__init__(label="Capacité Spéciale", style=lib.discord.ButtonStyle.red)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        content = await self.view.Battle.getAttack(interaction, "S")
+        content, damage = await self.view.Battle.getAttack(interaction, "S")
         #On répond au joueur
         await interaction.response.send_message(content=content, ephemeral=True)
-        await self.view.updateBattle()
+        if damage != []:
+            await self.view.updateBattle()
         
 
 class BattleView(lib.discord.ui.View):

@@ -13,13 +13,14 @@ class Rarity_Dropdown(lib.discord.ui.Select):
         if self.values[0] == "None": self.values[0] = None
         self.view.rarity = self.values[0]
         self.view.items_list_filtered = lib.Toolbox.filter_items_list(self.view.Slayer.cSlayer.inventory_items, self.view.slot, self.view.element, self.view.rarity)
-        
+        self.view.index = 0
+
         for option in self.options:
             if option.value == self.values[0]:
                 option.default = True
             else:
                 option.default = False
-        self.index = 0
+        
 
         await self.view.update_view(interaction) 
 
@@ -36,8 +37,8 @@ class Element_Dropdown(lib.discord.ui.Select):
         if self.values[0] == "None": self.values[0] = None
         self.view.element = self.values[0]
         self.view.items_list_filtered = lib.Toolbox.filter_items_list(self.view.Slayer.cSlayer.inventory_items, self.view.slot, self.view.element, self.view.rarity)
-        
-        self.index = 0
+        self.view.index = 0
+
         for option in self.options:
             if option.value == self.values[0]:
                 option.default = True
@@ -51,7 +52,8 @@ class Slot_Dropdown(lib.discord.ui.Select):
         options = []
         options.append(lib.discord.SelectOption(label="Tous", value="None", emoji="♾️"))
         for slot in rSlots:
-            options.append(lib.discord.SelectOption(label=rSlots[slot]["display_text"].capitalize(), value=slot, emoji=rSlots[slot]["display_emote"]))
+            if rSlots[slot]["activated"]:
+                options.append(lib.discord.SelectOption(label=rSlots[slot]["display_text"].capitalize(), value=slot, emoji=rSlots[slot]["display_emote"]))
 
         super().__init__(placeholder="Filtrer l'emplacement...", min_values=1, max_values=1, options=options)
 
@@ -59,8 +61,8 @@ class Slot_Dropdown(lib.discord.ui.Select):
         if self.values[0] == "None": self.values[0] = None
         self.view.slot = self.values[0]
         self.view.items_list_filtered = lib.Toolbox.filter_items_list(self.view.Slayer.cSlayer.inventory_items, self.view.slot, self.view.element, self.view.rarity)
-        
-        self.index = 0
+        self.view.index = 0
+
         for option in self.options:
             if option.value == self.values[0]:
                 option.default = True
@@ -149,7 +151,7 @@ class InventoryView(lib.discord.ui.View):
 
     async def update_view(self, interaction=None):
         if interaction is None: self.items_list_filtered = lib.Toolbox.filter_items_list(self.Slayer.cSlayer.inventory_items, self.slot, self.element, self.rarity)
-        embed = lib.Embed.create_embed_item(self.bot, None if self.items_list_filtered == [] else self.items_list_filtered[self.index])
+        embed = lib.Embed.create_embed_item(self.bot, None if self.items_list_filtered == [] else self.items_list_filtered[self.index], self.Slayer)
         lib.Toolbox.disable_enable_InventoryView(self.children, self.items_list_filtered, self.index)
         view = self  
 

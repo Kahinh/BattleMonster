@@ -5,7 +5,7 @@ class Details_Button(lib.discord.ui.Button):
         super().__init__(label="Détails", style=lib.discord.ButtonStyle.blurple)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        embed = lib.Embed.create_embed_item(self.view.bot, self.view.cItem)
+        embed = lib.Embed.create_embed_item(self.view.bot, self.view.cItem, self.view.Slayer)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 class Equip_Button(lib.discord.ui.Button):

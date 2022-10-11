@@ -41,7 +41,7 @@ class Spe:
   
   def shieldslam(self, cMonster, Slayer):
     if self.id == 3:
-      damage = int(min(Slayer.cSlayer.stats["total_armor"], cMonster.base_hp))
+      damage = int(min(Slayer.cSlayer.stats["total_armor"]*3, cMonster.base_hp))
       if damage == 0:
         return 0, f"\n> Oups, à côté !."
       else: 
