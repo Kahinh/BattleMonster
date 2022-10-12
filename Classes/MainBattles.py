@@ -98,11 +98,11 @@ class Battle:
     cMonster = self.Monsters[self.count]
 
     content = "**__Rapport de Combat :__**\n"
+    damage = [] 
+    parries = []
 
     #On check si on est vivant ou mort.
     if Slayer.cSlayer.isAlive()[0]:
-      damage = [] 
-      parries = []
 
       #Si on fait le spécial
       if hit == "S":
@@ -196,6 +196,11 @@ class Battle:
     for i in self.Monsters:
       if self.Monsters[i].base_hp == 0:
         #On fait le tour de tous les slayers ayant attaqué
+        print("Slayers Hits : ")
+        print("-------------------------")
+        print(self.Monsters[i].slayers_hits)
+        print("LootTable :")
+        print(len(self.LootTable[i]))
         for slayer_id in self.Monsters[i].slayers_hits:
             #On ne considère que les éligibles
             if self.Monsters[i].slayers_hits[slayer_id].eligible:
