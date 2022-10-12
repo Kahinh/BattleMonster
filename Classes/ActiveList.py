@@ -17,6 +17,14 @@ class ActiveList:
     self.bot = bot
     self.active_slayers = {}
 
+  def get_active_Slayer(self, user_id):
+    if user_id in self.active_slayers:
+      Slayer = self.active_slayers[user_id].Slayer
+      self.active_slayers[user_id].timestamp = datetime.datetime.timestamp(datetime.datetime.now())
+      return Slayer
+    else:
+      return None
+
   async def get_Slayer(self, user_id, user_name):
     if user_id not in self.active_slayers:
       #On init le Slayer

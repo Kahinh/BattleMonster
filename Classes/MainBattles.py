@@ -118,7 +118,6 @@ class Battle:
           attack, message, cMonster.last_hits = Slayer.cSlayer.Spe.pain(cMonster)
           if message != "":
             cMonster.getDamage(attack)
-            damage.append(attack)
             content += message
 
             #TEMPLAR
@@ -194,7 +193,7 @@ class Battle:
     loots = {}
     #On fait le tour des Monstres.
     for i in self.Monsters:
-      if self.Monsters[i].base_hp == 0:
+      if self.Monsters[i].base_hp == 0 and len(self.LootTable[i]) > 0:
         #On fait le tour de tous les slayers ayant attaqué
         for slayer_id in self.Monsters[i].slayers_hits:
             #On ne considère que les éligibles

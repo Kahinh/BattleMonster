@@ -45,7 +45,11 @@ class Spe:
       if damage == 0:
         return 0, f"\n> Oups, à côté !."
       else: 
-        return damage, f"\n> Impact de Bouclier : Dégâts infligés {damage}"
+        if Slayer.cSlayer.isCrit("S"):
+          damage = int(min(damage * (1 + Slayer.cSlayer.stats["total_crit_damage_S"]), cMonster.base_hp))
+          return damage, f"\n> Impact de Bouclier : Dégâts infligés {damage} ‼️ "
+        else:
+          return damage, f"\n> Impact de Bouclier : Dégâts infligés {damage}"
     else:
       return 0, ""
   

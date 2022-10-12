@@ -2,13 +2,12 @@ import lib
 
 def create_embed_battle(self):
 
-    embed=lib.discord.Embed(title=f"{self.Monsters[self.count].name} ({'{:,}'.format(int(self.Monsters[self.count].base_hp)).replace(',', ' ')}/{'{:,}'.format(int(self.Monsters[self.count].total_hp)).replace(',', ' ')} ❤️)",
+    embed=lib.discord.Embed(title=f"{self.Monsters[self.count].name} ({'{:,}'.format(int(self.Monsters[self.count].base_hp)).replace(',', ' ')}/{'{:,}'.format(int(self.Monsters[self.count].total_hp)).replace(',', ' ')} ❤️) {'💩💩' if len(self.LootTable[self.count]) == 0 else ''}",
     description= \
         f"**Monstre {self.bot.rRarities[self.Monsters[self.count].rarity]['display_text'].capitalize()}**\n" \
         f"⚔️ Puissance : **{int(self.Monsters[self.count].damage)}** {self.bot.rElements[self.Monsters[self.count].element]['display_emote']}\n" \
         f"🛡️ Armure : **{int(self.Monsters[self.count].armor)}**\n" \
         f"🎲 Butin Disponible : **{self.Monsters[self.count].roll_dices}**\n\n" \
-        f"TEST LOOTTABLE : **{len(self.LootTable[self.count])}**\n\n" \
         f"{self.Monsters[self.count].description}", \
     color=int(self.bot.rRarities[self.Monsters[self.count].rarity]['display_color'], 16)
     )

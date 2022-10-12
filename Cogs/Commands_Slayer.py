@@ -1,4 +1,5 @@
 import lib
+import datetime
 
 class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
   def __init__(self, bot: lib.commands.Bot) -> None:
@@ -40,7 +41,28 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
   async def regen(self, interaction: lib.discord.Interaction) -> None:
     """ Permet de récupérer de la santé ou de ressuciter """
     Slayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
-    await interaction.response.send_message(content="Désolé pour le moment ça marche pas", ephemeral=True)
+    #C'est une Rez
+    if Slayer.cSlayer.dead:
+      waiting_time = 20 #7200
+      #Si on a attendu suffisamment
+      if datetime.datetime.timestamp(datetime.datetime.now()) - Slayer.cSlayer.lastregen >= waiting_time:
+        #On rez
+        Slayer.cSlayer.dead = False
+        regen = Slayer.cSlayer.regen()
+        await self.bot.dB.push_slayer_data(Slayer.cSlayer)
+        await interaction.response.send_message(content=f"Résurrection effectuée : Tu as récupéré {regen} ❤️", ephemeral=True)
+      else:
+        await interaction.response.send_message(content=f"Malheureusement, il te faut encore attendre un peu !\nProchaine résurrection : **{int(Slayer.cSlayer.lastregen + waiting_time - datetime.datetime.timestamp(datetime.datetime.now()))}**s", ephemeral=True)
+    #C'est une regen
+    else:
+      waiting_time = 10 #3600
+      #Si on a attendu suffisamment
+      if datetime.datetime.timestamp(datetime.datetime.now()) - Slayer.cSlayer.lastregen >= waiting_time:
+        regen = Slayer.cSlayer.regen()
+        await self.bot.dB.push_slayer_data(Slayer.cSlayer)
+        await interaction.response.send_message(content=f"Régénération effectuée : Tu as récupéré {regen} ❤️", ephemeral=True)
+      else:
+        await interaction.response.send_message(content=f"Malheureusement, il te faut encore attendre un peu !\nProchaine régénération : **{int(Slayer.cSlayer.lastregen + waiting_time - datetime.datetime.timestamp(datetime.datetime.now()))}**s", ephemeral=True)
 
 async def setup(bot: lib.commands.Bot) -> None:
   await bot.add_cog(Commands_Slayer(bot))
