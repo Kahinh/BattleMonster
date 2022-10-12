@@ -36,6 +36,12 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
     await self.bot.ActiveList.add_interface(interaction.user.id, "inventaire_spe", view)
     await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
+  @lib.app_commands.command(name="regen")
+  async def regen(self, interaction: lib.discord.Interaction) -> None:
+    """ Permet de récupérer de la santé ou de ressuciter """
+    Slayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
+    await interaction.response.send_message(content="Désolé pour le moment ça marche pas", ephemeral=True)
+
 async def setup(bot: lib.commands.Bot) -> None:
   await bot.add_cog(Commands_Slayer(bot))
   print("Commands_Slayer : √")

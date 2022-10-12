@@ -196,11 +196,6 @@ class Battle:
     for i in self.Monsters:
       if self.Monsters[i].base_hp == 0:
         #On fait le tour de tous les slayers ayant attaqué
-        print("Slayers Hits : ")
-        print("-------------------------")
-        print(self.Monsters[i].slayers_hits)
-        print("LootTable :")
-        print(len(self.LootTable[i]))
         for slayer_id in self.Monsters[i].slayers_hits:
             #On ne considère que les éligibles
             if self.Monsters[i].slayers_hits[slayer_id].eligible:
@@ -271,7 +266,7 @@ class Monster:
     }
     self.damage = Battle.Monsters[i]["damage"] * Battle.scaling["damage"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])
     self.letality = Battle.Monsters[i]["letality"] * Battle.scaling["letality"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])
-    self.letality_per = min(Battle.Monsters[i]["letality_per"] * int(Battle.scaling["letality"]/3) * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]),1)
+    self.letality_per = min(Battle.Monsters[i]["letality_per"] * max(int(Battle.scaling["letality"]/3),1) * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]),1)
     self.armor = Battle.Monsters[i]["armor"] * Battle.scaling["armor"] * (1 + i * float(Battle.bot.rBaseBonuses["mult_battle"]))
     self.protect_crit = Battle.Monsters[i]["protect_crit"] * Battle.scaling["protect_crit"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])
     self.img_url_normal = Battle.Monsters[i]["img_url_normal"]

@@ -53,15 +53,6 @@ class ActiveList:
   def remove_interface(self, slayer_id, interface):
     if interface in self.active_slayers[slayer_id].interfaces:
       self.active_slayers[slayer_id].interfaces.pop(interface)
-    
-  def regen_health_all(self):
-    for slayer_id in self.active_slayers:
-      self.active_slayers[slayer_id].Slayer.cSlayer.regenHealth(self.bot.rBaseBonuses["regen"], False)
-
-  def rez_all(self):
-    for slayer_id in self.active_slayers:
-      self.active_slayers[slayer_id].Slayer.cSlayer.regenHealth(self.bot.rBaseBonuses["regen"], True)
-      self.active_slayers[slayer_id].Slayer.cSlayer.rez()
 
 class ActiveSlayer:
   def __init__(

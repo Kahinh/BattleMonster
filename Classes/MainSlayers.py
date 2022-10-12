@@ -21,12 +21,10 @@ class MSlayer:
         user_name
         ):
         self.bot = bot
-        self.isExist = False
         self.user_id = user_id
         self.user_name = user_name
         self.cSlayer = None
-        self.requests = []
-
+        
     async def extractdB(self):
         async with self.bot.db_pool.acquire() as conn:
             async with conn.transaction():
@@ -216,6 +214,8 @@ class Slayer:
         self.stats = stats
         self.slots_count = slots_count
         self.bot = bot
+        self.lastregen = datetime.datetime.timestamp(datetime.datetime.now())
+
 
     def calculateBonuses(self, rBaseBonuses):
         bonuses = {
@@ -309,7 +309,7 @@ class Slayer:
         self.stats = stats
 
     def canSpecial(self):
-        if self.stats["total_stacks"] >= self.special_stacks:
+        if self.special_stacks >= self.stats["total_stacks"]:
             return True, ""
         else:
             return False, f"\n> ☄️ Tu ne possèdes pas le nombre de charges nécessaires - Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
@@ -397,13 +397,7 @@ class Slayer:
         if self.stats["total_max_health"] == self.damage_taken:
             content += f"\n> Tu es mort !"
             self.dead = True
+            self.lastregen = datetime.datetime.timestamp(datetime.datetime.now())
         else:
             content += f"\n> Il te reste {int(self.stats['total_max_health'] - self.damage_taken)}/{self.stats['total_max_health']} ❤️ !"
         return content
-    
-    def regenHealth(self, amount, isDead):
-        if self.dead == isDead:
-            self.damage_taken = max(self.damage_taken - amount, 0)
-
-    def rez(self):
-        self.dead = False

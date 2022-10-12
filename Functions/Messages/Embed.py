@@ -133,11 +133,11 @@ def create_embed_profil(Slayer, avatar):
 
     description = \
     f"**📯 {Slayer.cSlayer.Spe.name}**" \
-    f"\n**🪙 Coin : **{int(Slayer.cSlayer.money)}**" \
+    f"\n🪙 Coin : **{int(Slayer.cSlayer.money)}**" \
     "\n\n**__Statistiques__**" \
     f"\n❤️ Vie : **{int(Slayer.cSlayer.stats['total_max_health'] - Slayer.cSlayer.damage_taken)}/{Slayer.cSlayer.stats['total_max_health']}**" \
     f"\n🛡️ Armure : **{Slayer.cSlayer.stats['total_armor']}**" \
-    f"\n🌪️ Vivacité : **{Slayer.cSlayer.stats['total_cooldown']}s**" \
+    f"\n🌪️ Vivacité : **{Slayer.cSlayer.stats['total_cooldown']}**s" \
     f"\n☄️ Charge : **{Slayer.cSlayer.special_stacks}/{Slayer.cSlayer.stats['total_stacks']}**" \
     f"\n🍀 Luck : **{Slayer.cSlayer.stats['total_luck'] * 100}**%"
 
