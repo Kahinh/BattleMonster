@@ -107,6 +107,7 @@ class Battle:
       #Si on fait le spécial
       if hit == "S":
         if Slayer.cSlayer.canSpecial()[0]:
+          Slayer.cSlayer.useStacks(hit)
           for i in range(Slayer.cSlayer.getNbrHit()):
             attack, contents = Slayer.cSlayer.dealDamage(hit, cMonster)
             content += contents
@@ -135,7 +136,7 @@ class Battle:
           #Recap fin des attaques
           content += cMonster.recapDamageTaken(sum(damage))
           cMonster.storeLastHits(sum(damage))
-          content += Slayer.cSlayer.useStacks(hit)
+          content += Slayer.cSlayer.recap_useStacks(hit)
           dump = Slayer.cSlayer.recapStacks()
           content += cMonster.slayer_storeAttack(Slayer.cSlayer, sum(damage), hit)
         else:
@@ -255,19 +256,19 @@ class Monster:
     self.name = Battle.Monsters[i]["name"]
     self.description = Battle.Monsters[i]["description"]
     self.element = Battle.Monsters[i]["element"]
-    self.base_hp = Battle.Monsters[i]["base_hp"] * hp_scaling * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])
-    self.total_hp = Battle.Monsters[i]["base_hp"] * hp_scaling * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])
+    self.base_hp = int(Battle.Monsters[i]["base_hp"] * hp_scaling * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
+    self.total_hp = int(Battle.Monsters[i]["base_hp"] * hp_scaling * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
     self.rarity = Battle.Monsters[i]["rarity"]
     self.parry = {
       "parry_chance_L" : float(Battle.Monsters[i]["parry_chance_L"]) * int(Battle.scaling["parry"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
       "parry_chance_H" : float(Battle.Monsters[i]["parry_chance_H"]) * int(Battle.scaling["parry"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
       "parry_chance_S" : 0
     }
-    self.damage = Battle.Monsters[i]["damage"] * Battle.scaling["damage"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])
-    self.letality = Battle.Monsters[i]["letality"] * Battle.scaling["letality"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])
+    self.damage = int(Battle.Monsters[i]["damage"] * Battle.scaling["damage"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
+    self.letality = int(Battle.Monsters[i]["letality"] * Battle.scaling["letality"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
     self.letality_per = min(Battle.Monsters[i]["letality_per"] * max(int(Battle.scaling["letality"]/3),1) * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]),1)
-    self.armor = Battle.Monsters[i]["armor"] * Battle.scaling["armor"] * (1 + i * float(Battle.bot.rBaseBonuses["mult_battle"]))
-    self.protect_crit = Battle.Monsters[i]["protect_crit"] * Battle.scaling["protect_crit"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])
+    self.armor = int(Battle.Monsters[i]["armor"] * Battle.scaling["armor"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
+    self.protect_crit = int(Battle.Monsters[i]["protect_crit"] * Battle.scaling["protect_crit"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
     self.img_url_normal = Battle.Monsters[i]["img_url_normal"]
     self.img_url_enraged = Battle.Monsters[i]["img_url_enraged"]
     self.bg_url = Battle.Monsters[i]["bg_url"]

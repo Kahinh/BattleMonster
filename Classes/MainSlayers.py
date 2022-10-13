@@ -306,6 +306,8 @@ class Slayer:
         }
         if stats["total_max_health"] == self.damage_taken:
             self.dead = True
+        if self.dead == True:
+            self.damage_taken = stats["total_max_health"]
         self.stats = stats
 
     def canSpecial(self):
@@ -369,9 +371,7 @@ class Slayer:
 
     def useStacks(self, hit):
         if hit == "S":
-            content = f"\n> ☄️ Charge consommée : {self.special_stacks} - Charge total : **0/{self.stats['total_stacks']}**"
-            self.special_stacks = 0
-            return content
+            self.special_stacks = self.special_stacks - self.stats['total_stacks']
 
     def getDamage(self, damage):
         self.damage_taken += damage
@@ -384,6 +384,11 @@ class Slayer:
 
     def getNbrHit(self):
         return self.Spe.nbr_hit(self.bot.rBaseBonuses["hit_number"])
+
+    def recap_useStacks(self, hit):
+        if hit == "S":
+            content = f"\n> ☄️ Charge consommée : {self.stats['total_stacks']} - Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
+            return content
 
     def recapStacks(self):
         if self.stats["total_stacks"] == self.special_stacks:

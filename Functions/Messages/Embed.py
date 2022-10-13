@@ -134,7 +134,7 @@ def create_embed_profil(Slayer, avatar):
     f"**📯 {Slayer.cSlayer.Spe.name}**" \
     f"\n🪙 Coin : **{int(Slayer.cSlayer.money)}**" \
     "\n\n**__Statistiques__**" \
-    f"\n❤️ Vie : **{int(Slayer.cSlayer.stats['total_max_health'] - Slayer.cSlayer.damage_taken)}/{Slayer.cSlayer.stats['total_max_health']}**" \
+    f"\n{'💀' if Slayer.cSlayer.dead else '❤️'} Vie : **{int(Slayer.cSlayer.stats['total_max_health'] - Slayer.cSlayer.damage_taken)}/{Slayer.cSlayer.stats['total_max_health']}**" \
     f"\n🛡️ Armure : **{Slayer.cSlayer.stats['total_armor']}**" \
     f"\n🌪️ Vivacité : **{Slayer.cSlayer.stats['total_cooldown']}**s" \
     f"\n☄️ Charge : **{Slayer.cSlayer.special_stacks}/{Slayer.cSlayer.stats['total_stacks']}**" \
@@ -170,16 +170,17 @@ def create_embed_equipment(bot, Slayer, avatar):
     description = f"Score d'équipement : **{Slayer.cSlayer.gearscore}**\n"
     for slot in Slayer.cSlayer.slots_count:
         if Slayer.cSlayer.slots_count[slot]['activated']:
-            if slot in Slayer.cSlayer.slots: nbr = len(Slayer.cSlayer.slots[slot])
-            else: nbr = 0
-            description += f"\n**{Slayer.cSlayer.slots_count[slot]['display_emote']} {Slayer.cSlayer.slots_count[slot]['display_text']}** - ({nbr}/{Slayer.cSlayer.slots_count[slot]['count']})"
-            if slot in Slayer.cSlayer.slots:
-                for item in Slayer.cSlayer.slots[slot]:
-                    cItem = Slayer.cSlayer.inventory_items[item]
-                    if cItem.level > 1:
-                        description += f"\n- {bot.rElements[cItem.element]['display_emote']} [{cItem.level}] {cItem.name} - *{bot.rRarities[cItem.rarity]['display_text']}*"
-                    else:
-                        description += f"\n- {bot.rElements[cItem.element]['display_emote']} {cItem.name} - *{bot.rRarities[cItem.rarity]['display_text']}*"
+            if Slayer.cSlayer.slots_count[slot]['count'] > 0:
+                if slot in Slayer.cSlayer.slots: nbr = len(Slayer.cSlayer.slots[slot])
+                else: nbr = 0
+                description += f"\n**{Slayer.cSlayer.slots_count[slot]['display_emote']} {Slayer.cSlayer.slots_count[slot]['display_text']}** - ({nbr}/{Slayer.cSlayer.slots_count[slot]['count']})"
+                if slot in Slayer.cSlayer.slots:
+                    for item in Slayer.cSlayer.slots[slot]:
+                        cItem = Slayer.cSlayer.inventory_items[item]
+                        if cItem.level > 1:
+                            description += f"\n- {bot.rElements[cItem.element]['display_emote']} [{cItem.level}] {cItem.name} - *{bot.rRarities[cItem.rarity]['display_text']}*"
+                        else:
+                            description += f"\n- {bot.rElements[cItem.element]['display_emote']} {cItem.name} - *{bot.rRarities[cItem.rarity]['display_text']}*"
 
     embed=lib.discord.Embed(title=f"Équipement de {Slayer.cSlayer.name}",
     description=description,

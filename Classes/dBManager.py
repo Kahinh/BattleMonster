@@ -49,4 +49,13 @@ class dB:
             f" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)" \
             ' ON CONFLICT (slayer_id) DO ' \
             f"UPDATE SET xp=$2, money=$3, damage_taken=$4, special_stacks=$5, faction=$6, specialization=$7, dead=$10", cSlayer.slayer_id, cSlayer.xp, cSlayer.money, cSlayer.damage_taken, cSlayer.special_stacks, cSlayer.faction, cSlayer.specialization, cSlayer.creation_date, cSlayer.name, cSlayer.dead)
+  
+  async def get_itemrow(self, item_name):
+    async with self.bot.db_pool.acquire() as conn:
+      item_row = await conn.fetchrow('SELECT * FROM "Items" WHERE name = $1', item_name)
+    return item_row
+  
+  async def add_item(self, cSlayer, cItem):
+    async with self.bot.db_pool.acquire() as conn:
+      await conn.execute('INSERT INTO "Slayers_Inventory_Items" (slayer_id, item_id, level, equipped) VALUES ($1, $2, $3, $4)', cSlayer.slayer_id, cItem.item_id, 1, False)
 
