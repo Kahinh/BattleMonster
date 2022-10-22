@@ -4,6 +4,7 @@ class Main(lib.commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.battle_monster.start()
+        self.loop_remove = 1
 
     @lib.tasks.loop(minutes=1)
     async def battle_monster(self):
@@ -17,7 +18,11 @@ class Main(lib.commands.Cog):
                     Battle = lib.Battle(self.bot, gamemode)
                     await Battle.constructGamemode()
         
-        await self.bot.ActiveList.remove_inactive()
+        if self.loop_remove >= 60:
+            await self.bot.ActiveList.remove_inactive()
+            self.loop_remove = 1
+        
+        self.loop_remove += 1
 
     @battle_monster.before_loop
     async def before_battle_monster(self):
