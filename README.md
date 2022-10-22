@@ -9,14 +9,14 @@ Une fois le monstre abattu, les joueurs peuvent acquérir des butins pour améli
 
 ## Fonctionnalités:
 ### Pour les joueurs: 
-- 
--
+- /profil : Afin de visualiser vos statistiques, votre équipement et vos achievements
+- /inventaire : Permet d'ouvrir votre inventaire : Visualiser les bonus des items, les équiper ou les vendre
+- /regen : Récupérer de la vie ou ressuciter
 
 ## A propos:
 
 
-Merci à vous de jouer et de partager le bot !
-
+Merci à vous de jouer !
 ### 😄
 
 ## TodoList:
@@ -24,3 +24,6 @@ Merci à vous de jouer et de partager le bot !
 - [X] Alpha 0.1
 - [X] Alpha 0.2
 - [X] Alpha 0.3
+- [X] Alpha 0.4
+- [X] Alpha 0.5
+- [X] Alpha 0.6

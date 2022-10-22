@@ -6,7 +6,7 @@ def create_embed_battle(self):
     description= \
         f"**Monstre {self.bot.rRarities[self.Monsters[self.count].rarity]['display_text'].capitalize()}**\n" \
         f"⚔️ Puissance : **{int(self.Monsters[self.count].damage)}** {self.bot.rElements[self.Monsters[self.count].element]['display_emote']}\n" \
-        f"🛡️ Armure : **{int(self.Monsters[self.count].armor)}**\n" \
+        f"🛡️ Armure : **{int(self.Monsters[self.count].armor)}** *({int(self.Monsters[self.count].armor_cap)})*\n" \
         f"🎲 Butin Disponible : **{self.Monsters[self.count].roll_dices}**\n\n" \
         f"{self.Monsters[self.count].description}", \
     color=int(self.bot.rRarities[self.Monsters[self.count].rarity]['display_color'], 16)
@@ -131,7 +131,7 @@ def create_embed_item(bot, cItem1, Slayer, cItem2=None):
 def create_embed_profil(Slayer, avatar):
 
     description = \
-    f"**📯 {Slayer.cSlayer.Spe.name}**" \
+    f"**{Slayer.cSlayer.Spe.emote} {Slayer.cSlayer.Spe.name}**" \
     f"\n🪙 Coin : **{int(Slayer.cSlayer.money)}**" \
     "\n\n**__Statistiques__**" \
     f"\n{'💀' if Slayer.cSlayer.dead else '❤️'} Vie : **{int(Slayer.cSlayer.stats['total_max_health'] - Slayer.cSlayer.damage_taken)}/{Slayer.cSlayer.stats['total_max_health']}**" \
@@ -157,7 +157,7 @@ def create_embed_profil(Slayer, avatar):
         f"\n☄️ Gains Charge : **{Slayer.cSlayer.stats['total_special_charge_' + i]}**" \
         f"\n✨ Chance Critique : **{int(Slayer.cSlayer.stats['total_crit_chance_' + i]*100)}**%" \
         f"\n💢 Dégâts Critiques : **{int(Slayer.cSlayer.stats['total_crit_damage_' + i]*100)}**%" \
-        f"\n🗡️ Létalité : **{Slayer.cSlayer.stats['total_letality_' + i]}**,  **{Slayer.cSlayer.stats['total_letality_per_' + i]*100}**%" \
+        f"\n🗡️ Létalité : **{Slayer.cSlayer.stats['total_letality_' + i]}**,  **{int(Slayer.cSlayer.stats['total_letality_per_' + i]*100)}**%" \
         f"\n🎯 Echec : **{Slayer.cSlayer.stats['total_fail_' + i]*100}**%" \
         f"\n✊ Blocage : **{int(Slayer.cSlayer.stats['total_parry_' + i]*100)}**%"
         embed.add_field(name=name, value=description, inline=False)
@@ -191,13 +191,14 @@ def create_embed_equipment(bot, Slayer, avatar):
     return embed
 
 def create_embed_spe(Slayer, rowSpe):
-    embed=lib.discord.Embed(title=rowSpe["name"],
+    embed=lib.discord.Embed(title=f"{rowSpe['display_emote']} {rowSpe['name']}",
     description= \
         f"{rowSpe['description']}" \
-        f"\n\n Dégâts : {rowSpe['damage']}" \
-        f"\n Charges : {rowSpe['stacks']}" \
-        "\n\n LA COMMANDE N'EST PAS TERMINEE", \
+        f"\n\n⚔️ Dégâts : {rowSpe['damage']}" \
+        f"\n☄️ Charges : {rowSpe['stacks']}" \
+        f"\n\n**Actuellement équipé :**" \
+        f"\n{Slayer.cSlayer.Spe.emote} {Slayer.cSlayer.Spe.name}",
     color=0xe74c3c
     )        
-    #embed.set_thumbnail(url="")
+    embed.set_thumbnail(url="https://media.discordapp.net/attachments/1000070083915304991/1033518782544613417/unknown.png")
     return embed    

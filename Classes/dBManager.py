@@ -58,4 +58,11 @@ class dB:
   async def add_item(self, cSlayer, cItem):
     async with self.bot.db_pool.acquire() as conn:
       await conn.execute('INSERT INTO "Slayers_Inventory_Items" (slayer_id, item_id, level, equipped) VALUES ($1, $2, $3, $4)', cSlayer.slayer_id, cItem.item_id, 1, False)
+  
+  async def push_spe_list(self, cSlayer):
+    async with self.bot.db_pool.acquire() as conn:
+      await conn.execute('INSERT INTO "Slayers_Inventory_Specializations" (slayer_id, specialization_list)' \
+            f" VALUES ($1, $2)" \
+            ' ON CONFLICT (slayer_id) DO ' \
+            f"UPDATE SET specialization_list=$2", cSlayer.slayer_id, str(cSlayer.inventory_specializations))
 

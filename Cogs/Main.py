@@ -16,6 +16,8 @@ class Main(lib.commands.Cog):
                     #On crée la class et on construit
                     Battle = lib.Battle(self.bot, gamemode)
                     await Battle.constructGamemode()
+        
+        await self.bot.ActiveList.remove_inactive()
 
     @battle_monster.before_loop
     async def before_battle_monster(self):

@@ -32,7 +32,7 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
   async def spe(self, interaction: lib.discord.Interaction) -> None:
     """ Affiche les spécialités disponibles pour acheter ou équiper """
     Slayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
-    embed = lib.Embed.create_embed_spe(Slayer, self.bot.rSpe[0])
+    embed = lib.Embed.create_embed_spe(Slayer, lib.Toolbox.get_spe_row_by_id(self.bot.rSpe, 1))
     view = lib.SpeView(self.bot, Slayer, interaction)
     await self.bot.ActiveList.add_interface(interaction.user.id, "inventaire_spe", view)
     await interaction.response.send_message(embed=embed, view=view, ephemeral=True)

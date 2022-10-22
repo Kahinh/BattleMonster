@@ -49,13 +49,12 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
       await interaction.response.send_message(content=f"{user} n'existe pas", ephemeral=True)
 
   @lib.app_commands.describe(
-      user='ID User to revive',
+      user='ID User',
       item_name='Item name to be given'
   )
   @lib.app_commands.command(name="give")
   async def give(self, interaction: lib.discord.Interaction, user: str, item_name: str) -> None:
     """ Offre un objet dans l'inventaire d'un joueur """
-    Slayer = self.bot.ActiveList.get_active_Slayer(int(user))
     try: 
       Slayer = self.bot.ActiveList.get_active_Slayer(int(user))
     except: 

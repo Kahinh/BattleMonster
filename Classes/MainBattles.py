@@ -116,13 +116,21 @@ class Battle:
           
           #Spéciaux
             #PAIN
-          attack, message, cMonster.last_hits = Slayer.cSlayer.Spe.pain(cMonster)
+          attack, message = Slayer.cSlayer.Spe.pain(cMonster, Slayer)
           if message != "":
             cMonster.getDamage(attack)
+            damage.append(attack)
             content += message
 
             #TEMPLAR
           attack, message = Slayer.cSlayer.Spe.shieldslam(cMonster, Slayer)
+          if message != "":
+            cMonster.getDamage(attack)
+            damage.append(attack)
+            content += message
+
+            #CHASSEUR
+          attack, message = Slayer.cSlayer.Spe.weakness(cMonster, Slayer)
           if message != "":
             cMonster.getDamage(attack)
             damage.append(attack)
@@ -135,7 +143,7 @@ class Battle:
 
           #Recap fin des attaques
           content += cMonster.recapDamageTaken(sum(damage))
-          cMonster.storeLastHits(sum(damage))
+          cMonster.storeLastHits(sum(damage), Slayer.cSlayer.Spe)
           content += Slayer.cSlayer.recap_useStacks(hit)
           dump = Slayer.cSlayer.recapStacks()
           content += cMonster.slayer_storeAttack(Slayer.cSlayer, sum(damage), hit)
@@ -166,7 +174,7 @@ class Battle:
           #Recap fin des attaques
           if sum(damage) > 0:
             content += cMonster.recapDamageTaken(sum(damage))
-            cMonster.storeLastHits(sum(damage))
+            cMonster.storeLastHits(sum(damage), Slayer.cSlayer.Spe)
             content += Slayer.cSlayer.recapStacks()
           if sum(parries) > 0:
             content += Slayer.cSlayer.recapHealth(parries)
@@ -260,14 +268,15 @@ class Monster:
     self.total_hp = int(Battle.Monsters[i]["base_hp"] * hp_scaling * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
     self.rarity = Battle.Monsters[i]["rarity"]
     self.parry = {
-      "parry_chance_L" : float(Battle.Monsters[i]["parry_chance_L"]) * int(Battle.scaling["parry"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
-      "parry_chance_H" : float(Battle.Monsters[i]["parry_chance_H"]) * int(Battle.scaling["parry"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
+      "parry_chance_L" : float(Battle.Monsters[i]["parry_chance_L"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
+      "parry_chance_H" : float(Battle.Monsters[i]["parry_chance_H"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
       "parry_chance_S" : 0
     }
     self.damage = int(Battle.Monsters[i]["damage"] * Battle.scaling["damage"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
     self.letality = int(Battle.Monsters[i]["letality"] * Battle.scaling["letality"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
     self.letality_per = min(Battle.Monsters[i]["letality_per"] * max(int(Battle.scaling["letality"]/3),1) * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]),1)
     self.armor = int(Battle.Monsters[i]["armor"] * Battle.scaling["armor"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
+    self.armor_cap = int(Battle.Monsters[i]["armor"])
     self.protect_crit = int(Battle.Monsters[i]["protect_crit"] * Battle.scaling["protect_crit"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
     self.img_url_normal = Battle.Monsters[i]["img_url_normal"]
     self.img_url_enraged = Battle.Monsters[i]["img_url_enraged"]
@@ -290,10 +299,11 @@ class Monster:
       armor = max((int(armor*(1-float(self.letality_per)))-int(self.letality)), 0)
       return int(armor)
 
-  def storeLastHits(self, damage):
-    self.last_hits.append(damage)
-    if len(self.last_hits) > 10:
-      self.last_hits.pop(0)
+  def storeLastHits(self, damage, Spe):
+    if Spe.id != 4 and damage != 0:
+      self.last_hits.append(damage)
+      if len(self.last_hits) > 5:
+        self.last_hits.pop(0)
 
   def isParry(self, hit, Slayer):
     ParryChance = min(max(self.parry[f"parry_chance_{hit}"] + Slayer.cSlayer.stats[f"total_parry_{hit}"], 0), 1)

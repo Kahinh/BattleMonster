@@ -79,33 +79,14 @@ def disable_enable_InventoryView(children, list, index):
                     else:
                         item.disabled = False
 
-def disable_enable_SpeView(children, list, index):
-    len_list = len(list)
-    if index == len_list - 1:
-        for item in children:
-            if hasattr(item, "label"):
-                if item.label==">>":
-                    item.disabled = True   
-    if index > 0:
-        for item in children:
-            if hasattr(item, "label"):
-                if item.label=="<<":
-                    item.disabled = False 
-    if index == 0:
-        for item in children:
-            if hasattr(item, "label"):
-                if item.label=="<<":
-                    item.disabled = True
-    if index < len_list - 1:
-        for item in children:
-            if hasattr(item, "label"):
-                if item.label==">>":
-                    item.disabled = False
-
-
 def filter_items_list(items_list, slot=None, element=None, rarity=None):
     filtered_list = []
     for item_id in items_list:
         if (items_list[item_id].slot == slot or slot is None) and (items_list[item_id].element == element or element is None) and (items_list[item_id].rarity == rarity or rarity is None):
             filtered_list.append(items_list[item_id])
     return filtered_list
+
+def get_spe_row_by_id(rSpe, spe_id):
+    for row in rSpe:
+        if int(row["id"]) == int(spe_id):
+            return row

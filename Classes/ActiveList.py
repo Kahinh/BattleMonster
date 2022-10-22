@@ -17,13 +17,18 @@ class ActiveList:
     self.bot = bot
     self.active_slayers = {}
 
-  def get_active_Slayer(self, user_id):
-    if user_id in self.active_slayers:
-      Slayer = self.active_slayers[user_id].Slayer
-      self.active_slayers[user_id].timestamp = datetime.datetime.timestamp(datetime.datetime.now())
-      return Slayer
-    else:
-      return None
+  async def remove_inactive(self):
+    inactive_slayers = []
+    for slayer_id in self.active_slayers:
+      if self.active_slayers[slayer_id].isInactive():
+        inactive_slayers.append(slayer_id)
+    
+    if inactive_slayers != []:
+      print(len(self.active_slayers))
+      for slayer_id in inactive_slayers:
+        self.active_slayers.pop(slayer_id)
+        print(f"{slayer_id} a été kické")
+      print(len(self.active_slayers))
 
   async def get_Slayer(self, user_id, user_name):
     if user_id not in self.active_slayers:
@@ -55,6 +60,14 @@ class ActiveList:
       await self.active_slayers[slayer_id].interfaces[interface].close_view()
       self.active_slayers[slayer_id].interfaces.pop(interface)
 
+  def get_active_Slayer(self, user_id):
+    if user_id in self.active_slayers:
+      Slayer = self.active_slayers[user_id].Slayer
+      self.active_slayers[user_id].timestamp = datetime.datetime.timestamp(datetime.datetime.now())
+      return Slayer
+    else:
+      return None
+
   def add_active_slayer(self, slayer_id, Slayer):
     self.active_slayers[slayer_id] = ActiveSlayer(Slayer)
 
@@ -70,3 +83,9 @@ class ActiveSlayer:
     self.timestamp = datetime.datetime.timestamp(datetime.datetime.now())
     self.Slayer = Slayer
     self.interfaces = {}
+
+  def isInactive(self):
+    if len(self.interfaces) == 0 and datetime.datetime.timestamp(datetime.datetime.now())-self.timestamp >= 3600:
+      return True
+    else:
+      return False

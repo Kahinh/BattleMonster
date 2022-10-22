@@ -31,7 +31,14 @@ class MSlayer:
                 self.rSlayer = await conn.fetchrow(qSlayers.SELECT_SLAYER, self.user_id)
                 if self.rSlayer is not None:
                     self.rSlayerInventory = await conn.fetch(qSlayers.SELECT_SLAYER_ROW_INVENTORY, self.user_id)
-                    self.rSlayerSpeInventory = await conn.fetch(qSlayers.SELECT_SLAYER_SPE_INVENTORY, self.user_id)
+                    self.rSlayerSpeInventory = await conn.fetchrow(qSlayers.SELECT_SLAYER_SPE_INVENTORY, self.user_id)
+                    if self.rSlayerSpeInventory is None:
+                        self.rSlayerSpeInventory = []
+                    else:
+                        self.rSlayerSpeInventory = list(self.rSlayerSpeInventory)[0]
+                        self.rSlayerSpeInventory = self.rSlayerSpeInventory.strip('][').split(', ')
+                        self.rSlayerSpeInventory = [eval(i) for i in self.rSlayerSpeInventory]
+                        
                     self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, self.rSlayer["specialization"])
                 else:
                     self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, 1)
@@ -42,6 +49,7 @@ class MSlayer:
         if self.rSlayer is None:
             self.cSlayer = Slayer(slayer_id=self.user_id, name=self.user_name, bot=self.bot)
             await self.bot.dB.push_slayer_data(self.cSlayer)
+            await self.bot.dB.push_spe_list(self.cSlayer)
         else:
             self.cSlayer = Slayer(
                 slayer_id= self.rSlayer["slayer_id"],
@@ -55,7 +63,7 @@ class MSlayer:
                 faction= self.rSlayer["faction"],
                 specialization= self.rSlayer["specialization"],
                 inventory_items={},
-                inventory_specializations=[int(dict(spe)['specialization_id']) for spe in self.rSlayerSpeInventory],
+                inventory_specializations=self.rSlayerSpeInventory,
                 bot = self.bot
             )
 
@@ -65,10 +73,14 @@ class MSlayer:
         await self.updateSlayer()   
 
     async def updateSlayer(self):
-            #SLOTS
-        self.cSlayer.slots = self.getSlots()
+
+        #Spe
         self.cSlayer.Spe = Spe(self.rSpe)
         self.cSlayer.slots_count = self.cSlayer.Spe.adjust_slot_count(self.bot.rSlots)
+
+        #Slots
+        self.cSlayer.slots = self.getSlots()
+        await self.correctSlots()
 
         self.cSlayer.calculateStats(self.bot.rBaseBonuses)
         self.GetGearScore()
@@ -137,6 +149,18 @@ class MSlayer:
                 slots[self.cSlayer.inventory_items[item_id].slot].append(item_id)
         return slots
 
+    async def correctSlots(self):
+        gotError = False
+        for slot in self.cSlayer.slots:
+            if len(self.cSlayer.slots[slot]) > self.cSlayer.slots_count[slot]["count"]:
+                self.cSlayer.inventory_items[self.cSlayer.slots[slot][len(self.cSlayer.slots[slot])-1]].equipped = False
+                await self.bot.dB.unequip_item(self.cSlayer, self.cSlayer.inventory_items[self.cSlayer.slots[slot][len(self.cSlayer.slots[slot])-1]])
+                gotError = True
+        
+        if gotError:
+            self.cSlayer.slots = self.getSlots()
+                
+
     def isinInventory(self, item_id):
         if item_id in self.cSlayer.inventory_items:
             return True
@@ -153,7 +177,7 @@ class MSlayer:
         self.cSlayer.money += money
     
     def removeMoney(self, money):
-        self.cSlayer.monney -= money
+        self.cSlayer.money -= money
 
     def GetGearScore(self):
         gearscore = 0
@@ -327,14 +351,15 @@ class Slayer:
         isCrit = random.choices(population=[True, False], weights=[float(self.stats[f"total_crit_chance_{hit}"]), float(1-self.stats[f"total_crit_chance_{hit}"])], k=1)[0]
         return isCrit
 
-    def dealDamage(self, hit, cMonster):
+    def dealDamage(self, hit, cMonster, damage=None, ability=None):
         armor = self.reduceArmor(hit, cMonster.armor)
         protect_crit = cMonster.protect_crit
         stacks_earned = self.getStacks(hit)
         if self.isCrit(hit):
 
             #Calcul des dégâts avec crit
-            damage = int(self.stats[f"total_damage_{hit}"]*(1 + (self.stats[f"total_crit_damage_{hit}"])) * (1 + self.stats[f"total_final_damage_{hit}"]))
+            if damage is None:
+                damage = int(self.stats[f"total_damage_{hit}"]*(1 + (self.stats[f"total_crit_damage_{hit}"])) * (1 + self.stats[f"total_final_damage_{hit}"]))
             #ProtectCrit
             damage = int(max(damage - protect_crit, 0))
             #Armor
@@ -343,21 +368,28 @@ class Slayer:
             damage = int(min(damage, cMonster.base_hp))
 
             if damage == 0:
-                content = f"\n> Le montre est déjà mort."
+                content = f"\n> Raté !"
             else:
-                content = f"\n> ⚔️ {hit} Dégâts infligés : {int(damage)} ‼️ [+{stacks_earned}☄️]"
+                if ability is None:
+                    content = f"\n> ⚔️ {hit} Dégâts infligés : {int(damage)} ‼️ [+{stacks_earned}☄️]"
+                else:
+                    content = f"\n> ⚔️ {ability} : {int(damage)} ‼️ [+{stacks_earned}☄️]"
         else:
             #Calcul des dégâts sans crit
-            damage = int(self.stats[f"total_damage_{hit}"] * (1 + self.stats[f"total_final_damage_{hit}"]))
+            if damage is None:
+                damage = int(self.stats[f"total_damage_{hit}"] * (1 + self.stats[f"total_final_damage_{hit}"]))
             #Armor
             damage = int(max(damage * 1000/(1000+armor), 0))
             #Vie du monstre
             damage = int(min(damage, cMonster.base_hp))          
             
             if damage == 0:
-                content = f"\n> Le montre est déjà mort."
+                content = f"\n> Raté !"
             else:
-                content = f"\n> ⚔️ {hit} Dégâts infligés : {int(damage)} [+{stacks_earned}☄️]"
+                if ability is None:
+                    content = f"\n> ⚔️ {hit} Dégâts infligés : {int(damage)} [+{stacks_earned}☄️]"
+                else:
+                    content = f"\n> ⚔️ {ability} : {int(damage)} [+{stacks_earned}☄️]"
         return damage, content
     
     def reduceArmor(self, hit, armor):
