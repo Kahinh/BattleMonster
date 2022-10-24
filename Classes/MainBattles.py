@@ -304,7 +304,6 @@ class Monster:
       self.last_hits.append(damage)
       if len(self.last_hits) > 5:
         self.last_hits.pop(0)
-    print(f"last_hit : {self.last_hits}")
 
   def isParry(self, hit, Slayer):
     ParryChance = min(max(self.parry[f"parry_chance_{hit}"] + Slayer.cSlayer.stats[f"total_parry_{hit}"], 0), 1)

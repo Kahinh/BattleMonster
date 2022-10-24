@@ -32,9 +32,7 @@ class Spe:
   
   def pain(self, cMonster, Slayer):
     if self.id == 4:
-      print(f"last_hits : {cMonster.last_hits}")
       damage, content = Slayer.cSlayer.dealDamage("S", cMonster, sum(cMonster.last_hits), "Vaillance du chef")
-      print(f"{damage} {content}")
       return damage, content
     else:
       return 0, ""

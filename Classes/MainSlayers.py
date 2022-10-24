@@ -359,7 +359,9 @@ class Slayer:
 
             #Calcul des dégâts avec crit
             if damage is None:
-                damage = int(self.stats[f"total_damage_{hit}"]*(1 + (self.stats[f"total_crit_damage_{hit}"])) * (1 + self.stats[f"total_final_damage_{hit}"]))
+                damage = int(self.stats[f"total_damage_{hit}"])
+            
+            damage = int(damage*(1 + (self.stats[f"total_crit_damage_{hit}"])) * (1 + self.stats[f"total_final_damage_{hit}"]))
             #ProtectCrit
             damage = int(max(damage - protect_crit, 0))
             #Armor
@@ -377,7 +379,9 @@ class Slayer:
         else:
             #Calcul des dégâts sans crit
             if damage is None:
-                damage = int(self.stats[f"total_damage_{hit}"] * (1 + self.stats[f"total_final_damage_{hit}"]))
+                damage = int(self.stats[f"total_damage_{hit}"])
+                
+            damage = int(damage * (1 + self.stats[f"total_final_damage_{hit}"]))
             #Armor
             damage = int(max(damage * 1000/(1000+armor), 0))
             #Vie du monstre
