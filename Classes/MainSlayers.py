@@ -238,7 +238,7 @@ class Slayer:
         self.stats = stats
         self.slots_count = slots_count
         self.bot = bot
-        self.lastregen = datetime.datetime.timestamp(datetime.datetime.now())
+        self.lastregen = datetime.datetime.timestamp(datetime.datetime.now()) - 600
 
 
     def calculateBonuses(self, rBaseBonuses):
@@ -351,15 +351,17 @@ class Slayer:
         isCrit = random.choices(population=[True, False], weights=[float(self.stats[f"total_crit_chance_{hit}"]), float(1-self.stats[f"total_crit_chance_{hit}"])], k=1)[0]
         return isCrit
 
-    def dealDamage(self, hit, cMonster, damage=None, ability=None):
+    def dealDamage(self, hit, cMonster):
         armor = self.reduceArmor(hit, cMonster.armor)
         protect_crit = cMonster.protect_crit
-        stacks_earned = self.getStacks(hit)
+        if hit == "S":
+            additionnal_damage, additionnal_ability = self.Spe.get_damage(cMonster, self)
+        else:
+            additionnal_damage, additionnal_ability = 0, ""
         if self.isCrit(hit):
 
             #Calcul des dégâts avec crit
-            if damage is None:
-                damage = int(self.stats[f"total_damage_{hit}"])
+            damage = int(self.stats[f"total_damage_{hit}"] + additionnal_damage)
             
             damage = int(damage*(1 + (self.stats[f"total_crit_damage_{hit}"])) * (1 + self.stats[f"total_final_damage_{hit}"]))
             #ProtectCrit
@@ -372,14 +374,11 @@ class Slayer:
             if damage == 0:
                 content = f"\n> Raté !"
             else:
-                if ability is None:
-                    content = f"\n> ⚔️ {hit} Dégâts infligés : {int(damage)} ‼️ [+{stacks_earned}☄️]"
-                else:
-                    content = f"\n> ⚔️ {ability} : {int(damage)} ‼️ [+{stacks_earned}☄️]"
+                stacks_earned = self.getStacks(hit)
+                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} ‼️ [+{stacks_earned}☄️] {additionnal_ability if additionnal_ability != '' else ''}"
         else:
             #Calcul des dégâts sans crit
-            if damage is None:
-                damage = int(self.stats[f"total_damage_{hit}"])
+            damage = int(self.stats[f"total_damage_{hit}"] + additionnal_damage)
                 
             damage = int(damage * (1 + self.stats[f"total_final_damage_{hit}"]))
             #Armor
@@ -390,10 +389,8 @@ class Slayer:
             if damage == 0:
                 content = f"\n> Raté !"
             else:
-                if ability is None:
-                    content = f"\n> ⚔️ {hit} Dégâts infligés : {int(damage)} [+{stacks_earned}☄️]"
-                else:
-                    content = f"\n> ⚔️ {ability} : {int(damage)} [+{stacks_earned}☄️]"
+                stacks_earned = self.getStacks(hit)
+                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} [+{stacks_earned}☄️] {additionnal_ability if additionnal_ability != '' else ''}"
         return damage, content
     
     def reduceArmor(self, hit, armor):
@@ -401,7 +398,10 @@ class Slayer:
         return int(armor)
 
     def getStacks(self, hit):
-        stacks_earned = min(self.stats["total_stacks"] - self.special_stacks, self.stats[f"total_special_charge_{hit}"])
+        if hit == "S":
+            stacks_earned = max(min(int(self.stats["total_stacks"]*0.5) - self.special_stacks, self.stats[f"total_special_charge_{hit}"]),0)
+        else:
+            stacks_earned = min(self.stats["total_stacks"] - self.special_stacks, self.stats[f"total_special_charge_{hit}"])
         self.special_stacks += stacks_earned
         return stacks_earned
 

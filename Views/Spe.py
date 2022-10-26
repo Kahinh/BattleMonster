@@ -31,14 +31,17 @@ class Buy_Button(lib.discord.ui.Button):
         super().__init__(label=f"{price} 🪙", style=lib.discord.ButtonStyle.red)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        self.view.Slayer.cSlayer.inventory_specializations.append(self.view.current_spe_id)
-        self.view.Slayer.removeMoney(self.price)
+        if self.view.Slayer.cSlayer.money >= self.price:
+            self.view.Slayer.cSlayer.inventory_specializations.append(self.view.current_spe_id)
+            self.view.Slayer.removeMoney(self.price)
 
-        await self.view.bot.dB.push_slayer_data(self.view.Slayer.cSlayer)
-        await self.view.bot.dB.push_spe_list(self.view.Slayer.cSlayer)
-        await self.view.update_view()
+            await self.view.bot.dB.push_slayer_data(self.view.Slayer.cSlayer)
+            await self.view.bot.dB.push_spe_list(self.view.Slayer.cSlayer)
+            await self.view.update_view()
 
-        await interaction.response.send_message(content="La spécialité a bien été achetée !", ephemeral=True) 
+            await interaction.response.send_message(content="La spécialité a bien été achetée !", ephemeral=True) 
+        else:
+            await interaction.response.send_message(content="Malheureusement, tu ne possèdes pas suffisament de 🪙 !", ephemeral=True)
 
 class SpeView(lib.discord.ui.View):
     def __init__(self, bot, Slayer, interaction):

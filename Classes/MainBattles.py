@@ -23,6 +23,7 @@ class Battle:
     self.min_dice = gamemode["roll_dices_min"]
     self.max_dice = gamemode["roll_dices_max"]
     self.interaction = interaction
+    self.loots = {}
 
     #Gestion du nombre de spawns
     self.spawns_count = gamemode["spawns_count"]
@@ -113,33 +114,6 @@ class Battle:
             content += contents
             damage.append(attack)
             cMonster.getDamage(attack)
-          
-          #Spéciaux
-            #PAIN
-          attack, message = Slayer.cSlayer.Spe.pain(cMonster, Slayer)
-          if message != "":
-            cMonster.getDamage(attack)
-            damage.append(attack)
-            content += message
-
-            #TEMPLAR
-          attack, message = Slayer.cSlayer.Spe.shieldslam(cMonster, Slayer)
-          if message != "":
-            cMonster.getDamage(attack)
-            damage.append(attack)
-            content += message
-
-            #CHASSEUR
-          attack, message = Slayer.cSlayer.Spe.weakness(cMonster, Slayer)
-          if message != "":
-            cMonster.getDamage(attack)
-            damage.append(attack)
-            content += message
-
-          #RESETTIMER
-          cMonster.slayers_hits, message = Slayer.cSlayer.Spe.resetTimer(cMonster)
-          if message != "":
-            content += message
 
           #Recap fin des attaques
           content += cMonster.recapDamageTaken(sum(damage))
@@ -226,6 +200,9 @@ class Battle:
 
     for slayer_id in loots:
       Slayer = await self.bot.ActiveList.get_Slayer(slayer_id, "")
+      self.loots[slayer_id] = {}
+      self.loots[slayer_id]["items"] = []
+      self.loots[slayer_id]["money"] = 0
 
       for row in loots[slayer_id]:
 
@@ -236,9 +213,7 @@ class Battle:
           money_request.append((self.bot.rRarities[cItem.rarity]["price"], slayer_id))
           Slayer.addMoney(self.bot.rRarities[cItem.rarity]["price"])
 
-          embed = lib.Embed.create_embed_money_loot(self.bot, Slayer, cItem)
-          view = lib.LootView(self.bot, Slayer, cItem)
-          view.message = await channel.send(content=f"<@{slayer_id}>", embed=embed, view=view)
+          self.loots[slayer_id]["money"] += self.bot.rRarities[cItem.rarity]["price"]
 
         #ON AJOUTE DANS LA DB INVENTAIRE
         else:
@@ -247,10 +222,7 @@ class Battle:
 
           await self.bot.ActiveList.update_interface(slayer_id, "inventaire")
 
-          embed = lib.Embed.create_embed_new_loot(self.bot, Slayer, cItem)
-          view = lib.LootView(self.bot, Slayer, cItem, True)
-          await self.bot.ActiveList.add_interface(slayer_id, cItem.item_id, view)
-          view.message = await channel.send(content=f"<@{slayer_id}>", embed=embed, view=view)
+          self.loots[slayer_id]["items"].append(cItem)
 
     await self.bot.dB.push_loots_money(loots_request, money_request)
 

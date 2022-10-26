@@ -26,10 +26,12 @@ import Cogs.Commands_Admin as Commands_Admin
 #VIEWS
 from Views.Inventory import InventoryView
 from Views.Loot import LootView
+from Views.LootRecap import LootRecapView
 from Views.Battle import BattleView
 from Views.Slayer import SlayerView
 from Views.MultEquip import MultEquipView
 from Views.Spe import SpeView
+from Views.LootReview import LootReviewView
 
 #CLASSES
 from Classes.DamageDone import DamageDone

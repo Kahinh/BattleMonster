@@ -6,7 +6,7 @@ def create_embed_battle(self):
     description= \
         f"**Monstre {self.bot.rRarities[self.Monsters[self.count].rarity]['display_text'].capitalize()}**\n" \
         f"⚔️ Puissance : **{int(self.Monsters[self.count].damage)}** {self.bot.rElements[self.Monsters[self.count].element]['display_emote']}\n" \
-        f"🛡️ Armure : **{int(self.Monsters[self.count].armor)}** *({int(self.Monsters[self.count].armor_cap)})*\n" \
+        f"🛡️ Armure : **{int(self.Monsters[self.count].armor)}** *({int(self.Monsters[self.count].armor_cap)} min.)*\n" \
         f"🎲 Butin Disponible : **{self.Monsters[self.count].roll_dices}**\n\n" \
         f"{self.Monsters[self.count].description}", \
     color=int(self.bot.rRarities[self.Monsters[self.count].rarity]['display_color'], 16)
@@ -201,4 +201,19 @@ def create_embed_spe(Slayer, rowSpe):
     color=0xe74c3c
     )        
     embed.set_thumbnail(url="https://media.discordapp.net/attachments/1000070083915304991/1033518782544613417/unknown.png")
-    return embed    
+    return embed 
+
+def create_embed_recap_loot(bot, recap_loot):
+
+    description = f"🪙 récupéré : {recap_loot['money']}"
+    if recap_loot['items'] != []:
+        description += f"\n\n__Item(s) récupéré(s) :__"
+        for cItem in recap_loot['items']:
+            description += f"\n- {bot.rElements[cItem.element]['display_emote']} {cItem.name} (*{bot.rSlots[cItem.slot]['display_text']} {bot.rRarities[cItem.rarity]['display_text']}*)"
+
+    embed=lib.discord.Embed(title=f"Récapitulatif Butin :",
+    description=description,
+    color=0xe74c3c
+    )        
+    embed.set_thumbnail(url="https://media.discordapp.net/attachments/1000070083915304991/1034553474999922848/unknown.png?width=1022&height=1022")
+    return embed        

@@ -13,6 +13,7 @@ class Spe:
     self.stacks = rSpe["stacks"]
     self.cost = rSpe["cost"]
     self.emote = rSpe["display_emote"]
+    self.ability_name = rSpe["ability_name"]
 
   def adjust_slot_count(self, rSlots):
     Slots = deepcopy(rSlots)
@@ -30,37 +31,22 @@ class Spe:
       base += 1
     return base
   
-  def pain(self, cMonster, Slayer):
-    if self.id == 4:
-      damage, content = Slayer.cSlayer.dealDamage("S", cMonster, sum(cMonster.last_hits), "Vaillance du chef")
-      return damage, content
-    else:
-      return 0, ""
-  
-  def shieldslam(self, cMonster, Slayer):
-    if self.id == 3:
-      damage, content = Slayer.cSlayer.dealDamage("S", cMonster, int(Slayer.cSlayer.stats["total_armor"]*3), "Impact de Bouclier")
-      return damage, content
-    else:
-      return 0, ""
-  
-  def resetTimer(self, cMonster):
-    if self.id == 5:
+  def get_damage(self, cMonster, cSlayer):
+    if self.id == 3: #Templier
+      return int(cSlayer.stats["total_armor"]*3), ""
+    elif self.id == 4: #Chef de Guerre
+      return sum(cMonster.last_hits), ""
+    elif self.id == 5: #Forgeron
       for slayer_id in cMonster.slayers_hits:
         cMonster.slayers_hits[slayer_id].timestamp_next_hit = datetime.datetime.timestamp(datetime.datetime.now())
-      return cMonster.slayers_hits, f"\n\n>Vos alliés peuvent attaquer de nouveau."
-    else:
-      return cMonster.slayers_hits, f""
-  
-  def weakness(self, cMonster, Slayer):
-    if self.id == 6:
+      return 0, "(*Cooldown reset*)"
+    elif self.id == 6: #Analyst Chasseur   
       if cMonster.armor == cMonster.armor_cap:
-        damage, content = Slayer.cSlayer.dealDamage("S", cMonster, int(Slayer.cSlayer.stats["total_letality_S"] * (1+Slayer.cSlayer.stats["total_letality_per_S"])), "Point Faible")
-        return damage, content
+        return int(cSlayer.stats["total_letality_S"] * (1+cSlayer.stats["total_letality_per_S"])), ""
       else:
-        armor_reduction = int((cMonster.armor * Slayer.cSlayer.stats["total_letality_per_S"] + Slayer.cSlayer.stats["total_letality_S"]) / 5)
+        armor_reduction = int((cMonster.armor * cSlayer.stats["total_letality_per_S"] + cSlayer.stats["total_letality_S"]) / 5)
         armor_reduction = int(min(armor_reduction, cMonster.armor - cMonster.armor_cap))
         cMonster.armor -= armor_reduction
-        return 0, f"\n\n> Tu as retiré {armor_reduction} 🛡️ au monstre !"
+        return 0, f"(-{armor_reduction} 🛡️)"
     else:
       return 0, ""
