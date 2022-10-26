@@ -238,7 +238,7 @@ class Slayer:
         self.stats = stats
         self.slots_count = slots_count
         self.bot = bot
-        self.lastregen = datetime.datetime.timestamp(datetime.datetime.now()) - 600
+        self.lastregen = datetime.datetime.timestamp(datetime.datetime.now()) - 1200
 
 
     def calculateBonuses(self, rBaseBonuses):
@@ -293,40 +293,40 @@ class Slayer:
         self.calculateBonuses(rBaseBonuses)
         bonuses = self.bonuses
         stats = {
-            "total_armor" : int(bonuses["armor"]*(1+bonuses["armor_per"])),
-            "total_max_health" : int(bonuses["health"]*(1+bonuses["health_per"])),
-            "total_fail_L" : float(min(max(bonuses["fail_L"],0),1)),
-            "total_fail_H" : float(min(max(bonuses["fail_H"],0),1)),
+            "total_armor" : int((bonuses["armor"] + self.Spe.bonuses["armor"])*(1+(bonuses["armor_per"] + self.Spe.bonuses["armor_per"]))),
+            "total_max_health" : int((bonuses["health"] + self.Spe.bonuses["health"])*(1+(bonuses["health_per"] + self.Spe.bonuses["health_per"]))),
+            "total_fail_L" : float(min(max((bonuses["fail_L"] + self.Spe.bonuses["fail_L"]),0),1)),
+            "total_fail_H" : float(min(max((bonuses["fail_H"] + self.Spe.bonuses["fail_H"]),0),1)),
             "total_fail_S" : 0,
-            "total_parry_L" : float(bonuses["parry_L"]),
-            "total_parry_H" : float(bonuses["parry_H"]),
+            "total_parry_L" : float((bonuses["parry_L"] + self.Spe.bonuses["parry_L"])),
+            "total_parry_H" : float((bonuses["parry_H"] + self.Spe.bonuses["parry_H"])),
             "total_parry_S" : 0,
-            "total_damage_L" : int((bonuses["damage_L"] + bonuses["damage_weapon"])*(1+bonuses["damage_per_L"])),
-            "total_damage_H" : int((bonuses["damage_H"] + bonuses["damage_weapon"])*(1+bonuses["damage_per_H"])),
-            "total_damage_S" : int((bonuses["damage_S"] + bonuses["damage_weapon"])*(1+bonuses["damage_per_S"])),
-            "total_final_damage_L" : float(bonuses["final_damage_L"]),
-            "total_final_damage_H" : float(bonuses["final_damage_H"]),
-            "total_final_damage_S" : float(bonuses["final_damage_S"]),
-            "total_crit_chance_L" : float(min(bonuses["crit_chance_L"],1)),
-            "total_crit_chance_H" : float(min(bonuses["crit_chance_H"],1)),
-            "total_crit_chance_S" : float(min(bonuses["crit_chance_S"],1)),
-            "total_crit_damage_L" : float(bonuses["crit_damage_L"]),
-            "total_crit_damage_H" : float(bonuses["crit_damage_H"]),
-            "total_crit_damage_S" : float(bonuses["crit_damage_S"]),
-            "total_letality_L" : int(bonuses["letality_L"]),
-            "total_letality_H" : int(bonuses["letality_H"]),
-            "total_letality_S" : int(bonuses["letality_S"]),
-            "total_letality_per_L" : float(bonuses["letality_per_L"]),
-            "total_letality_per_H" : float(bonuses["letality_per_H"]),
-            "total_letality_per_S" : float(bonuses["letality_per_S"]),
-            "total_special_charge_L" : int(bonuses["special_charge_L"]),
-            "total_special_charge_H" : int(bonuses["special_charge_H"]),
-            "total_special_charge_S" : int(bonuses["special_charge_S"]),
-            "total_stacks_reduction" : int(bonuses["stacks_reduction"]),
+            "total_damage_L" : int(((bonuses["damage_L"] + self.Spe.bonuses["damage_L"]) + (bonuses["damage_weapon"] + self.Spe.bonuses["damage_weapon"]))*(1+(bonuses["damage_per_L"] + self.Spe.bonuses["damage_per_L"]))),
+            "total_damage_H" : int(((bonuses["damage_H"] + self.Spe.bonuses["damage_H"]) + (bonuses["damage_weapon"] + self.Spe.bonuses["damage_weapon"]))*(1+(bonuses["damage_per_H"] + self.Spe.bonuses["damage_per_H"]))),
+            "total_damage_S" : int(((bonuses["damage_S"] + self.Spe.bonuses["damage_S"]) + (bonuses["damage_weapon"] + self.Spe.bonuses["damage_weapon"]))*(1+(bonuses["damage_per_S"] + self.Spe.bonuses["damage_per_S"]))),
+            "total_final_damage_L" : float((bonuses["final_damage_L"] + self.Spe.bonuses["final_damage_L"])),
+            "total_final_damage_H" : float((bonuses["final_damage_H"] + self.Spe.bonuses["final_damage_H"])),
+            "total_final_damage_S" : float((bonuses["final_damage_S"] + self.Spe.bonuses["final_damage_S"])),
+            "total_crit_chance_L" : float(min((bonuses["crit_chance_L"] + self.Spe.bonuses["crit_chance_L"]),1)),
+            "total_crit_chance_H" : float(min((bonuses["crit_chance_H"] + self.Spe.bonuses["crit_chance_H"]),1)),
+            "total_crit_chance_S" : float(min((bonuses["crit_chance_S"] + self.Spe.bonuses["crit_chance_S"]),1)),
+            "total_crit_damage_L" : float((bonuses["crit_damage_L"] + self.Spe.bonuses["crit_damage_L"])),
+            "total_crit_damage_H" : float((bonuses["crit_damage_H"] + self.Spe.bonuses["crit_damage_H"])),
+            "total_crit_damage_S" : float((bonuses["crit_damage_S"] + self.Spe.bonuses["crit_damage_S"])),
+            "total_letality_L" : int((bonuses["letality_L"] + self.Spe.bonuses["letality_L"])),
+            "total_letality_H" : int((bonuses["letality_H"] + self.Spe.bonuses["letality_H"])),
+            "total_letality_S" : int((bonuses["letality_S"] + self.Spe.bonuses["letality_S"])),
+            "total_letality_per_L" : float((bonuses["letality_per_L"] + self.Spe.bonuses["letality_per_L"])),
+            "total_letality_per_H" : float((bonuses["letality_per_H"] + self.Spe.bonuses["letality_per_H"])),
+            "total_letality_per_S" : float((bonuses["letality_per_S"] + self.Spe.bonuses["letality_per_S"])),
+            "total_special_charge_L" : int((bonuses["special_charge_L"] + self.Spe.bonuses["special_charge_L"])),
+            "total_special_charge_H" : int((bonuses["special_charge_H"] + self.Spe.bonuses["special_charge_H"])),
+            "total_special_charge_S" : int((bonuses["special_charge_S"] + self.Spe.bonuses["special_charge_S"])),
+            "total_stacks_reduction" : int((bonuses["stacks_reduction"] + self.Spe.bonuses["stacks_reduction"])),
             "total_stacks" : int(max(self.Spe.stacks - bonuses["stacks_reduction"], 1)),
-            "total_vivacity" : int(bonuses["vivacity"]),
+            "total_vivacity" : int((bonuses["vivacity"] + self.Spe.bonuses["vivacity"])),
             "total_cooldown" : int(max(rBaseBonuses["cooldown"] - bonuses["vivacity"], 1)),
-            "total_luck" : float(min(max(bonuses["luck"],0),1))
+            "total_luck" : float(min(max((bonuses["luck"] + self.Spe.bonuses["luck"]),0),1))
         }
         if stats["total_max_health"] == self.damage_taken:
             self.dead = True

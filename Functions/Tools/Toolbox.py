@@ -1,5 +1,5 @@
 from typing import KeysView
-
+import lib
 
 def transformRaritiesANDElements(fetch):
     dict_record = {}
@@ -89,4 +89,4 @@ def filter_items_list(items_list, slot=None, element=None, rarity=None):
 def get_spe_row_by_id(rSpe, spe_id):
     for row in rSpe:
         if int(row["id"]) == int(spe_id):
-            return row
+            return lib.Spe(row)

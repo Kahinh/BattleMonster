@@ -40,8 +40,8 @@ def create_embed_end_battle(Battle, timeout):
         else:
             description += f"\n- {i + 1} {Battle.bot.rElements[Battle.Monsters[i].element]['display_emote']} {Battle.Monsters[i].name} ({int(Battle.Monsters[i].base_hp)}/{int(Battle.Monsters[i].total_hp)} ❤️)"
     
-    description += f"\n\n⚔️ Attaques infligées : {Battle.stats['attacks']}"
-    description += f"\n🩸 Dégâts reçus : {Battle.stats['damage']}"
+    description += f"\n\n⚔️ Attaques reçues : {Battle.stats['attacks_received']}"
+    description += f"\n🩸 Attaques infligées : {Battle.stats['attacks_done']}"
     description += f"\n💀 Slayers morts : {Battle.stats['kills']}"
     description += f"\n🎁 Butins récupérés : {Battle.stats['loots']}"
     embed=lib.discord.Embed(title=title, description=description, color=0xe74c3c if timeout else 0x2ecc71)
@@ -190,14 +190,16 @@ def create_embed_equipment(bot, Slayer, avatar):
     embed.set_footer(text=f'Chasse depuis le {Slayer.cSlayer.creation_date}')
     return embed
 
-def create_embed_spe(Slayer, rowSpe):
-    embed=lib.discord.Embed(title=f"{rowSpe['display_emote']} {rowSpe['name']}",
+def create_embed_spe(Slayer, cSpe):
+    embed=lib.discord.Embed(title=f"{cSpe.emote} {cSpe.name}",
     description= \
-        f"{rowSpe['description']}" \
-        f"\n\n⚔️ Dégâts : {rowSpe['damage']}" \
-        f"\n☄️ Charges : {rowSpe['stacks']}" \
+        f"{cSpe.description}" \
+        f"\n\n⚔️ Dégâts : {cSpe.damage}" \
+        f"\n☄️ Charges : {cSpe.stacks}" \
         f"\n\n**Actuellement équipé :**" \
-        f"\n{Slayer.cSlayer.Spe.emote} {Slayer.cSlayer.Spe.name}",
+        f"\n{Slayer.cSlayer.Spe.emote} {Slayer.cSlayer.Spe.name}" \
+        f"\n\n__Statistiques :__"
+        f"{cSpe.getDisplayStats()}",
     color=0xe74c3c
     )        
     embed.set_thumbnail(url="https://media.discordapp.net/attachments/1000070083915304991/1033518782544613417/unknown.png")

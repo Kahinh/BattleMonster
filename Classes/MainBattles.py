@@ -41,8 +41,8 @@ class Battle:
     }
 
     self.stats = {
-      'attacks': 0,
-      'damage': 0,
+      'attacks_received': 0,
+      'attacks_done': 0,
       'loots': 0,
       'kills': 0,
     }
@@ -88,8 +88,9 @@ class Battle:
         channel = self.bot.get_channel(self.bot.rChannels[self.name])
         view.message = await channel.send(embed=embed, view=view)
       else:
-        view.interaction = self.interaction
-        await self.interaction.response.send_message(embed=embed, view=view, ephemeral=False)
+        channel = self.bot.get_channel(self.interaction.channel.id)
+        self.interaction = None
+        view.message = await channel.send(embed=embed, view=view)
     else:
       await interaction.message.edit(embed=embed, view=view)
 
@@ -150,6 +151,7 @@ class Battle:
             content += cMonster.recapDamageTaken(sum(damage))
             cMonster.storeLastHits(sum(damage), Slayer.cSlayer.Spe)
             content += Slayer.cSlayer.recapStacks()
+            self.stats['attacks_received'] += 1
           if sum(parries) > 0:
             content += Slayer.cSlayer.recapHealth(parries)
           content += cMonster.slayer_storeAttack(Slayer.cSlayer, sum(damage), hit)
@@ -212,16 +214,13 @@ class Battle:
         if Slayer.isinInventory(cItem.item_id):
           money_request.append((self.bot.rRarities[cItem.rarity]["price"], slayer_id))
           Slayer.addMoney(self.bot.rRarities[cItem.rarity]["price"])
-
           self.loots[slayer_id]["money"] += self.bot.rRarities[cItem.rarity]["price"]
 
         #ON AJOUTE DANS LA DB INVENTAIRE
         else:
           loots_request.append((slayer_id, cItem.item_id, 1, False))
           Slayer.addtoInventory(cItem)
-
-          await self.bot.ActiveList.update_interface(slayer_id, "inventaire")
-
+          #await self.bot.ActiveList.update_interface(slayer_id, "inventaire")
           self.loots[slayer_id]["items"].append(cItem)
 
     await self.bot.dB.push_loots_money(loots_request, money_request)

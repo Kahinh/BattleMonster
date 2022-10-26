@@ -14,19 +14,11 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
     await self.bot.update_bot()
     await interaction.response.send_message(f"Update réalisée !", ephemeral=True)
 
-  @lib.app_commands.choices(
-    gamemode=[
-      lib.Choice(name='Chasse', value="hunts"),
-      lib.Choice(name='Event Gold', value="gold_event")
-    ])
-  @lib.app_commands.command(name="spawnmonster")
-  async def spawnmonster(self, interaction: lib.discord.Interaction, gamemode: lib.Choice[str]) -> None:
+  @lib.app_commands.command(name="event")
+  async def event(self, interaction: lib.discord.Interaction) -> None:
     """ Admin Only - Commande afin de faire apparaître un monstre. """
-
-    rGamemode = await self.bot.db_pool.fetchrow(lib.qGameModes.SELECT_GAMEMODE, gamemode.value)
-    #On crée la class et on construit
-    Battle = lib.Battle(self.bot, rGamemode, interaction)
-    await Battle.constructGamemode()
+    view = lib.CmdEvent(self.bot, self.bot.rGamemodes, interaction)
+    await interaction.response.send_message(content="Quel event faire apparaître ?", view=view, ephemeral=True)
 
   @lib.app_commands.describe(
       user='ID User to revive',
