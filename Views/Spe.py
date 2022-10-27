@@ -18,12 +18,12 @@ class Equip_Button(lib.discord.ui.Button):
     async def callback(self, interaction: lib.discord.Interaction):
         self.view.Slayer.cSlayer.special_stacks = 0
         self.view.Slayer.cSlayer.specialization = int(self.view.current_spe_id)
-        self.view.Slayer.rSpe = lib.Toolbox.get_spe_row_by_id(self.view.bot.rSpe, self.view.current_spe_id)
+        self.view.Slayer.cSlayer.Spe = lib.Toolbox.get_spe_row_by_id(self.view.bot.rSpe, self.view.current_spe_id)
         await self.view.bot.dB.push_slayer_data(self.view.Slayer.cSlayer)
         await self.view.Slayer.updateSlayer()
 
-        await self.view.update_view()
-        await interaction.response.send_message(content="La spécialité a bien été équipée !", ephemeral=True) 
+        await self.view.update_view(interaction)
+        await interaction.followup.send(content="La spécialité a bien été équipée !", ephemeral=True) 
 
 class Buy_Button(lib.discord.ui.Button):
     def __init__(self, price):
@@ -37,9 +37,9 @@ class Buy_Button(lib.discord.ui.Button):
 
             await self.view.bot.dB.push_slayer_data(self.view.Slayer.cSlayer)
             await self.view.bot.dB.push_spe_list(self.view.Slayer.cSlayer)
-            await self.view.update_view()
+            await self.view.update_view(interaction)
 
-            await interaction.response.send_message(content="La spécialité a bien été achetée !", ephemeral=True) 
+            await interaction.followup.send(content="La spécialité a bien été achetée !", ephemeral=True) 
         else:
             await interaction.response.send_message(content="Malheureusement, tu ne possèdes pas suffisament de 🪙 !", ephemeral=True)
 

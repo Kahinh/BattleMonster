@@ -11,9 +11,9 @@ class Details_Button(lib.discord.ui.Button):
 
             if self.view.Battle.loots[interaction.user.id]["items"] != []:
                 view=lib.LootReviewView(self.view.bot, self.view.Battle.loots[interaction.user.id], Slayer)
-                await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+                view.message = await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
             else:    
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+                view.message = await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
             await interaction.response.send_message(content="Vous n'avez malheureusement rien reçu lors de ce combat.", ephemeral=True)
 

@@ -48,6 +48,7 @@ class MSlayer:
         await self.extractdB()
         if self.rSlayer is None:
             self.cSlayer = Slayer(slayer_id=self.user_id, name=self.user_name, bot=self.bot)
+            self.cSlayer.Spe = Spe(self.rSpe)
             await self.bot.dB.push_slayer_data(self.cSlayer)
             await self.bot.dB.push_spe_list(self.cSlayer)
         else:
@@ -62,6 +63,7 @@ class MSlayer:
                 special_stacks= self.rSlayer["special_stacks"],
                 faction= self.rSlayer["faction"],
                 specialization= self.rSlayer["specialization"],
+                Spe = Spe(self.rSpe),
                 inventory_items={},
                 inventory_specializations=self.rSlayerSpeInventory,
                 bot = self.bot
@@ -75,7 +77,6 @@ class MSlayer:
     async def updateSlayer(self):
 
         #Spe
-        self.cSlayer.Spe = Spe(self.rSpe)
         self.cSlayer.slots_count = self.cSlayer.Spe.adjust_slot_count(self.bot.rSlots)
 
         #Slots
