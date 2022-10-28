@@ -23,17 +23,19 @@ class Loot_Dropdown(lib.discord.ui.Select):
             await interaction.response.edit_message(embed=embed)
         
 class LootReviewView(lib.discord.ui.View):
-    def __init__(self, bot, recap_loot, Slayer):
+    def __init__(self, bot, recap_loot, Slayer, interaction):
         super().__init__(timeout=600)
         self.bot = bot
         self.recap_loot = recap_loot
         self.Slayer = Slayer
+        self.interaction = interaction
 
         # Adds the dropdown to our view object.
         self.add_item(Loot_Dropdown(self.bot, self.recap_loot))
 
     async def end_view(self):
-        await self.message.edit(view=None)
+        message = await self.interaction.original_response()
+        await message.edit(view=None)
         self.stop()
 
     async def on_timeout(self) -> None:

@@ -121,6 +121,7 @@ class Battle:
           cMonster.storeLastHits(sum(damage), Slayer.cSlayer.Spe)
           content += Slayer.cSlayer.recap_useStacks(hit)
           dump = Slayer.cSlayer.recapStacks()
+          self.stats['attacks_received'] += 1
           content += cMonster.slayer_storeAttack(Slayer.cSlayer, sum(damage), hit)
         else:
           content += Slayer.cSlayer.canSpecial()[1]
