@@ -1,7 +1,9 @@
 import datetime
+from email import message
 import os
 import inspect
 import sys
+import asyncio
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -16,6 +18,7 @@ class ActiveList:
     ):
     self.bot = bot
     self.active_slayers = {}
+    self.active_battles = {}
 
   async def remove_inactive(self):
     inactive_slayers = []
@@ -24,11 +27,8 @@ class ActiveList:
         inactive_slayers.append(slayer_id)
     
     if inactive_slayers != []:
-      print(len(self.active_slayers))
       for slayer_id in inactive_slayers:
         self.active_slayers.pop(slayer_id)
-        print(f"{slayer_id} a été kické")
-      print(len(self.active_slayers))
 
   async def get_Slayer(self, user_id, user_name):
     if user_id not in self.active_slayers:
@@ -74,6 +74,18 @@ class ActiveList:
   def remove_interface(self, slayer_id, interface):
     if interface in self.active_slayers[slayer_id].interfaces:
       self.active_slayers[slayer_id].interfaces.pop(interface)
+
+  def add_battle(self, message_id, Battle):
+    self.active_battles[message_id] = Battle
+  
+  def remove_battle(self, message_id):
+    self.active_battles.pop(message_id)
+  
+  async def clear_all_battles(self):
+    for message_id in self.active_battles:
+      await self.active_battles[message_id].updateBattle(timeout=True, poweroff=True)
+      await asyncio.sleep(2)
+    self.active_battles = {}
 
 class ActiveSlayer:
   def __init__(

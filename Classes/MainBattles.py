@@ -87,10 +87,12 @@ class Battle:
       if self.interaction is None:
         channel = self.bot.get_channel(self.bot.rChannels[self.name])
         view.message = await channel.send(embed=embed, view=view)
+        self.bot.ActiveList.add_battle(view.message.id, view)
       else:
         channel = self.bot.get_channel(self.interaction.channel.id)
         self.interaction = None
         view.message = await channel.send(embed=embed, view=view)
+        self.bot.ActiveList.add_battle(view.message.id, view)
     else:
       await interaction.message.edit(embed=embed, view=view)
 
@@ -154,7 +156,11 @@ class Battle:
             content += Slayer.cSlayer.recapStacks()
             self.stats['attacks_received'] += 1
           if sum(parries) > 0:
-            content += Slayer.cSlayer.recapHealth(parries)
+            isDead, message = Slayer.cSlayer.recapHealth(parries)
+            content += message
+            self.stats['attacks_done'] += sum(parries)
+            if isDead:
+              self.stats['kills'] += 1
           content += cMonster.slayer_storeAttack(Slayer.cSlayer, sum(damage), hit)
 
         else:

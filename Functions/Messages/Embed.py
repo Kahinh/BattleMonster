@@ -29,9 +29,9 @@ def create_embed_battle(self):
 def create_embed_end_battle(Battle, timeout):
     #TITLE
     if timeout == False:
-        title = "**Combat achevé ✨ Tous les monstres ont été vaincus !**"
+        title = f"**{Battle.name.capitalize()} achevé ✨ Tous les monstres ont été vaincus !**"
     else: 
-        title = "**Combat achevé : 🐉 Vous avez échoué et les monstres se sont enfuis.**"
+        title = f"**{Battle.name.capitalize()} achevé : 🐉 Vous avez échoué et les monstres se sont enfuis.**"
     
     description = "**Bilan du combat :**"
     for i in Battle.Monsters:
@@ -41,7 +41,7 @@ def create_embed_end_battle(Battle, timeout):
             description += f"\n- {i + 1} {Battle.bot.rElements[Battle.Monsters[i].element]['display_emote']} {Battle.Monsters[i].name} ({int(Battle.Monsters[i].base_hp)}/{int(Battle.Monsters[i].total_hp)} ❤️)"
     
     description += f"\n\n⚔️ Attaques reçues : {Battle.stats['attacks_received']}"
-    description += f"\n🩸 Attaques infligées : {Battle.stats['attacks_done']}"
+    description += f"\n🩸 Dégâts infligés : {Battle.stats['attacks_done']}"
     description += f"\n💀 Slayers morts : {Battle.stats['kills']}"
     description += f"\n🎁 Butins récupérés : {Battle.stats['loots']}"
     embed=lib.discord.Embed(title=title, description=description, color=0xe74c3c if timeout else 0x2ecc71)
@@ -167,7 +167,7 @@ def create_embed_profil(Slayer, avatar):
     return embed
 
 def create_embed_equipment(bot, Slayer, avatar):
-    description = f"Score d'équipement : **{Slayer.cSlayer.gearscore}**\n"
+    description = f"Score d'équipement : **{int(Slayer.cSlayer.gearscore)}**\n"
     for slot in Slayer.cSlayer.slots_count:
         if Slayer.cSlayer.slots_count[slot]['activated']:
             if Slayer.cSlayer.slots_count[slot]['count'] > 0:

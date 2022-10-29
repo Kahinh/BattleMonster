@@ -184,7 +184,12 @@ class MSlayer:
         gearscore = 0
         for item in self.cSlayer.inventory_items:
             if self.cSlayer.inventory_items[item].equipped:
-                gearscore += self.bot.rRarities[self.cSlayer.inventory_items[item].rarity]["gearscore"]
+                if (self.cSlayer.Spe.id == 2 and self.cSlayer.inventory_items[item].slot == "weapon"): #Escrime Double
+                    gearscore += self.bot.rRarities[self.cSlayer.inventory_items[item].rarity]["gearscore"] / 2
+                elif (self.cSlayer.Spe.id == 3 and (self.cSlayer.inventory_items[item].slot == "shield" or self.cSlayer.inventory_items[item].slot == "weapon")): #Templier
+                    gearscore += self.bot.rRarities[self.cSlayer.inventory_items[item].rarity]["gearscore"] / 2
+                else:
+                    gearscore += self.bot.rRarities[self.cSlayer.inventory_items[item].rarity]["gearscore"]
         self.cSlayer.gearscore = gearscore
 
     def equippedonSlot(self, slot):
@@ -227,6 +232,7 @@ class Slayer:
         self.creation_date = creation_date
         self.dead = dead
         self.xp = xp
+        self.mult_damage = 1
         self.damage_taken = damage_taken
         self.money = money
         self.special_stacks = special_stacks
@@ -286,7 +292,10 @@ class Slayer:
         for item_id in self.inventory_items:
             if self.inventory_items[item_id].equipped:
                 for bonus in self.inventory_items[item_id].bonuses:
-                    bonuses[bonus] += self.inventory_items[item_id].bonuses[bonus]
+                    if self.Spe.id == 2 and self.inventory_items[item_id].slot == "weapon" and (bonus == "parry_L" or bonus == "parry_H" or bonus == "fail_L" or bonus == "fail_H"): #Escrime Double
+                        bonuses[bonus] += self.inventory_items[item_id].bonuses[bonus] / 2
+                    else:
+                        bonuses[bonus] += self.inventory_items[item_id].bonuses[bonus]
         self.bonuses = bonuses
 
     def calculateStats(self, rBaseBonuses):
@@ -333,6 +342,8 @@ class Slayer:
             self.dead = True
         if self.dead == True:
             self.damage_taken = stats["total_max_health"]
+        else:
+            self.damage_taken = min(self.damage_taken, stats["total_max_health"]-1)
         self.stats = stats
 
     def canSpecial(self):
@@ -357,18 +368,23 @@ class Slayer:
         protect_crit = cMonster.protect_crit
         if hit == "S":
             additionnal_damage, additionnal_ability = self.Spe.get_damage(cMonster, self)
+            mult_damage = self.mult_damage
         else:
             additionnal_damage, additionnal_ability = 0, ""
+            mult_damage = 1
         if self.isCrit(hit):
 
             #Calcul des dégâts avec crit
             damage = int(self.stats[f"total_damage_{hit}"] + additionnal_damage)
             
-            damage = int(damage*(1 + (self.stats[f"total_crit_damage_{hit}"])) * (1 + self.stats[f"total_final_damage_{hit}"]))
+            damage = int(damage*(1 + (self.stats[f"total_crit_damage_{hit}"])) * (1 + self.stats[f"total_final_damage_{hit}"]) * mult_damage)
             #ProtectCrit
             damage = int(max(damage - protect_crit, 0))
             #Armor
-            damage = int(max(damage * 1000/(1000+armor), 0))
+            if armor >= 0:
+                damage = int(max(damage * (1000/(1000+armor)), 1))
+            if armor < 0:
+                damage = int(damage * ((1000+abs(armor))/1000))
             #Vie du monstre
             damage = int(min(damage, cMonster.base_hp))
 
@@ -376,14 +392,17 @@ class Slayer:
                 content = f"\n> Raté !"
             else:
                 stacks_earned = self.getStacks(hit)
-                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} ‼️ [+{stacks_earned}☄️] {additionnal_ability if additionnal_ability != '' else ''}"
+                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} ‼️ [+{stacks_earned}☄️] {'[🔥x' + str(mult_damage) + ']' if mult_damage > 1 else ''} {additionnal_ability if additionnal_ability != '' else ''}"
         else:
             #Calcul des dégâts sans crit
             damage = int(self.stats[f"total_damage_{hit}"] + additionnal_damage)
                 
-            damage = int(damage * (1 + self.stats[f"total_final_damage_{hit}"]))
+            damage = int(damage * (1 + self.stats[f"total_final_damage_{hit}"]) * mult_damage)
             #Armor
-            damage = int(max(damage * 1000/(1000+armor), 0))
+            if armor >= 0:
+                damage = int(max(damage * (1000/(1000+armor)), 1))
+            if armor < 0:
+                damage = int(damage * ((1000+abs(armor))/1000))
             #Vie du monstre
             damage = int(min(damage, cMonster.base_hp))          
             
@@ -391,24 +410,34 @@ class Slayer:
                 content = f"\n> Raté !"
             else:
                 stacks_earned = self.getStacks(hit)
-                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} [+{stacks_earned}☄️] {additionnal_ability if additionnal_ability != '' else ''}"
+                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} [+{stacks_earned}☄️] {'[🔥x' + str(mult_damage) + ']' if mult_damage > 1 else ''} {additionnal_ability if additionnal_ability != '' else ''}"
         return damage, content
     
     def reduceArmor(self, hit, armor):
-        armor = max(((armor*(1-float(self.stats[f"total_letality_per_{hit}"])))-int(self.stats[f"total_letality_{hit}"])),0)
+        armor = ((armor*(1-float(self.stats[f"total_letality_per_{hit}"])))-int(self.stats[f"total_letality_{hit}"]))
         return int(armor)
 
     def getStacks(self, hit):
-        if hit == "S":
-            stacks_earned = max(min(int(self.stats["total_stacks"]*0.5) - self.special_stacks, self.stats[f"total_special_charge_{hit}"]),0)
+        if self.mult_damage == 1:
+            if hit == "S":
+                stacks_earned = max(min(int(self.stats["total_stacks"]*0.5) - self.special_stacks, self.stats[f"total_special_charge_{hit}"]),0)
+            else:
+                stacks_earned = min(self.stats["total_stacks"] - self.special_stacks, self.stats[f"total_special_charge_{hit}"])
+            self.special_stacks += stacks_earned
         else:
-            stacks_earned = min(self.stats["total_stacks"] - self.special_stacks, self.stats[f"total_special_charge_{hit}"])
-        self.special_stacks += stacks_earned
+            stacks_earned = 0
         return stacks_earned
 
     def useStacks(self, hit):
         if hit == "S":
-            self.special_stacks = self.special_stacks - self.stats['total_stacks']
+            if self.Spe.id == 7:
+                if random.choices((True, False), (1, 0), k=1)[0]:
+                    self.mult_damage *= 2
+                else:
+                    self.mult_damage *= 2
+                    self.special_stacks = self.special_stacks - self.stats['total_stacks']
+            else:
+                self.special_stacks = self.special_stacks - self.stats['total_stacks']
 
     def getDamage(self, damage):
         self.damage_taken += damage
@@ -424,7 +453,10 @@ class Slayer:
 
     def recap_useStacks(self, hit):
         if hit == "S":
-            content = f"\n> ☄️ Charge consommée : {self.stats['total_stacks']} - Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
+            if self.Spe.id == 7 and self.special_stacks == self.stats['total_stacks']:
+                content = f"\n> ☄️ Charge récupérées, spécial disponible : **{self.special_stacks}/{self.stats['total_stacks']}**"
+            else:
+                content = f"\n> ☄️ Charge consommée : {self.stats['total_stacks']} - Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
             return content
 
     def recapStacks(self):
@@ -442,7 +474,7 @@ class Slayer:
             self.lastregen = datetime.datetime.timestamp(datetime.datetime.now())
         else:
             content += f"\n> Il te reste {int(self.stats['total_max_health'] - self.damage_taken)}/{self.stats['total_max_health']} ❤️ !"
-        return content
+        return self.dead, content
     
     def regen(self):
         regen = 0.1 * self.stats["total_max_health"]

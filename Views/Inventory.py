@@ -10,19 +10,21 @@ class Rarity_Dropdown(lib.discord.ui.Select):
         super().__init__(placeholder='Filtrer la rareté...', min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        if self.values[0] == "None": self.values[0] = None
-        self.view.rarity = self.values[0]
-        self.view.items_list_filtered = lib.Toolbox.filter_items_list(self.view.Slayer.cSlayer.inventory_items, self.view.slot, self.view.element, self.view.rarity)
-        self.view.index = 0
+        if not self.view.obsolete:
+            if self.values[0] == "None": self.values[0] = None
+            self.view.rarity = self.values[0]
+            self.view.items_list_filtered = lib.Toolbox.filter_items_list(self.view.Slayer.cSlayer.inventory_items, self.view.slot, self.view.element, self.view.rarity)
+            self.view.index = 0
 
-        for option in self.options:
-            if option.value == self.values[0]:
-                option.default = True
-            else:
-                option.default = False
-        
-
-        await self.view.update_view(interaction) 
+            for option in self.options:
+                if option.value == self.values[0]:
+                    option.default = True
+                else:
+                    option.default = False
+            
+            await self.view.update_view(interaction) 
+        else:
+            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class Element_Dropdown(lib.discord.ui.Select):
     def __init__(self, rElements):
@@ -58,61 +60,73 @@ class Slot_Dropdown(lib.discord.ui.Select):
         super().__init__(placeholder="Filtrer l'emplacement...", min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        if self.values[0] == "None": self.values[0] = None
-        self.view.slot = self.values[0]
-        self.view.items_list_filtered = lib.Toolbox.filter_items_list(self.view.Slayer.cSlayer.inventory_items, self.view.slot, self.view.element, self.view.rarity)
-        self.view.index = 0
+        if not self.view.obsolete:
+            if self.values[0] == "None": self.values[0] = None
+            self.view.slot = self.values[0]
+            self.view.items_list_filtered = lib.Toolbox.filter_items_list(self.view.Slayer.cSlayer.inventory_items, self.view.slot, self.view.element, self.view.rarity)
+            self.view.index = 0
 
-        for option in self.options:
-            if option.value == self.values[0]:
-                option.default = True
-            else:
-                option.default = False
+            for option in self.options:
+                if option.value == self.values[0]:
+                    option.default = True
+                else:
+                    option.default = False
 
-        await self.view.update_view(interaction) 
+            await self.view.update_view(interaction) 
+        else:
+            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class Previous_Button(lib.discord.ui.Button):
     def __init__(self):
         super().__init__(label="<<", style=lib.discord.ButtonStyle.blurple)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        self.view.index -= 1
-        
-        await self.view.update_view(interaction)        
+        if not self.view.obsolete:
+            self.view.index -= 1
+            
+            await self.view.update_view(interaction)        
+        else:
+            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class Next_Button(lib.discord.ui.Button):
     def __init__(self):
         super().__init__(label=">>", style=lib.discord.ButtonStyle.blurple)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        self.view.index += 1 
-        
-        await self.view.update_view(interaction)   
+        if not self.view.obsolete:
+            self.view.index += 1 
+            
+            await self.view.update_view(interaction)   
+        else:
+            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class Equip_Button(lib.discord.ui.Button):
     def __init__(self):
         super().__init__(label="Équiper", style=lib.discord.ButtonStyle.green)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        isEquipped, List = await self.view.Slayer.equip_item(self.view.items_list_filtered[self.view.index])
+        if not self.view.obsolete:
+            isEquipped, List = await self.view.Slayer.equip_item(self.view.items_list_filtered[self.view.index])
 
-        if isEquipped:
-            await self.view.update_view(interaction) 
-            await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
-        else:
-            if len(List) == 0:
-                await interaction.response.send_message(content="Une erreur est survenue !", ephemeral=True)
+            if isEquipped:
+                await self.view.update_view(interaction) 
+                await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
             else:
-                viewMult = lib.MultEquipView(self.view.bot, self.view.Slayer, List, interaction, self.view.items_list_filtered[self.view.index])
-                await self.view.bot.ActiveList.add_interface(interaction.user.id, "mult_equip", viewMult)
-                await interaction.response.send_message(content="Tous les emplacements sont déjà utilisés, quel objet souhaitez-vous remplacer ?", view=viewMult, ephemeral=True)
+                if len(List) == 0:
+                    await interaction.response.send_message(content="Une erreur est survenue !", ephemeral=True)
+                else:
+                    viewMult = lib.MultEquipView(self.view.bot, self.view.Slayer, List, interaction, self.view.items_list_filtered[self.view.index])
+                    await self.view.bot.ActiveList.add_interface(interaction.user.id, "mult_equip", viewMult)
+                    await interaction.response.send_message(content="Tous les emplacements sont déjà utilisés, quel objet souhaitez-vous remplacer ?", view=viewMult, ephemeral=True)
+        else:
+            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class Sell_Button(lib.discord.ui.Button):
     def __init__(self):
         super().__init__(label="Vendre", style=lib.discord.ButtonStyle.red)
 
     async def callback(self, interaction: lib.discord.Interaction):
-
+        if not self.view.obsolete:
             Sold = await self.view.Slayer.sell_item(self.view.items_list_filtered[self.view.index])
             self.view.items_list_filtered = lib.Toolbox.filter_items_list(self.view.Slayer.cSlayer.inventory_items, self.view.slot, self.view.element, self.view.rarity)
             self.index = 0
@@ -123,6 +137,8 @@ class Sell_Button(lib.discord.ui.Button):
                 await interaction.followup.send("L'objet a été vendu !", ephemeral=True)
             else:
                 await interaction.followup.send("Une erreur s'est produite !", ephemeral=True)
+        else:
+            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class InventoryView(lib.discord.ui.View):
     def __init__(self, bot, Slayer, interaction):
@@ -130,6 +146,7 @@ class InventoryView(lib.discord.ui.View):
         self.bot = bot
         self.Slayer = Slayer
         self.interaction = interaction
+        self.obsolete = False
 
         self.slot = None
         self.element = None

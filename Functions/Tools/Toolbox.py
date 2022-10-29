@@ -90,3 +90,10 @@ def get_spe_row_by_id(rSpe, spe_id):
     for row in rSpe:
         if int(row["id"]) == int(spe_id):
             return lib.Spe(row)
+
+def get_content_looters(Battle):
+    content = ""
+    for slayer_id in Battle.loots:
+        if Battle.loots[slayer_id]["items"] != []:
+            content += f"<@{slayer_id}> "
+    return content

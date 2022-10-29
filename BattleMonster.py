@@ -62,6 +62,7 @@ async def main():
             port=port) as db_pool:
         client = BattleMonster()
         client.db_pool = db_pool
+        client.power = True
         await client.start(token)
 
 asyncio.run(main())
