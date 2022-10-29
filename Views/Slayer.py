@@ -6,7 +6,6 @@ class Profil_Button(lib.discord.ui.Button):
         super().__init__(label="Profil", style=lib.discord.ButtonStyle.blurple)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
         if not self.view.obsolete:
             embed = self.view.embed_Profil
             for item in self.view.children:
@@ -14,16 +13,15 @@ class Profil_Button(lib.discord.ui.Button):
                     item.disabled = True
                 if item.label=="Équipement":
                     item.disabled = False
-            await interaction.followup.send(embed=embed, view=self.view)
+            await interaction.response.edit_message(embed=embed, view=self.view)
         else:
-            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class Equipment_Button(lib.discord.ui.Button):
     def __init__(self):
         super().__init__(label="Équipement", style=lib.discord.ButtonStyle.green)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
         if not self.view.obsolete:
             embed = self.view.embed_Equipment
             for item in self.view.children:
@@ -31,20 +29,19 @@ class Equipment_Button(lib.discord.ui.Button):
                     item.disabled = True
                 if item.label=="Profil":
                     item.disabled = False
-            await interaction.followup.send(embed=embed, view=self.view)
+            await interaction.response.edit_message(embed=embed, view=self.view)
         else:
-            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class Achievements_Button(lib.discord.ui.Button):
     def __init__(self):
         super().__init__(label="Succès", style=lib.discord.ButtonStyle.red)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
         if not self.view.obsolete:
-            await interaction.followup.send(content="Test")
+            await interaction.response.edit_message(content="Test")
         else:
-            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class SlayerView(lib.discord.ui.View):
     def __init__(self, bot, Slayer, interaction, avatar, interface_name="profil"):
