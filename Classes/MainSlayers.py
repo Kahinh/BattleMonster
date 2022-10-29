@@ -434,7 +434,7 @@ class Slayer:
                 if random.choices((True, False), (0.5, 0.5), k=1)[0]:
                     self.mult_damage *= 2
                 else:
-                    self.mult_damage *= 2
+                    self.mult_damage = 1
                     self.special_stacks = self.special_stacks - self.stats['total_stacks']
             else:
                 self.special_stacks = self.special_stacks - self.stats['total_stacks']
