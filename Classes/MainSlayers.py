@@ -431,7 +431,7 @@ class Slayer:
     def useStacks(self, hit):
         if hit == "S":
             if self.Spe.id == 7:
-                if random.choices((True, False), (1, 0), k=1)[0]:
+                if random.choices((True, False), (0.5, 0.5), k=1)[0]:
                     self.mult_damage *= 2
                 else:
                     self.mult_damage *= 2
