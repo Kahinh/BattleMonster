@@ -27,7 +27,7 @@ class Equip_Button(lib.discord.ui.Button):
             await self.view.Slayer.updateSlayer()
 
             await self.view.update_view(interaction)
-            await interaction.response.send_message(content="La spécialité a bien été équipée !", ephemeral=True) 
+            await interaction.followup.send(content="La spécialité a bien été équipée !", ephemeral=True) 
         else:
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
@@ -46,7 +46,7 @@ class Buy_Button(lib.discord.ui.Button):
                 await self.view.bot.dB.push_spe_list(self.view.Slayer.cSlayer)
                 await self.view.update_view(interaction)
 
-                await interaction.response.send_message(content="La spécialité a bien été achetée !", ephemeral=True) 
+                await interaction.followup.send(content="La spécialité a bien été achetée !", ephemeral=True) 
             else:
                 await interaction.response.send_message(content="Malheureusement, tu ne possèdes pas suffisament de 🪙 !", ephemeral=True)
         else:
