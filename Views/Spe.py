@@ -37,7 +37,7 @@ class Buy_Button(lib.discord.ui.Button):
         super().__init__(label=f"{price} 🪙", style=lib.discord.ButtonStyle.red)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        if not self.obsolete:
+        if not self.view.obsolete:
             if self.view.Slayer.cSlayer.money >= self.price:
                 self.view.Slayer.cSlayer.inventory_specializations.append(self.view.current_spe_id)
                 self.view.Slayer.removeMoney(self.price)
