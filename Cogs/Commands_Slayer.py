@@ -14,8 +14,10 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
       Slayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
       if len(Slayer.cSlayer.inventory_items) > 0:
           #On init le message
-          view = lib.InventoryView(self.bot, Slayer, interaction)
-          embed = lib.Embed.create_embed_item(self.bot, Slayer.cSlayer.inventory_items[list(Slayer.cSlayer.inventory_items.keys())[0]], Slayer)
+          itemsequipped_list = Slayer.getListEquippedOnSlot(Slayer.cSlayer.inventory_items[list(Slayer.cSlayer.inventory_items.keys())[0]].slot)
+          itemID_compare = Slayer.cSlayer.inventory_items[list(Slayer.cSlayer.inventory_items.keys())[0]].item_id
+          view = lib.InventoryView(self.bot, Slayer, interaction, itemsequipped_list, itemID_compare)
+          embed = lib.Embed.create_embed_item(self.bot, Slayer.cSlayer.inventory_items[list(Slayer.cSlayer.inventory_items.keys())[0]], Slayer, itemsequipped_list[0] if itemsequipped_list != [] else None)
           await self.bot.ActiveList.add_interface(interaction.user.id, "inventaire", view)
           await interaction.followup.send(embed=embed, view=view, ephemeral=True)
       else:
@@ -62,6 +64,7 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
           #Si on a attendu suffisamment
           if datetime.datetime.timestamp(datetime.datetime.now()) - Slayer.cSlayer.lastregen >= waiting_time:
             #On rez
+            Slayer.cSlayer.lastregen = datetime.datetime.timestamp(datetime.datetime.now())
             Slayer.cSlayer.dead = False
             regen = Slayer.cSlayer.regen()
             await self.bot.dB.push_slayer_data(Slayer.cSlayer)
@@ -74,6 +77,7 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
           #Si on a attendu suffisamment
           if datetime.datetime.timestamp(datetime.datetime.now()) - Slayer.cSlayer.lastregen >= waiting_time:
             regen = Slayer.cSlayer.regen()
+            Slayer.cSlayer.lastregen = datetime.datetime.timestamp(datetime.datetime.now())
             await self.bot.dB.push_slayer_data(Slayer.cSlayer)
             await interaction.followup.send(content=f"Régénération effectuée : Tu as récupéré {regen} ❤️", ephemeral=True)
           else:

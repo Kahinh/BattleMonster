@@ -29,3 +29,4 @@ Merci à vous de jouer !
 - [X] Alpha 0.6
 - [X] Alpha 0.7
 - [X] Alpha 0.8
+- [X] Alpha 0.9

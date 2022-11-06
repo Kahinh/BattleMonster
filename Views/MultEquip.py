@@ -10,22 +10,26 @@ class Equiped_Dropdown(lib.discord.ui.Select):
     async def callback(self, interaction: lib.discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         if not self.view.obsolete:
-            self.view.Slayer.cSlayer.inventory_items[int(self.values[0])].unequip()
-            self.view.cItem.equip()
-            await self.view.Slayer.updateSlayer()
-            await self.view.bot.dB.switch_item(self.view.Slayer.cSlayer, self.view.cItem, self.view.Slayer.cSlayer.inventory_items[int(self.values[0])])
+            try:
+                self.view.Slayer.cSlayer.inventory_items[int(self.values[0])].unequip()
+                self.view.cItem.equip()
+                await self.view.Slayer.updateSlayer()
+                await self.view.bot.dB.switch_item(self.view.Slayer.cSlayer, self.view.cItem, self.view.Slayer.cSlayer.inventory_items[int(self.values[0])])
 
-            #On update le Inventoryview ?
-            await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.slayer_id, "inventaire")
+                #On update le Inventoryview ?
+                await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.slayer_id, "inventaire")
+                await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.slayer_id, "LootReview")
 
-            self.view.bot.ActiveList.remove_interface(self.view.Slayer.cSlayer.slayer_id, "mult_equip")
-            message = await self.view.interaction.original_response()
-            await message.edit(view=None)
-            self.view.stop()
-            
-            self.view.Slayer.cSlayer.calculateStats(self.view.bot.rBaseBonuses)
-            await self.view.bot.ActiveList.close_interface(self.view.Slayer.cSlayer.slayer_id, self.view.cItem.item_id)
-            await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
+                self.view.bot.ActiveList.remove_interface(self.view.Slayer.cSlayer.slayer_id, "mult_equip")
+                message = await self.view.interaction.original_response()
+                await message.edit(view=None)
+                self.view.stop()
+                
+                self.view.Slayer.cSlayer.calculateStats(self.view.bot.rBaseBonuses)
+                await self.view.bot.ActiveList.close_interface(self.view.Slayer.cSlayer.slayer_id, self.view.cItem.item_id)
+                await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
+            except:
+                await interaction.followup.send("Une erreur s'est produite !", ephemeral=True)
         else:
             await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
 

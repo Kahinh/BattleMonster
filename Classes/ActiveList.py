@@ -19,6 +19,7 @@ class ActiveList:
     self.bot = bot
     self.active_slayers = {}
     self.active_battles = {}
+    self.active_lootrecap = {}
 
   async def remove_inactive(self):
     inactive_slayers = []
@@ -75,17 +76,39 @@ class ActiveList:
     if interface in self.active_slayers[slayer_id].interfaces:
       self.active_slayers[slayer_id].interfaces.pop(interface)
 
+  def obsolete_interfaces(self):
+    for slayer_id in self.active_slayers:
+      for interface in self.active_slayers[slayer_id].interfaces:
+        self.active_slayers[slayer_id].interfaces[interface].obsolete = True
+  
+  def reset_slayers_activelist(self):
+    self.active_slayers = {}
+  
+  ##########ACTIVE BATTLES
   def add_battle(self, message_id, Battle):
     self.active_battles[message_id] = Battle
   
   def remove_battle(self, message_id):
     self.active_battles.pop(message_id)
-  
+
   async def clear_all_battles(self):
     for message_id in self.active_battles:
       await self.active_battles[message_id].updateBattle(timeout=True, poweroff=True)
       await asyncio.sleep(2)
     self.active_battles = {}
+
+  ###########ACTIVE LOOT RECAP
+  def add_recap(self, message_id, Recap):
+    self.active_lootrecap[message_id] = Recap
+  
+  def remove_recap(self, message_id):
+    self.active_lootrecap.pop(message_id)
+
+  async def clear_all_recap(self):
+    for message_id in self.active_lootrecap:
+      await self.active_lootrecap[message_id].end_view(poweroff=True)
+      await asyncio.sleep(2)
+    self.active_lootrecap = {}
 
 class ActiveSlayer:
   def __init__(

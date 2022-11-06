@@ -60,8 +60,10 @@ class Item:
   
   def getDisplayStats(self, cItem2=None):
     desc_stat = ""
+    if cItem2 is not None:
+      desc_stat += f"\n*Comparaison {cItem2.name}*"
     for bonus in self.bonuses:
-      if cItem2 is None:
+      if cItem2 is None or self.item_id == cItem2.item_id:
         if self.bonuses[bonus] != 0:
           if bonus.find("_") != -1 and bonus[-1:] in ["L", "H", "S"]:
             if self.bonuses[bonus[:-1]+"L"] == self.bonuses[bonus[:-1]+"H"] == self.bonuses[bonus[:-1]+"S"]:

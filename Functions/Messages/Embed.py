@@ -44,6 +44,7 @@ def create_embed_end_battle(Battle, timeout):
     description += f"\n🩸 Dégâts infligés : {Battle.stats['attacks_done']}"
     description += f"\n💀 Slayers morts : {Battle.stats['kills']}"
     description += f"\n🎁 Butins récupérés : {Battle.stats['loots']}"
+    description += f"\n🪙 Or distribué : {Battle.stats['money']}"
     embed=lib.discord.Embed(title=title, description=description, color=0xe74c3c if timeout else 0x2ecc71)
     embed.set_thumbnail(url='https://images-ext-2.discordapp.net/external/K5FrBGB9d-8IbCg_bnZyheglS9Q61aXohV4hJSMiImA/%3Fcb%3D20200801054948/https/static.wikia.nocookie.net/dauntless_gamepedia_en/images/1/13/Hunt_Icon.png/revision/latest')
     return embed
@@ -131,7 +132,7 @@ def create_embed_item(bot, cItem1, Slayer, cItem2=None):
 def create_embed_profil(Slayer, avatar):
 
     description = \
-    f"**{Slayer.cSlayer.Spe.emote} {Slayer.cSlayer.Spe.name}**" \
+    f"**{Slayer.cSlayer.Spe.emote} {Slayer.cSlayer.Spe.name}** {'*[ON : ' + str(Slayer.cSlayer.berserker_mode) + '/5]*' if Slayer.cSlayer.berserker_mode > 0 else ''}" \
     f"\n🪙 Coin : **{int(Slayer.cSlayer.money)}**" \
     "\n\n**__Statistiques__**" \
     f"\n{'💀' if Slayer.cSlayer.dead else '❤️'} Vie : **{int(Slayer.cSlayer.stats['total_max_health'] - Slayer.cSlayer.damage_taken)}/{Slayer.cSlayer.stats['total_max_health']}**" \
@@ -153,7 +154,7 @@ def create_embed_profil(Slayer, avatar):
             name = "__Capacité Spéciale__"
         description = \
         f"\n⚔️ Puissance : **{Slayer.cSlayer.stats['total_damage_' + i]}**" \
-        f"\n⚔️ Dégâts Finaux : **{Slayer.cSlayer.stats['total_final_damage_' + i]*100}**" \
+        f"\n⚔️ Dégâts Finaux : **{int(Slayer.cSlayer.stats['total_final_damage_' + i]*100)}**%" \
         f"\n☄️ Gains Charge : **{Slayer.cSlayer.stats['total_special_charge_' + i]}**" \
         f"\n✨ Chance Critique : **{int(Slayer.cSlayer.stats['total_crit_chance_' + i]*100)}**%" \
         f"\n💢 Dégâts Critiques : **{int(Slayer.cSlayer.stats['total_crit_damage_' + i]*100)}**%" \

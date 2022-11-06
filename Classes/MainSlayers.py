@@ -1,3 +1,4 @@
+from decimal import Decimal
 import random
 import datetime
 import os
@@ -168,6 +169,15 @@ class MSlayer:
         else:
             return False
     
+    def isEquipped(self, item_id):
+        if item_id in self.cSlayer.inventory_items:
+            if self.cSlayer.inventory_items[item_id].equipped:
+                return True
+            else:
+                return False
+        else:
+            return True
+    
     def addtoInventory(self, cItem):
         self.cSlayer.inventory_items[cItem.item_id] = cItem
 
@@ -205,6 +215,13 @@ class MSlayer:
             description = ""
         return description
 
+    def getListEquippedOnSlot(self, slot):
+        items_list = []
+        if slot in self.cSlayer.slots:
+            for item_id in self.cSlayer.slots[slot]:
+                items_list.append(self.cSlayer.inventory_items[item_id])
+        return items_list
+
 
 class Slayer:
     def __init__(
@@ -232,7 +249,6 @@ class Slayer:
         self.creation_date = creation_date
         self.dead = dead
         self.xp = xp
-        self.mult_damage = 1
         self.damage_taken = damage_taken
         self.money = money
         self.special_stacks = special_stacks
@@ -247,46 +263,49 @@ class Slayer:
         self.bot = bot
         self.lastregen = datetime.datetime.timestamp(datetime.datetime.now()) - 1200
 
+        self.mult_damage = 1 #Spe Démon
+        self.berserker_mode = 0
+
 
     def calculateBonuses(self, rBaseBonuses):
         bonuses = {
-            "armor" : rBaseBonuses["armor"],
-            "armor_per" : 0,
-            "health" : rBaseBonuses["hp"],
-            "health_per" : 0,
-            "parry_L" : 0,
-            "parry_H" : 0,
+            "armor" : rBaseBonuses["armor"] + self.Spe.bonuses["armor"],
+            "armor_per" : 0 + self.Spe.bonuses["armor_per"],
+            "health" : rBaseBonuses["hp"] + self.Spe.bonuses["health"],
+            "health_per" : 0 + self.Spe.bonuses["health_per"],
+            "parry_L" : 0 + self.Spe.bonuses["parry_L"],
+            "parry_H" : 0 + self.Spe.bonuses["parry_H"],
             "parry_S" : 0,
-            "fail_L" : rBaseBonuses["fail_L"],
-            "fail_H" : rBaseBonuses["fail_H"],
-            "damage_weapon" : 0,
-            "damage_L" : rBaseBonuses["damage_L"],
-            "damage_H" : rBaseBonuses["damage_H"],
-            "damage_S" : self.Spe.damage,
-            "final_damage_L" : 0,
-            "final_damage_H" : 0,
-            "final_damage_S" : 0,
-            "damage_per_L" : 0,
-            "damage_per_H" : 0,
-            "damage_per_S" : 0,
-            "letality_L" : 0,
-            "letality_H" : 0,
-            "letality_S" : 0,
-            "letality_per_L" : 0,
-            "letality_per_H" : 0,
-            "letality_per_S" : 0,
-            "crit_chance_L" : rBaseBonuses["crit_chance_L"],
-            "crit_chance_H" : rBaseBonuses["crit_chance_H"],
-            "crit_chance_S" : rBaseBonuses["crit_chance_S"],
-            "crit_damage_L" : rBaseBonuses["crit_damage_L"],
-            "crit_damage_H" : rBaseBonuses["crit_damage_H"],
-            "crit_damage_S" : rBaseBonuses["crit_damage_S"],
-            "special_charge_L" : rBaseBonuses["special_charge_L"],
-            "special_charge_H" : rBaseBonuses["special_charge_H"],
-            "special_charge_S" : 0,
-            "stacks_reduction" : 0,
-            "luck": rBaseBonuses["luck"],
-            "vivacity": rBaseBonuses["vivacity"]
+            "fail_L" : rBaseBonuses["fail_L"] + self.Spe.bonuses["fail_L"],
+            "fail_H" : rBaseBonuses["fail_H"] + self.Spe.bonuses["fail_H"],
+            "damage_weapon" : 0 + self.Spe.bonuses["damage_weapon"],
+            "damage_L" : rBaseBonuses["damage_L"] + self.Spe.bonuses["damage_L"],
+            "damage_H" : rBaseBonuses["damage_H"] + self.Spe.bonuses["damage_H"],
+            "damage_S" : self.Spe.damage + self.Spe.bonuses["damage_S"],
+            "final_damage_L" : 0 + self.Spe.bonuses["final_damage_L"],
+            "final_damage_H" : 0 + self.Spe.bonuses["final_damage_H"],
+            "final_damage_S" : 0 + self.Spe.bonuses["final_damage_S"],
+            "damage_per_L" : 0 + self.Spe.bonuses["damage_per_L"],
+            "damage_per_H" : 0 + self.Spe.bonuses["damage_per_H"],
+            "damage_per_S" : 0 + self.Spe.bonuses["damage_per_S"],
+            "letality_L" : 0 + self.Spe.bonuses["letality_L"],
+            "letality_H" : 0 + self.Spe.bonuses["letality_H"],
+            "letality_S" : 0 + self.Spe.bonuses["letality_S"],
+            "letality_per_L" : 0 + self.Spe.bonuses["letality_per_L"],
+            "letality_per_H" : 0 + self.Spe.bonuses["letality_per_H"],
+            "letality_per_S" : 0  + self.Spe.bonuses["letality_per_S"],
+            "crit_chance_L" : rBaseBonuses["crit_chance_L"] + self.Spe.bonuses["crit_chance_L"] + (Decimal(0.0) if self.berserker_mode > 0 else 0),
+            "crit_chance_H" : rBaseBonuses["crit_chance_H"] + self.Spe.bonuses["crit_chance_H"] + (Decimal(0.0) if self.berserker_mode > 0 else 0),
+            "crit_chance_S" : rBaseBonuses["crit_chance_S"] + self.Spe.bonuses["crit_chance_S"] + (Decimal(0.0) if self.berserker_mode > 0 else 0),
+            "crit_damage_L" : rBaseBonuses["crit_damage_L"] + self.Spe.bonuses["crit_damage_L"] + (Decimal(2.0) if self.berserker_mode > 0 else 0),
+            "crit_damage_H" : rBaseBonuses["crit_damage_H"] + self.Spe.bonuses["crit_damage_H"] + (Decimal(2.0) if self.berserker_mode > 0 else 0),
+            "crit_damage_S" : rBaseBonuses["crit_damage_S"] + self.Spe.bonuses["crit_damage_S"] + (Decimal(2.0) if self.berserker_mode > 0 else 0),
+            "special_charge_L" : rBaseBonuses["special_charge_L"] + self.Spe.bonuses["special_charge_L"],
+            "special_charge_H" : rBaseBonuses["special_charge_H"] + self.Spe.bonuses["special_charge_H"],
+            "special_charge_S" : 0 + self.Spe.bonuses["special_charge_S"],
+            "stacks_reduction" : 0 + self.Spe.bonuses["stacks_reduction"],
+            "luck": rBaseBonuses["luck"] + self.Spe.bonuses["luck"],
+            "vivacity": rBaseBonuses["vivacity"] + self.Spe.bonuses["vivacity"]
         }
 
         for item_id in self.inventory_items:
@@ -303,40 +322,40 @@ class Slayer:
         self.calculateBonuses(rBaseBonuses)
         bonuses = self.bonuses
         stats = {
-            "total_armor" : int((bonuses["armor"] + self.Spe.bonuses["armor"])*(1+(bonuses["armor_per"] + self.Spe.bonuses["armor_per"]))),
-            "total_max_health" : int((bonuses["health"] + self.Spe.bonuses["health"])*(1+(bonuses["health_per"] + self.Spe.bonuses["health_per"]))),
-            "total_fail_L" : float(min(max((bonuses["fail_L"] + self.Spe.bonuses["fail_L"]),0),1)),
-            "total_fail_H" : float(min(max((bonuses["fail_H"] + self.Spe.bonuses["fail_H"]),0),1)),
+            "total_armor" : int(bonuses["armor"]*(1+bonuses["armor_per"])),
+            "total_max_health" : int(bonuses["health"]*(1+bonuses["health_per"])),
+            "total_fail_L" : float(min(max(bonuses["fail_L"],0),1)),
+            "total_fail_H" : float(min(max(bonuses["fail_H"],0),1)),
             "total_fail_S" : 0,
-            "total_parry_L" : float((bonuses["parry_L"] + self.Spe.bonuses["parry_L"])),
-            "total_parry_H" : float((bonuses["parry_H"] + self.Spe.bonuses["parry_H"])),
+            "total_parry_L" : float(bonuses["parry_L"]),
+            "total_parry_H" : float(bonuses["parry_H"]),
             "total_parry_S" : 0,
-            "total_damage_L" : int(((bonuses["damage_L"] + self.Spe.bonuses["damage_L"]) + (bonuses["damage_weapon"] + self.Spe.bonuses["damage_weapon"]))*(1+(bonuses["damage_per_L"] + self.Spe.bonuses["damage_per_L"]))),
-            "total_damage_H" : int(((bonuses["damage_H"] + self.Spe.bonuses["damage_H"]) + (bonuses["damage_weapon"] + self.Spe.bonuses["damage_weapon"]))*(1+(bonuses["damage_per_H"] + self.Spe.bonuses["damage_per_H"]))),
-            "total_damage_S" : int(((bonuses["damage_S"] + self.Spe.bonuses["damage_S"]) + (bonuses["damage_weapon"] + self.Spe.bonuses["damage_weapon"]))*(1+(bonuses["damage_per_S"] + self.Spe.bonuses["damage_per_S"]))),
-            "total_final_damage_L" : float((bonuses["final_damage_L"] + self.Spe.bonuses["final_damage_L"])),
-            "total_final_damage_H" : float((bonuses["final_damage_H"] + self.Spe.bonuses["final_damage_H"])),
-            "total_final_damage_S" : float((bonuses["final_damage_S"] + self.Spe.bonuses["final_damage_S"])),
-            "total_crit_chance_L" : float(min((bonuses["crit_chance_L"] + self.Spe.bonuses["crit_chance_L"]),1)),
-            "total_crit_chance_H" : float(min((bonuses["crit_chance_H"] + self.Spe.bonuses["crit_chance_H"]),1)),
-            "total_crit_chance_S" : float(min((bonuses["crit_chance_S"] + self.Spe.bonuses["crit_chance_S"]),1)),
-            "total_crit_damage_L" : float((bonuses["crit_damage_L"] + self.Spe.bonuses["crit_damage_L"])),
-            "total_crit_damage_H" : float((bonuses["crit_damage_H"] + self.Spe.bonuses["crit_damage_H"])),
-            "total_crit_damage_S" : float((bonuses["crit_damage_S"] + self.Spe.bonuses["crit_damage_S"])),
-            "total_letality_L" : int((bonuses["letality_L"] + self.Spe.bonuses["letality_L"])),
-            "total_letality_H" : int((bonuses["letality_H"] + self.Spe.bonuses["letality_H"])),
-            "total_letality_S" : int((bonuses["letality_S"] + self.Spe.bonuses["letality_S"])),
-            "total_letality_per_L" : float((bonuses["letality_per_L"] + self.Spe.bonuses["letality_per_L"])),
-            "total_letality_per_H" : float((bonuses["letality_per_H"] + self.Spe.bonuses["letality_per_H"])),
-            "total_letality_per_S" : float((bonuses["letality_per_S"] + self.Spe.bonuses["letality_per_S"])),
-            "total_special_charge_L" : int((bonuses["special_charge_L"] + self.Spe.bonuses["special_charge_L"])),
-            "total_special_charge_H" : int((bonuses["special_charge_H"] + self.Spe.bonuses["special_charge_H"])),
-            "total_special_charge_S" : int((bonuses["special_charge_S"] + self.Spe.bonuses["special_charge_S"])),
-            "total_stacks_reduction" : int((bonuses["stacks_reduction"] + self.Spe.bonuses["stacks_reduction"])),
+            "total_damage_L" : int((bonuses["damage_L"] + bonuses["damage_weapon"])*(1+bonuses["damage_per_L"])),
+            "total_damage_H" : int((bonuses["damage_H"] + bonuses["damage_weapon"])*(1+bonuses["damage_per_H"])),
+            "total_damage_S" : int((bonuses["damage_S"] + bonuses["damage_weapon"])*(1+bonuses["damage_per_S"])),
+            "total_final_damage_L" : float(bonuses["final_damage_L"]),
+            "total_final_damage_H" : float(bonuses["final_damage_H"]),
+            "total_final_damage_S" : float(bonuses["final_damage_S"]),
+            "total_crit_chance_L" : float(min(bonuses["crit_chance_L"],1)),
+            "total_crit_chance_H" : float(min(bonuses["crit_chance_H"],1)),
+            "total_crit_chance_S" : float(min(bonuses["crit_chance_S"],1)),
+            "total_crit_damage_L" : float(bonuses["crit_damage_L"] + (max(bonuses["crit_chance_L"] - 1, 0) if self.Spe.id == 8 else 0)),
+            "total_crit_damage_H" : float(bonuses["crit_damage_H"] + (max(bonuses["crit_chance_H"] - 1, 0) if self.Spe.id == 8 else 0)),
+            "total_crit_damage_S" : float(bonuses["crit_damage_S"] + (max(bonuses["crit_chance_S"] - 1, 0) if self.Spe.id == 8 else 0)),
+            "total_letality_L" : int(bonuses["letality_L"]),
+            "total_letality_H" : int(bonuses["letality_H"]),
+            "total_letality_S" : int(bonuses["letality_S"]),
+            "total_letality_per_L" : float(bonuses["letality_per_L"]),
+            "total_letality_per_H" : float(bonuses["letality_per_H"]),
+            "total_letality_per_S" : float(bonuses["letality_per_S"]),
+            "total_special_charge_L" : int(bonuses["special_charge_L"]),
+            "total_special_charge_H" : int(bonuses["special_charge_H"]),
+            "total_special_charge_S" : int(bonuses["special_charge_S"]),
+            "total_stacks_reduction" : int(bonuses["stacks_reduction"]),
             "total_stacks" : int(max(self.Spe.stacks - bonuses["stacks_reduction"], 1)),
-            "total_vivacity" : int((bonuses["vivacity"] + self.Spe.bonuses["vivacity"])),
+            "total_vivacity" : int(bonuses["vivacity"]),
             "total_cooldown" : int(max(rBaseBonuses["cooldown"] - bonuses["vivacity"], 1)),
-            "total_luck" : float(min(max((bonuses["luck"] + self.Spe.bonuses["luck"]),0),1))
+            "total_luck" : float(min(max(bonuses["luck"],0),1))
         }
         if stats["total_max_health"] == self.damage_taken:
             self.dead = True
@@ -392,7 +411,14 @@ class Slayer:
                 content = f"\n> Raté !"
             else:
                 stacks_earned = self.getStacks(hit)
-                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} ‼️ [+{stacks_earned}☄️] {'[🔥x' + str(mult_damage) + ']' if mult_damage > 1 else ''} {additionnal_ability if additionnal_ability != '' else ''}"
+                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} ‼️ [+{stacks_earned}☄️] {'[🔥x' + str(mult_damage) + ']' if mult_damage > 1 else ''} {additionnal_ability if additionnal_ability != '' else ''} {'[🗡️' + str(self.berserker_mode -1) + 'restants]' if self.berserker_mode > 0 else ''}"
+                
+                #Berserker
+                if self.berserker_mode > 0:
+                    self.berserker_mode -= 1
+                    if self.berserker_mode == 0:
+                        self.calculateStats(self.bot.rBaseBonuses)
+                        
         else:
             #Calcul des dégâts sans crit
             damage = int(self.stats[f"total_damage_{hit}"] + additionnal_damage)
@@ -418,14 +444,11 @@ class Slayer:
         return int(armor)
 
     def getStacks(self, hit):
-        if self.mult_damage == 1:
-            if hit == "S":
-                stacks_earned = max(min(int(self.stats["total_stacks"]*0.5) - self.special_stacks, self.stats[f"total_special_charge_{hit}"]),0)
-            else:
-                stacks_earned = min(self.stats["total_stacks"] - self.special_stacks, self.stats[f"total_special_charge_{hit}"])
-            self.special_stacks += stacks_earned
+        if hit == "S":
+            stacks_earned = max(min(int(self.stats["total_stacks"]*0.5) - self.special_stacks, self.stats[f"total_special_charge_{hit}"]),0)
         else:
-            stacks_earned = 0
+            stacks_earned = min(self.stats["total_stacks"] - self.special_stacks, self.stats[f"total_special_charge_{hit}"])
+        self.special_stacks += stacks_earned
         return stacks_earned
 
     def useStacks(self, hit):

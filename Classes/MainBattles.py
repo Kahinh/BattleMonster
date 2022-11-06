@@ -31,6 +31,8 @@ class Battle:
     self.Monsters = {}
     self.LootTable = {}
 
+    self.EndNotPublished = True
+
     self.scaling = {
       'hp': gamemode["hp_scaling"],
       'armor': gamemode["armor_scaling"],
@@ -45,6 +47,7 @@ class Battle:
       'attacks_done': 0,
       'loots': 0,
       'kills': 0,
+      'money' : 0
     }
 
   def isDataOK(self):
@@ -101,7 +104,7 @@ class Battle:
     Slayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
     cMonster = self.Monsters[self.count]
 
-    content = "**__Rapport de Combat :__**\n"
+    content = "**__Rapport de Combat :__**"
     damage = [] 
     parries = []
 
@@ -112,19 +115,25 @@ class Battle:
       if hit == "S":
         if Slayer.cSlayer.canSpecial()[0]:
           Slayer.cSlayer.useStacks(hit)
-          for i in range(Slayer.cSlayer.getNbrHit()):
-            attack, contents = Slayer.cSlayer.dealDamage(hit, cMonster)
-            content += contents
-            damage.append(attack)
-            cMonster.getDamage(attack)
+          if Slayer.cSlayer.Spe.id != 8: #Berserker
+            for i in range(Slayer.cSlayer.getNbrHit()):
+              attack, contents = Slayer.cSlayer.dealDamage(hit, cMonster)
+              content += contents
+              damage.append(attack)
+              cMonster.getDamage(attack)
 
-          #Recap fin des attaques
-          content += cMonster.recapDamageTaken(sum(damage))
-          cMonster.storeLastHits(sum(damage), Slayer.cSlayer.Spe)
-          content += Slayer.cSlayer.recap_useStacks(hit)
-          dump = Slayer.cSlayer.recapStacks()
-          self.stats['attacks_received'] += 1
-          content += cMonster.slayer_storeAttack(Slayer.cSlayer, sum(damage), hit)
+            #Recap fin des attaques
+            content += cMonster.recapDamageTaken(sum(damage))
+            cMonster.storeLastHits(sum(damage), Slayer.cSlayer.Spe)
+            content += Slayer.cSlayer.recap_useStacks(hit)
+            dump = Slayer.cSlayer.recapStacks()
+            self.stats['attacks_received'] += 1
+            content += cMonster.slayer_storeAttack(Slayer.cSlayer, sum(damage), hit)
+          else: #Berserker activé:
+            content += "\n> Vous avez activé le mode Berserker, vous obtenez 200% Dégâts Critiques pendant 5 coups !"
+            content += Slayer.cSlayer.recap_useStacks(hit)
+            Slayer.cSlayer.berserker_mode = 5
+            Slayer.cSlayer.calculateStats(self.bot.rBaseBonuses)
         else:
           content += Slayer.cSlayer.canSpecial()[1]
         
@@ -195,7 +204,7 @@ class Battle:
                   #On calcule le loot obtenu
                   isLoot = random.choices(population=[True, False], weights=[self.Monsters[i].slayers_hits[slayer_id].luck, 1-self.Monsters[i].slayers_hits[slayer_id].luck], k=1)[0]
                   if isLoot:
-                    self.stats["loots"] += 1
+
                     if slayer_id not in loots: loots[slayer_id] = []
                     loots[slayer_id].append(lib.random.choice(self.LootTable[i]))
     #On requete les items dans la dB
@@ -203,7 +212,6 @@ class Battle:
 
   async def getrowLoot(self, loots):
 
-    channel = self.bot.get_channel(self.bot.rChannels["loots"])
     money_request = []
     loots_request = []
 
@@ -219,15 +227,17 @@ class Battle:
 
         #ON VEND AUTOMATIQUEMENT L'ITEM
         if Slayer.isinInventory(cItem.item_id):
+          self.stats["money"] += self.bot.rRarities[cItem.rarity]["price"]
           money_request.append((self.bot.rRarities[cItem.rarity]["price"], slayer_id))
           Slayer.addMoney(self.bot.rRarities[cItem.rarity]["price"])
           self.loots[slayer_id]["money"] += self.bot.rRarities[cItem.rarity]["price"]
 
         #ON AJOUTE DANS LA DB INVENTAIRE
         else:
+          self.stats["loots"] += 1
           loots_request.append((slayer_id, cItem.item_id, 1, False))
           Slayer.addtoInventory(cItem)
-          #await self.bot.ActiveList.update_interface(slayer_id, "inventaire")
+          await self.bot.ActiveList.update_interface(slayer_id, "inventaire")
           self.loots[slayer_id]["items"].append(cItem)
 
     await self.bot.dB.push_loots_money(loots_request, money_request)
@@ -305,7 +315,7 @@ class Monster:
       if self.slayers_hits[cSlayer.slayer_id].canAttack():
         return True, ""
       else:
-        return False, f"> Pas si vite ! Prends ton temps ! Prochaine attaque disponible dans **{int(self.slayers_hits[cSlayer.slayer_id].timestamp_next_hit - lib.datetime.datetime.timestamp(lib.datetime.datetime.now()))}s**"
+        return False, f"\n> Pas si vite ! Prends ton temps ! Prochaine attaque disponible dans **{int(self.slayers_hits[cSlayer.slayer_id].timestamp_next_hit - lib.datetime.datetime.timestamp(lib.datetime.datetime.now()))}s**"
     else:
       return True, ""
 

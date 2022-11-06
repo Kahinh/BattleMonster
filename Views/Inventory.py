@@ -15,6 +15,7 @@ class Rarity_Dropdown(lib.discord.ui.Select):
             self.view.rarity = self.values[0]
             self.view.items_list_filtered = lib.Toolbox.filter_items_list(self.view.Slayer.cSlayer.inventory_items, self.view.slot, self.view.element, self.view.rarity)
             self.view.index = 0
+            self.itemID_compare = 0
 
             for option in self.options:
                 if option.value == self.values[0]:
@@ -24,7 +25,7 @@ class Rarity_Dropdown(lib.discord.ui.Select):
             
             await self.view.update_view(interaction) 
         else:
-            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class Element_Dropdown(lib.discord.ui.Select):
     def __init__(self, rElements):
@@ -36,18 +37,22 @@ class Element_Dropdown(lib.discord.ui.Select):
         super().__init__(placeholder="Filtrer l'élément...", min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        if self.values[0] == "None": self.values[0] = None
-        self.view.element = self.values[0]
-        self.view.items_list_filtered = lib.Toolbox.filter_items_list(self.view.Slayer.cSlayer.inventory_items, self.view.slot, self.view.element, self.view.rarity)
-        self.view.index = 0
+        if not self.view.obsolete:
+            if self.values[0] == "None": self.values[0] = None
+            self.view.element = self.values[0]
+            self.view.items_list_filtered = lib.Toolbox.filter_items_list(self.view.Slayer.cSlayer.inventory_items, self.view.slot, self.view.element, self.view.rarity)
+            self.view.index = 0
+            self.itemID_compare = 0
 
-        for option in self.options:
-            if option.value == self.values[0]:
-                option.default = True
-            else:
-                option.default = False
+            for option in self.options:
+                if option.value == self.values[0]:
+                    option.default = True
+                else:
+                    option.default = False
 
-        await self.view.update_view(interaction) 
+            await self.view.update_view(interaction) 
+        else:
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class Slot_Dropdown(lib.discord.ui.Select):
     def __init__(self, rSlots):
@@ -65,6 +70,7 @@ class Slot_Dropdown(lib.discord.ui.Select):
             self.view.slot = self.values[0]
             self.view.items_list_filtered = lib.Toolbox.filter_items_list(self.view.Slayer.cSlayer.inventory_items, self.view.slot, self.view.element, self.view.rarity)
             self.view.index = 0
+            self.itemID_compare = 0
 
             for option in self.options:
                 if option.value == self.values[0]:
@@ -74,7 +80,7 @@ class Slot_Dropdown(lib.discord.ui.Select):
 
             await self.view.update_view(interaction) 
         else:
-            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class Previous_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -83,10 +89,11 @@ class Previous_Button(lib.discord.ui.Button):
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
             self.view.index -= 1
+            self.itemID_compare = 0
             
             await self.view.update_view(interaction)        
         else:
-            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class Next_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -95,10 +102,11 @@ class Next_Button(lib.discord.ui.Button):
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
             self.view.index += 1 
+            self.itemID_compare = 0
             
             await self.view.update_view(interaction)   
         else:
-            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class Equip_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -107,9 +115,11 @@ class Equip_Button(lib.discord.ui.Button):
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
             isEquipped, List = await self.view.Slayer.equip_item(self.view.items_list_filtered[self.view.index])
+            self.itemID_compare = 0
 
             if isEquipped:
                 await self.view.update_view(interaction) 
+                await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.slayer_id, "LootReview")
                 await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
             else:
                 if len(List) == 0:
@@ -119,7 +129,7 @@ class Equip_Button(lib.discord.ui.Button):
                     await self.view.bot.ActiveList.add_interface(interaction.user.id, "mult_equip", viewMult)
                     await interaction.response.send_message(content="Tous les emplacements sont déjà utilisés, quel objet souhaitez-vous remplacer ?", view=viewMult, ephemeral=True)
         else:
-            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class Sell_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -129,8 +139,10 @@ class Sell_Button(lib.discord.ui.Button):
         if not self.view.obsolete:
             Sold = await self.view.Slayer.sell_item(self.view.items_list_filtered[self.view.index])
             self.view.items_list_filtered = lib.Toolbox.filter_items_list(self.view.Slayer.cSlayer.inventory_items, self.view.slot, self.view.element, self.view.rarity)
-            self.index = 0
+            self.view.index = 0
+            self.itemID_compare = 0
 
+            await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.slayer_id, "LootReview")
             await self.view.update_view(interaction)   
 
             if Sold:
@@ -138,11 +150,25 @@ class Sell_Button(lib.discord.ui.Button):
             else:
                 await interaction.followup.send("Une erreur s'est produite !", ephemeral=True)
         else:
-            await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+
+class Compare_Dropdown(lib.discord.ui.Select):
+    def __init__(self, itemsequipped_list):
+        options = []
+        for cItem in itemsequipped_list:
+            options.append(lib.discord.SelectOption(label=cItem.name, value=cItem.item_id))
+
+        super().__init__(placeholder="Objet à comparer...", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: lib.discord.Interaction):
+        if not self.view.obsolete:
+            await self.view.update_view(interaction, self.values[0]) 
+        else:
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class InventoryView(lib.discord.ui.View):
-    def __init__(self, bot, Slayer, interaction):
-        super().__init__(timeout=120)
+    def __init__(self, bot, Slayer, interaction, itemsequipped_list, itemID_compare):
+        super().__init__(timeout=60)
         self.bot = bot
         self.Slayer = Slayer
         self.interaction = interaction
@@ -153,6 +179,8 @@ class InventoryView(lib.discord.ui.View):
         self.rarity = None
 
         self.items_list_filtered = lib.Toolbox.filter_items_list(self.Slayer.cSlayer.inventory_items, self.slot, self.element, self.rarity)
+        self.itemsequipped_list = itemsequipped_list
+        self.itemID_compare = itemID_compare
         self.index = 0
 
 
@@ -166,17 +194,49 @@ class InventoryView(lib.discord.ui.View):
 
         lib.Toolbox.disable_enable_InventoryView(self.children, self.items_list_filtered, self.index)
 
-    async def update_view(self, interaction=None):
-        if interaction is None: self.items_list_filtered = lib.Toolbox.filter_items_list(self.Slayer.cSlayer.inventory_items, self.slot, self.element, self.rarity)
-        embed = lib.Embed.create_embed_item(self.bot, None if self.items_list_filtered == [] else self.items_list_filtered[self.index], self.Slayer)
-        lib.Toolbox.disable_enable_InventoryView(self.children, self.items_list_filtered, self.index)
-        view = self  
+    def get_itemsequipped_list(self):
+        #On get si on a des items équipés à cet endroit là
+        if self.items_list_filtered != []:
+            self.itemsequipped_list = self.Slayer.getListEquippedOnSlot(self.items_list_filtered[self.index].slot)
 
-        if interaction is None:
-            message = await self.interaction.original_response()
-            await message.edit(embed=embed, view=view)
-        else:
-            await interaction.response.edit_message(embed=embed, view=view) 
+    async def items_compare_view(self):
+        for item in self.children:
+            if hasattr(item, "placeholder"):
+                if item.placeholder=="Objet à comparer...":
+                    self.remove_item(item)
+        if len(self.itemsequipped_list) > 1:
+            self.add_item(Compare_Dropdown(self.itemsequipped_list))
+            
+
+    async def update_view(self, interaction=None, itemID_Compare=0, itemID_Updated=None):
+        if itemID_Updated is None or itemID_Updated in self.items_list_filtered[self.index].item_id:
+            if interaction is None: self.items_list_filtered = lib.Toolbox.filter_items_list(self.Slayer.cSlayer.inventory_items, self.slot, self.element, self.rarity)
+            
+            self.get_itemsequipped_list()
+            
+            await self.items_compare_view()
+            if len(self.itemsequipped_list) > 1:
+                if itemID_Compare == 0:
+                    cItem = self.itemsequipped_list[0]
+                else:
+                    for item in self.itemsequipped_list:
+                        if int(item.item_id) == int(itemID_Compare):
+                            cItem = item
+                            break
+            elif len(self.itemsequipped_list) == 1:
+                cItem = self.itemsequipped_list[0]
+            else:
+                cItem = None
+
+            embed = lib.Embed.create_embed_item(self.bot, None if self.items_list_filtered == [] else self.items_list_filtered[self.index], self.Slayer, cItem)
+            lib.Toolbox.disable_enable_InventoryView(self.children, self.items_list_filtered, self.index)
+            view = self  
+
+            if interaction is None:
+                message = await self.interaction.original_response()
+                await message.edit(embed=embed, view=view)
+            else:
+                await interaction.response.edit_message(embed=embed, view=view) 
 
     async def close_view(self):
         self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.slayer_id, "inventaire")

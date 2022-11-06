@@ -97,3 +97,17 @@ def get_content_looters(Battle):
         if Battle.loots[slayer_id]["items"] != []:
             content += f"<@{slayer_id}> "
     return content
+
+def disable_enable_LootReviewView(children, Slayer, item_id):
+    for item in children:
+        if hasattr(item, "label"):
+            if item.label=="Équiper":
+                if Slayer.isEquipped(item_id):
+                    item.disabled = True
+                else:
+                    item.disabled = False
+            if item.label=="Vendre":
+                if Slayer.isinInventory(item_id) == False:
+                    item.disabled = True
+                else:
+                    item.disabled = False

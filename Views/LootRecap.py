@@ -11,6 +11,7 @@ class Details_Button(lib.discord.ui.Button):
 
             if self.view.Battle.loots[interaction.user.id]["items"] != []:
                 view=lib.LootReviewView(self.view.bot, self.view.Battle.loots[interaction.user.id], Slayer, interaction)
+                await self.view.bot.ActiveList.add_interface(interaction.user.id, "LootReview", view)
                 await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
             else:    
                 await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -26,8 +27,11 @@ class LootRecapView(lib.discord.ui.View):
         # Adds the dropdown to our view object.
         self.add_item(Details_Button())
 
-    async def end_view(self):
+    async def end_view(self, poweroff=False):
         await self.message.edit(view=None)
+        if not poweroff:
+            #On remove le combat de la liste
+            self.bot.ActiveList.remove_recap(self.message.id)
         self.stop()
 
     async def on_timeout(self) -> None:

@@ -45,10 +45,10 @@ class dB:
   
   async def push_slayer_data(self, cSlayer):
     async with self.bot.db_pool.acquire() as conn:
-      await conn.execute('INSERT INTO "Slayers" (slayer_id, xp, money, damage_taken, special_stacks, faction, specialization, creation_date, name, dead)' \
-            f" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)" \
+      await conn.execute('INSERT INTO "Slayers" (slayer_id, xp, money, damage_taken, special_stacks, faction, specialization, creation_date, name, dead, gearscore)' \
+            f" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 0)" \
             ' ON CONFLICT (slayer_id) DO ' \
-            f"UPDATE SET xp=$2, money=$3, damage_taken=$4, special_stacks=$5, faction=$6, specialization=$7, dead=$10", cSlayer.slayer_id, cSlayer.xp, cSlayer.money, cSlayer.damage_taken, cSlayer.special_stacks, cSlayer.faction, cSlayer.specialization, cSlayer.creation_date, cSlayer.name, cSlayer.dead)
+            f"UPDATE SET xp=$2, money=$3, damage_taken=$4, special_stacks=$5, faction=$6, specialization=$7, dead=$10, gearscore=$11", cSlayer.slayer_id, cSlayer.xp, cSlayer.money, cSlayer.damage_taken, cSlayer.special_stacks, cSlayer.faction, cSlayer.specialization, cSlayer.creation_date, cSlayer.name, cSlayer.dead, cSlayer.gearscore)
   
   async def get_itemrow(self, item_name):
     async with self.bot.db_pool.acquire() as conn:

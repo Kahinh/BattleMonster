@@ -8,12 +8,22 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
     self.bot = bot
     super().__init__()
   
+  @lib.app_commands.choices(
+  data=[
+    lib.Choice(name='Gamemodes & Monsters Data', value="Monsters"),
+    lib.Choice(name='Slayers Data', value="Slayers")
+  ])
   @lib.app_commands.command(name="updatebot")
-  async def updatebot(self, interaction: lib.discord.Interaction) -> None:
+  async def updatebot(self, interaction: lib.discord.Interaction, data: lib.Choice[str]) -> None:
     """ Admin Only - Commande afin de lancer un update du Bot. """
     await interaction.response.defer(ephemeral=True)
-    await self.bot.update_bot()
-    await interaction.followup.send(f"Update réalisée !", ephemeral=True)
+    if data.value == "Monsters":
+      await self.bot.update_bot()
+    else:
+      self.bot.ActiveList.obsolete_interfaces()
+      self.bot.ActiveList.reset_slayers_activelist()
+      await self.bot.update_bot()
+    await interaction.followup.send(f"Update {data.name} réalisée !", ephemeral=True)
 
   @lib.app_commands.choices(
     power=[
@@ -31,7 +41,9 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
     if power.value == "OFF":
       self.bot.power = False
       if reset.value == "RESET":
+        self.bot.ActiveList.obsolete_interfaces()
         await self.bot.ActiveList.clear_all_battles()
+        await self.bot.ActiveList.clear_all_recap()
     else:
       self.bot.power = True
     await interaction.followup.send(content=f"BOT : {power.value} / RESET BATTLES : {reset.value}", ephemeral=True)
@@ -62,6 +74,7 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
         Slayer.cSlayer.dead = False
         Slayer.cSlayer.damage_taken = 0
         await self.bot.dB.push_slayer_data(Slayer.cSlayer)
+        await self.bot.ActiveList.update_interface(Slayer.cSlayer.slayer_id, "profil")
         await interaction.followup.send(content=f"{Slayer.cSlayer.name} a été réanimé !", ephemeral=True)
         channel = self.bot.get_channel(self.bot.rChannels["logs"])
         await channel.send(content=f"<@{Slayer.cSlayer.slayer_id}> a été réanimé par <@{interaction.user.id}>!")
@@ -92,6 +105,7 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
             cItem = lib.Item(item_row)
             Slayer.addtoInventory(cItem)
             await self.bot.dB.add_item(Slayer.cSlayer, cItem)
+            await self.bot.ActiveList.update_interface(Slayer.cSlayer.slayer_id, "inventaire")
             await interaction.followup.send(content=f"{item_name} a été donné à {user}", ephemeral=True)
             channel = self.bot.get_channel(self.bot.rChannels["logs"])
             await channel.send(content=f"<@{Slayer.cSlayer.slayer_id}> a obtenu {item_name} de la part de <@{interaction.user.id}>!")
