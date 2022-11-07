@@ -9,7 +9,7 @@ class DamageDone:
     luck = 0
     ):
     self.total_damage = total_damage
-    self.mult_spe = 1
+    self.mult_spe = 0
     self.timestamp_next_hit = cooldown + datetime.datetime.timestamp(datetime.datetime.now())
     self.eligible = eligible
     self.luck = luck

@@ -167,6 +167,20 @@ def create_embed_profil(Slayer, avatar):
     embed.set_footer(text=f'Chasse depuis le {Slayer.cSlayer.creation_date}')
     return embed
 
+def create_embed_achievement(Slayer, avatar):
+
+    description = \
+    f"🎖️ Monstres tués : **{Slayer.cSlayer.achievements['monsters_killed']}**" \
+    f"\n🏆 Meilleur Attaque : **{Slayer.cSlayer.achievements['biggest_hit']}**"
+
+    embed=lib.discord.Embed(title=f"Prouesses de {Slayer.cSlayer.name}",
+    description=description,
+    color=0x1abc9c)   
+
+    embed.set_thumbnail(url=avatar)
+    embed.set_footer(text=f'Chasse depuis le {Slayer.cSlayer.creation_date}')
+    return embed
+
 def create_embed_equipment(bot, Slayer, avatar):
     description = f"Score d'équipement : **{int(Slayer.cSlayer.gearscore)}**\n"
     for slot in Slayer.cSlayer.slots_count:

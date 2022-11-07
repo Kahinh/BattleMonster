@@ -25,11 +25,11 @@ class Equipment_Button(lib.discord.ui.Button):
 
 class Achievements_Button(lib.discord.ui.Button):
     def __init__(self):
-        super().__init__(label="Succès", style=lib.discord.ButtonStyle.red)
+        super().__init__(label="Prouesses", style=lib.discord.ButtonStyle.red)
 
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
-            self.view.tab = "Succès"
+            self.view.tab = "Prouesses"
             await self.view.update_view(interaction)
         else:
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
@@ -47,7 +47,7 @@ class SlayerView(lib.discord.ui.View):
 
         self.add_item(Profil_Button())
         self.add_item(Equipment_Button())
-        #self.add_item(Achievements_Button())
+        self.add_item(Achievements_Button())
 
         for item in self.children:
             if item.label=="Profil":
@@ -56,8 +56,8 @@ class SlayerView(lib.discord.ui.View):
     async def update_view(self, interaction=None):
         if self.tab == "Équipement":
             embed = lib.Embed.create_embed_equipment(self.bot, self.Slayer, self.avatar)
-        elif self.tab == "":
-            pass
+        elif self.tab == "Prouesses":
+            embed = lib.Embed.create_embed_achievement(self.Slayer, self.avatar)
         else: #Profil
             embed = lib.Embed.create_embed_profil(self.Slayer, self.avatar)
 

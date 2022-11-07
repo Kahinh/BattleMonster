@@ -34,6 +34,17 @@ class dB:
     async with self.bot.db_pool.acquire() as conn:
       loottable = await conn.fetch('SELECT * FROM "Items" WHERE monster = $1 AND slot = ANY($2::text[])', monster, lootslot)
     return loottable
+  
+  async def push_behemoths_killed_achievement(self, data_behemoths_killed_achievement):
+    async with self.bot.db_pool.acquire() as conn:
+      async with conn.transaction():
+        if data_behemoths_killed_achievement != []:    
+          await conn.executemany('UPDATE "slayers_achievements" SET monsters_killed = monsters_killed + $1 WHERE id = $2', data_behemoths_killed_achievement)
+
+  async def push_biggest_hit_achievement(self, cSlayer):
+    async with self.bot.db_pool.acquire() as conn:
+      async with conn.transaction():   
+        await conn.execute('UPDATE "slayers_achievements" SET biggest_hit = + $1 WHERE id = $2', cSlayer.achievements["biggest_hit"], cSlayer.slayer_id)
 
   async def push_loots_money(self, data_loots, data_money):
     async with self.bot.db_pool.acquire() as conn:
@@ -49,7 +60,7 @@ class dB:
             f" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 0)" \
             ' ON CONFLICT (slayer_id) DO ' \
             f"UPDATE SET xp=$2, money=$3, damage_taken=$4, special_stacks=$5, faction=$6, specialization=$7, dead=$10, gearscore=$11", cSlayer.slayer_id, cSlayer.xp, cSlayer.money, cSlayer.damage_taken, cSlayer.special_stacks, cSlayer.faction, cSlayer.specialization, cSlayer.creation_date, cSlayer.name, cSlayer.dead, cSlayer.gearscore)
-  
+
   async def get_itemrow(self, item_name):
     async with self.bot.db_pool.acquire() as conn:
       item_row = await conn.fetchrow('SELECT * FROM "Items" WHERE name = $1', item_name)

@@ -21,7 +21,7 @@ class Equip_Button(lib.discord.ui.Button):
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
             self.view.Slayer.cSlayer.special_stacks = 0
-            self.view.Slayer.cSlayer.mult_damage = 1
+            self.view.Slayer.cSlayer.mult_damage = 0
             self.view.Slayer.cSlayer.berserker_mode = 0
             self.view.Slayer.cSlayer.specialization = int(self.view.current_spe_id)
             self.view.Slayer.cSlayer.Spe = lib.Toolbox.get_spe_row_by_id(self.view.bot.rSpe, self.view.current_spe_id)

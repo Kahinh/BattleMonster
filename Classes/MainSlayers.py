@@ -67,7 +67,11 @@ class MSlayer:
                 Spe = Spe(self.rSpe),
                 inventory_items={},
                 inventory_specializations=self.rSlayerSpeInventory,
-                bot = self.bot
+                bot = self.bot,
+
+                #Achievements
+                monsters_killed = self.rSlayer["monsters_killed"],
+                biggest_hit = self.rSlayer["biggest_hit"]
             )
 
         for row in self.rSlayerInventory:
@@ -161,7 +165,11 @@ class MSlayer:
         
         if gotError:
             self.cSlayer.slots = self.getSlots()
-                
+    
+    async def update_biggest_hit(self, damage):
+        if damage > self.cSlayer.achievements["biggest_hit"]:
+            self.cSlayer.achievements["biggest_hit"] = damage
+            await self.bot.dB.push_biggest_hit_achievement(self.cSlayer)
 
     def isinInventory(self, item_id):
         if item_id in self.cSlayer.inventory_items:
@@ -222,7 +230,6 @@ class MSlayer:
                 items_list.append(self.cSlayer.inventory_items[item_id])
         return items_list
 
-
 class Slayer:
     def __init__(
         self,
@@ -242,7 +249,12 @@ class Slayer:
         inventory_specializations=[1],
         slots={},
         stats = {},
-        slots_count = {}
+        slots_count = {},
+
+        #Achievements
+        monsters_killed = 0,
+        biggest_hit = 0
+
         ):
         self.slayer_id = slayer_id
         self.name = name
@@ -263,9 +275,14 @@ class Slayer:
         self.bot = bot
         self.lastregen = datetime.datetime.timestamp(datetime.datetime.now()) - 1200
 
-        self.mult_damage = 1 #Spe Démon
+        self.mult_damage = 0 #Spe Démon
         self.berserker_mode = 0
 
+        #Achievements
+        self.achievements = {
+            'monsters_killed' : monsters_killed if monsters_killed is not None else 0,
+            'biggest_hit' : biggest_hit if biggest_hit is not None else 0
+        }
 
     def calculateBonuses(self, rBaseBonuses):
         bonuses = {
@@ -348,9 +365,9 @@ class Slayer:
             "total_letality_per_L" : float(bonuses["letality_per_L"]),
             "total_letality_per_H" : float(bonuses["letality_per_H"]),
             "total_letality_per_S" : float(bonuses["letality_per_S"]),
-            "total_special_charge_L" : int(bonuses["special_charge_L"]),
-            "total_special_charge_H" : int(bonuses["special_charge_H"]),
-            "total_special_charge_S" : int(bonuses["special_charge_S"]),
+            "total_special_charge_L" : int(max(bonuses["special_charge_L"], 0)),
+            "total_special_charge_H" : int(max(bonuses["special_charge_H"], 0)),
+            "total_special_charge_S" : int(max(bonuses["special_charge_S"], 0)),
             "total_stacks_reduction" : int(bonuses["stacks_reduction"]),
             "total_stacks" : int(max(self.Spe.stacks - bonuses["stacks_reduction"], 1)),
             "total_vivacity" : int(bonuses["vivacity"]),
@@ -390,13 +407,13 @@ class Slayer:
             mult_damage = self.mult_damage
         else:
             additionnal_damage, additionnal_ability = 0, ""
-            mult_damage = 1
+            mult_damage = 0
         if self.isCrit(hit):
 
             #Calcul des dégâts avec crit
-            damage = int(self.stats[f"total_damage_{hit}"] + additionnal_damage)
+            damage = int(self.stats[f"total_damage_{hit}"] + additionnal_damage + mult_damage)
             
-            damage = int(damage*(1 + (self.stats[f"total_crit_damage_{hit}"])) * (1 + self.stats[f"total_final_damage_{hit}"]) * mult_damage)
+            damage = int(damage*(1 + (self.stats[f"total_crit_damage_{hit}"])) * (1 + self.stats[f"total_final_damage_{hit}"]))
             #ProtectCrit
             damage = int(max(damage - protect_crit, 0))
             #Armor
@@ -411,7 +428,7 @@ class Slayer:
                 content = f"\n> Raté !"
             else:
                 stacks_earned = self.getStacks(hit)
-                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} ‼️ [+{stacks_earned}☄️] {'[🔥x' + str(mult_damage) + ']' if mult_damage > 1 else ''} {additionnal_ability if additionnal_ability != '' else ''} {'[🗡️' + str(self.berserker_mode -1) + 'restants]' if self.berserker_mode > 0 else ''}"
+                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} ‼️ [+{stacks_earned}☄️] {'[🔥+' + str(mult_damage) + ']' if mult_damage > 0 else ''} {additionnal_ability if additionnal_ability != '' else ''} {'[🗡️' + str(self.berserker_mode -1) + 'restants]' if self.berserker_mode > 0 else ''}"
                 
                 #Berserker
                 if self.berserker_mode > 0:
@@ -421,9 +438,9 @@ class Slayer:
                         
         else:
             #Calcul des dégâts sans crit
-            damage = int(self.stats[f"total_damage_{hit}"] + additionnal_damage)
+            damage = int(self.stats[f"total_damage_{hit}"] + additionnal_damage + mult_damage)
                 
-            damage = int(damage * (1 + self.stats[f"total_final_damage_{hit}"]) * mult_damage)
+            damage = int(damage * (1 + self.stats[f"total_final_damage_{hit}"]))
             #Armor
             if armor >= 0:
                 damage = int(max(damage * (1000/(1000+armor)), 1))
@@ -436,7 +453,7 @@ class Slayer:
                 content = f"\n> Raté !"
             else:
                 stacks_earned = self.getStacks(hit)
-                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} [+{stacks_earned}☄️] {'[🔥x' + str(mult_damage) + ']' if mult_damage > 1 else ''} {additionnal_ability if additionnal_ability != '' else ''}"
+                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} [+{stacks_earned}☄️] {'[🔥+' + str(mult_damage) + ']' if mult_damage > 0 else ''} {additionnal_ability if additionnal_ability != '' else ''}"
         return damage, content
     
     def reduceArmor(self, hit, armor):
@@ -455,9 +472,9 @@ class Slayer:
         if hit == "S":
             if self.Spe.id == 7:
                 if random.choices((True, False), (0.5, 0.5), k=1)[0]:
-                    self.mult_damage *= 2
+                    self.mult_damage += 500
                 else:
-                    self.mult_damage = 1
+                    self.mult_damage = 0
                     self.special_stacks = self.special_stacks - self.stats['total_stacks']
             else:
                 self.special_stacks = self.special_stacks - self.stats['total_stacks']

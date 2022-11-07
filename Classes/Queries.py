@@ -18,7 +18,7 @@ class qGameModesSpawnRate:
 
 class qSlayers:
     COUNT = 'SELECT COUNT(*) FROM "Slayers"'
-    SELECT_SLAYER = 'SELECT * FROM "Slayers" WHERE slayer_id = $1'
+    SELECT_SLAYER = 'SELECT * FROM "Slayers" LEFT JOIN "slayers_achievements" ON "slayers_achievements".id = "Slayers".slayer_id WHERE slayer_id = $1'
     SELECT_SLAYER_ITEMS = 'SELECT * FROM "Items" LEFT JOIN "Slayers_Slots" ON "Items".id = "Slayers_Slots".item_id WHERE "Slayers_Slots".slayer_id = $1'
     SELECT_SLAYER_ROW_INVENTORY = 'SELECT "Items".*, "Slayers_Inventory_Items".level, "Slayers_Inventory_Items".equipped FROM "Items" LEFT JOIN "Slayers_Inventory_Items" ON "Items".id = "Slayers_Inventory_Items".item_id WHERE "Slayers_Inventory_Items".slayer_id = $1'
     SELECT_SLAYER_INVENTORY = 'SELECT item_id FROM "Slayers_Inventory_Items" WHERE slayer_id = $1'

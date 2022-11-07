@@ -129,6 +129,10 @@ class Battle:
             dump = Slayer.cSlayer.recapStacks()
             self.stats['attacks_received'] += 1
             content += cMonster.slayer_storeAttack(Slayer.cSlayer, sum(damage), hit)
+
+            #Achievement Biggest_Hit
+            await Slayer.update_biggest_hit(sum(damage))
+
           else: #Berserker activé:
             content += "\n> Vous avez activé le mode Berserker, vous obtenez 200% Dégâts Critiques pendant 5 coups !"
             content += Slayer.cSlayer.recap_useStacks(hit)
@@ -164,6 +168,10 @@ class Battle:
             cMonster.storeLastHits(sum(damage), Slayer.cSlayer.Spe)
             content += Slayer.cSlayer.recapStacks()
             self.stats['attacks_received'] += 1
+            
+            #Achievement Biggest_Hit
+            await Slayer.update_biggest_hit(sum(damage))
+
           if sum(parries) > 0:
             isDead, message = Slayer.cSlayer.recapHealth(parries)
             content += message
@@ -192,6 +200,7 @@ class Battle:
 
   async def calculateLoot(self):
     loots = {}
+    behemoths_killed_achievement_request = []
     #On fait le tour des Monstres.
     for i in self.Monsters:
       if self.Monsters[i].base_hp == 0 and len(self.LootTable[i]) > 0:
@@ -199,6 +208,12 @@ class Battle:
         for slayer_id in self.Monsters[i].slayers_hits:
             #On ne considère que les éligibles
             if self.Monsters[i].slayers_hits[slayer_id].eligible:
+
+                #Achievement Behemoths Killed
+                Slayer = await self.bot.ActiveList.get_Slayer(slayer_id, "")
+                Slayer.cSlayer.achievements["monsters_killed"] += 1
+                behemoths_killed_achievement_request.append((1, slayer_id))
+
                 #On prend en compte le roll_dice
                 for j in range(self.Monsters[i].roll_dices):
                   #On calcule le loot obtenu
@@ -207,6 +222,9 @@ class Battle:
 
                     if slayer_id not in loots: loots[slayer_id] = []
                     loots[slayer_id].append(lib.random.choice(self.LootTable[i]))
+
+    #Achievement Behemoths Killed
+    await self.bot.dB.push_behemoths_killed_achievement(behemoths_killed_achievement_request)
     #On requete les items dans la dB
     await self.getrowLoot(loots)
 
