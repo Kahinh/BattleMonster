@@ -61,6 +61,10 @@ class dB:
             ' ON CONFLICT (slayer_id) DO ' \
             f"UPDATE SET xp=$2, money=$3, damage_taken=$4, special_stacks=$5, faction=$6, specialization=$7, dead=$10, gearscore=$11", cSlayer.slayer_id, cSlayer.xp, cSlayer.money, cSlayer.damage_taken, cSlayer.special_stacks, cSlayer.faction, cSlayer.specialization, cSlayer.creation_date, cSlayer.name, cSlayer.dead, cSlayer.gearscore)
 
+  async def push_achievement_data(self, cSlayer):
+    async with self.bot.db_pool.acquire() as conn:
+      await conn.execute('INSERT INTO "slayers_achievements" (id) VALUES ($1)', cSlayer.slayer_id)
+
   async def get_itemrow(self, item_name):
     async with self.bot.db_pool.acquire() as conn:
       item_row = await conn.fetchrow('SELECT * FROM "Items" WHERE name = $1', item_name)

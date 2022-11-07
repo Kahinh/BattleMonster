@@ -51,6 +51,7 @@ class MSlayer:
             self.cSlayer = Slayer(slayer_id=self.user_id, name=self.user_name, bot=self.bot)
             self.cSlayer.Spe = Spe(self.rSpe)
             await self.bot.dB.push_slayer_data(self.cSlayer)
+            await self.bot.dB.push_achievement_data(self.cSlayer)
             await self.bot.dB.push_spe_list(self.cSlayer)
         else:
             self.cSlayer = Slayer(
@@ -274,6 +275,7 @@ class Slayer:
         self.slots_count = slots_count
         self.bot = bot
         self.lastregen = datetime.datetime.timestamp(datetime.datetime.now()) - 1200
+        self.gearscore = 0
 
         self.mult_damage = 0 #Spe Démon
         self.berserker_mode = 0
