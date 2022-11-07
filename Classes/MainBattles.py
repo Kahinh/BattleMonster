@@ -134,7 +134,7 @@ class Battle:
             await Slayer.update_biggest_hit(sum(damage))
 
           else: #Berserker activé:
-            content += "\n> Vous avez activé le mode Berserker, vous obtenez 200% Dégâts Critiques pendant 5 coups !"
+            content += "\n> Vous avez activé le mode Berserker, vous obtenez 100% Chance Critique et 200% Dégâts Critiques pendant 5 coups !"
             content += Slayer.cSlayer.recap_useStacks(hit)
             Slayer.cSlayer.berserker_mode = 5
             Slayer.cSlayer.calculateStats(self.bot.rBaseBonuses)
