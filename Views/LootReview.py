@@ -15,7 +15,7 @@ class Loot_Dropdown(lib.discord.ui.Select):
             self.view.item_displayed = self.values[0]
             await self.view.update_view(interaction=interaction)
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Equip_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -42,7 +42,7 @@ class Equip_Button(lib.discord.ui.Button):
                     await self.view.bot.ActiveList.add_interface(interaction.user.id, "mult_equip", viewMult)
                     await interaction.response.send_message(content="Tous les emplacements sont déjà utilisés, quel objet souhaitez-vous remplacer ?", view=viewMult, ephemeral=True)
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Sell_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -61,7 +61,7 @@ class Sell_Button(lib.discord.ui.Button):
             else:
                 await interaction.followup.send("Une erreur s'est produite !", ephemeral=True)
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class LootReviewView(lib.discord.ui.View):
     def __init__(self, bot, recap_loot, Slayer, interaction):

@@ -12,7 +12,7 @@ class Spe_Dropdown(lib.discord.ui.Select):
             self.view.current_spe_id = int(self.values[0])
             await self.view.update_view(interaction)
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Equip_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -31,7 +31,7 @@ class Equip_Button(lib.discord.ui.Button):
             await self.view.update_view(interaction)
             await interaction.followup.send(content="La spécialité a bien été équipée !", ephemeral=True) 
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Buy_Button(lib.discord.ui.Button):
     def __init__(self, price):
@@ -52,7 +52,7 @@ class Buy_Button(lib.discord.ui.Button):
             else:
                 await interaction.response.send_message(content="Malheureusement, tu ne possèdes pas suffisament de 🪙 !", ephemeral=True)
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class SpeView(lib.discord.ui.View):
     def __init__(self, bot, Slayer, interaction):

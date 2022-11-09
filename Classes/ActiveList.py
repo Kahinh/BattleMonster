@@ -73,8 +73,9 @@ class ActiveList:
     self.active_slayers[slayer_id] = ActiveSlayer(Slayer)
 
   def remove_interface(self, slayer_id, interface):
-    if interface in self.active_slayers[slayer_id].interfaces:
-      self.active_slayers[slayer_id].interfaces.pop(interface)
+    if slayer_id in self.active_slayers:
+      if interface in self.active_slayers[slayer_id].interfaces:
+        self.active_slayers[slayer_id].interfaces.pop(interface)
 
   def obsolete_interfaces(self):
     for slayer_id in self.active_slayers:
@@ -89,7 +90,8 @@ class ActiveList:
     self.active_battles[message_id] = Battle
   
   def remove_battle(self, message_id):
-    self.active_battles.pop(message_id)
+    if message_id in self.active_battles:
+      self.active_battles.pop(message_id)
 
   async def clear_all_battles(self):
     for message_id in self.active_battles:
@@ -102,7 +104,8 @@ class ActiveList:
     self.active_lootrecap[message_id] = Recap
   
   def remove_recap(self, message_id):
-    self.active_lootrecap.pop(message_id)
+    if message_id in self.active_lootrecap:
+      self.active_lootrecap.pop(message_id)
 
   async def clear_all_recap(self):
     for message_id in self.active_lootrecap:

@@ -430,7 +430,7 @@ class Slayer:
                 content = f"\n> Raté !"
             else:
                 stacks_earned = self.getStacks(hit)
-                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} ‼️ [+{stacks_earned}☄️] {'[🔥+' + str(mult_damage) + ']' if mult_damage > 0 else ''} {additionnal_ability if additionnal_ability != '' else ''} {'[🗡️' + str(self.berserker_mode -1) + 'restants]' if self.berserker_mode > 0 else ''}"
+                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} ‼️ [+{stacks_earned}☄️] {'[🔥+' + str(mult_damage) + ']' if mult_damage > 0 else ''} {additionnal_ability if additionnal_ability != '' else ''} {'[🪓' + str(self.berserker_mode -1) + 'restants]' if self.berserker_mode > 0 else ''}"
                 
                 #Berserker
                 if self.berserker_mode > 0:

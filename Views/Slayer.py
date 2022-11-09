@@ -10,7 +10,7 @@ class Profil_Button(lib.discord.ui.Button):
             self.view.tab = "Profil"
             await self.view.update_view(interaction)
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Equipment_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -21,7 +21,7 @@ class Equipment_Button(lib.discord.ui.Button):
             self.view.tab = "Équipement"
             await self.view.update_view(interaction)
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Achievements_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -32,7 +32,7 @@ class Achievements_Button(lib.discord.ui.Button):
             self.view.tab = "Prouesses"
             await self.view.update_view(interaction)
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class SlayerView(lib.discord.ui.View):
     def __init__(self, bot, Slayer, interaction, avatar, interface_name="profil"):

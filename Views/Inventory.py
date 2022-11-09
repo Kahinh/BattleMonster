@@ -25,7 +25,7 @@ class Rarity_Dropdown(lib.discord.ui.Select):
             
             await self.view.update_view(interaction) 
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Element_Dropdown(lib.discord.ui.Select):
     def __init__(self, rElements):
@@ -52,7 +52,7 @@ class Element_Dropdown(lib.discord.ui.Select):
 
             await self.view.update_view(interaction) 
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Slot_Dropdown(lib.discord.ui.Select):
     def __init__(self, rSlots):
@@ -80,7 +80,7 @@ class Slot_Dropdown(lib.discord.ui.Select):
 
             await self.view.update_view(interaction) 
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Previous_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -93,7 +93,7 @@ class Previous_Button(lib.discord.ui.Button):
             
             await self.view.update_view(interaction)        
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Next_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -106,7 +106,7 @@ class Next_Button(lib.discord.ui.Button):
             
             await self.view.update_view(interaction)   
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Equip_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -129,7 +129,7 @@ class Equip_Button(lib.discord.ui.Button):
                     await self.view.bot.ActiveList.add_interface(interaction.user.id, "mult_equip", viewMult)
                     await interaction.response.send_message(content="Tous les emplacements sont déjà utilisés, quel objet souhaitez-vous remplacer ?", view=viewMult, ephemeral=True)
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Sell_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -150,7 +150,7 @@ class Sell_Button(lib.discord.ui.Button):
             else:
                 await interaction.followup.send("Une erreur s'est produite !", ephemeral=True)
         else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !")
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Compare_Dropdown(lib.discord.ui.Select):
     def __init__(self, itemsequipped_list):
