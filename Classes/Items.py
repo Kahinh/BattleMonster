@@ -83,9 +83,9 @@ class Item:
                 if self.bonuses[bonus] == cItem2.bonuses[bonus]:
                   emote = "🔸"
                 elif self.bonuses[bonus] > cItem2.bonuses[bonus]:
-                  emote = "🔻"
-                elif self.bonuses[bonus] < cItem2.bonuses[bonus]:
                   emote = "🔹"
+                elif self.bonuses[bonus] < cItem2.bonuses[bonus]:
+                  emote = "🔻"
                 else:
                   emote = ""
 
@@ -96,9 +96,9 @@ class Item:
               if self.bonuses[bonus] == cItem2.bonuses[bonus]:
                 emote = "🔸"
               elif self.bonuses[bonus] > cItem2.bonuses[bonus]:
-                emote = "🔻"
-              elif self.bonuses[bonus] < cItem2.bonuses[bonus]:
                 emote = "🔹"
+              elif self.bonuses[bonus] < cItem2.bonuses[bonus]:
+                emote = "🔻"
               else:
                 emote = ""
 
@@ -109,9 +109,9 @@ class Item:
             if self.bonuses[bonus] == cItem2.bonuses[bonus]:
               emote = "🔸"
             elif self.bonuses[bonus] > cItem2.bonuses[bonus]:
-              emote = "🔻"
-            elif self.bonuses[bonus] < cItem2.bonuses[bonus]:
               emote = "🔹"
+            elif self.bonuses[bonus] < cItem2.bonuses[bonus]:
+              emote = "🔻"
             else:
               emote = ""
 
