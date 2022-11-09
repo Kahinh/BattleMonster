@@ -270,8 +270,8 @@ class Monster:
     self.name = Battle.Monsters[i]["name"]
     self.description = Battle.Monsters[i]["description"]
     self.element = Battle.Monsters[i]["element"]
-    self.base_hp = int(Battle.Monsters[i]["base_hp"] * hp_scaling * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.total_hp = int(Battle.Monsters[i]["base_hp"] * hp_scaling * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
+    self.base_hp = int(Battle.Monsters[i]["base_hp"] * int(max(1,hp_scaling/2)) * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
+    self.total_hp = int(Battle.Monsters[i]["base_hp"] * int(max(1,hp_scaling/2)) * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
     self.rarity = Battle.Monsters[i]["rarity"]
     self.parry = {
       "parry_chance_L" : float(Battle.Monsters[i]["parry_chance_L"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),

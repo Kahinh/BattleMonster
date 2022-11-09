@@ -146,22 +146,23 @@ def create_embed_profil(Slayer, avatar):
     color=0x1abc9c)   
 
     for i in ("L", "H", "S"):
-        if i == "L":
-            name = "__Attaque Légère__"
-        elif i == "H":
-            name = "__Attaque Lourde__"
-        elif i == "S":
-            name = "__Capacité Spéciale__"
-        description = \
-        f"\n⚔️ Puissance : **{Slayer.cSlayer.stats['total_damage_' + i]}**" \
-        f"\n⚔️ Dégâts Finaux : **{int(Slayer.cSlayer.stats['total_final_damage_' + i]*100)}**%" \
-        f"\n☄️ Gains Charge : **{Slayer.cSlayer.stats['total_special_charge_' + i]}**" \
-        f"\n✨ Chance Critique : **{int(Slayer.cSlayer.stats['total_crit_chance_' + i]*100)}**%" \
-        f"\n💢 Dégâts Critiques : **{int(Slayer.cSlayer.stats['total_crit_damage_' + i]*100)}**%" \
-        f"\n🗡️ Létalité : **{Slayer.cSlayer.stats['total_letality_' + i]}**,  **{int(Slayer.cSlayer.stats['total_letality_per_' + i]*100)}**%" \
-        f"\n🎯 Echec : **{Slayer.cSlayer.stats['total_fail_' + i]*100}**%" \
-        f"\n✊ Blocage : **{int(Slayer.cSlayer.stats['total_parry_' + i]*100)}**%"
-        embed.add_field(name=name, value=description, inline=False)
+        if not (i == "S" and Slayer.cSlayer.Spe.id == 8):
+            if i == "L":
+                name = "__Attaque Légère__"
+            elif i == "H":
+                name = "__Attaque Lourde__"
+            elif i == "S":
+                name = "__Capacité Spéciale__"
+            description = \
+            f"\n⚔️ Puissance : **{Slayer.cSlayer.stats['total_damage_' + i]}**" \
+            f"\n⚔️ Dégâts Finaux : **{int(Slayer.cSlayer.stats['total_final_damage_' + i]*100)}**%" \
+            f"\n☄️ Gains Charge : **{Slayer.cSlayer.stats['total_special_charge_' + i]}**" \
+            f"\n✨ Chance Critique : **{int(Slayer.cSlayer.stats['total_crit_chance_' + i]*100)}**%" \
+            f"\n💢 Dégâts Critiques : **{int(Slayer.cSlayer.stats['total_crit_damage_' + i]*100)}**%" \
+            f"\n🗡️ Létalité : **{Slayer.cSlayer.stats['total_letality_' + i]}**,  **{int(Slayer.cSlayer.stats['total_letality_per_' + i]*100)}**%" \
+            f"\n🎯 Echec : **{Slayer.cSlayer.stats['total_fail_' + i]*100}**%" \
+            f"\n✊ Blocage : **{int(Slayer.cSlayer.stats['total_parry_' + i]*100)}**%"
+            embed.add_field(name=name, value=description, inline=False)
 
     embed.set_thumbnail(url=avatar)
     embed.set_footer(text=f'Chasse depuis le {Slayer.cSlayer.creation_date}')

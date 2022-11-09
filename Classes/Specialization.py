@@ -72,7 +72,7 @@ class Spe:
   
   def get_damage(self, cMonster, cSlayer):
     if self.id == 3: #Templier
-      return int(cSlayer.stats["total_armor"]*3), ""
+      return int(cSlayer.stats["total_armor"]), ""
     elif self.id == 4: #Chef de Guerre
       return sum(cMonster.last_hits), ""
     elif self.id == 5: #Forgeron

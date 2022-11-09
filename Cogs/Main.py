@@ -19,7 +19,7 @@ class Main(lib.commands.Cog):
                         Battle = lib.Battle(self.bot, gamemode)
                         await Battle.constructGamemode()
             
-            if self.loop_remove >= 60:
+            if self.loop_remove >= 2880:
                 await self.bot.ActiveList.remove_inactive()
                 self.loop_remove = 1
             
