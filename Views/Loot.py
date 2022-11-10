@@ -67,7 +67,7 @@ class LootView(lib.discord.ui.View):
             self.add_item(Sell_Button())
 
     async def end_view(self):
-        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.id, self.cItem.item_id)
+        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.id, self.cItem.id)
         await self.message.edit(view=None)
         self.stop()
 

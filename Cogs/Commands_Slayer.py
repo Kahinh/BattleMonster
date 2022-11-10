@@ -15,7 +15,7 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
       if len(Slayer.cSlayer.inventory_items) > 0:
           #On init le message
           itemsequipped_list = Slayer.getListEquippedOnSlot(Slayer.cSlayer.inventory_items[list(Slayer.cSlayer.inventory_items.keys())[0]].slot)
-          itemID_compare = Slayer.cSlayer.inventory_items[list(Slayer.cSlayer.inventory_items.keys())[0]].item_id
+          itemID_compare = Slayer.cSlayer.inventory_items[list(Slayer.cSlayer.inventory_items.keys())[0]].id
           view = lib.InventoryView(self.bot, Slayer, interaction, itemsequipped_list, itemID_compare)
           embed = lib.Embed.create_embed_item(self.bot, Slayer.cSlayer.inventory_items[list(Slayer.cSlayer.inventory_items.keys())[0]], Slayer, itemsequipped_list[0] if itemsequipped_list != [] else None)
           await self.bot.ActiveList.add_interface(interaction.user.id, "inventaire", view)
@@ -80,6 +80,7 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
             Slayer.cSlayer.lastregen = datetime.datetime.timestamp(datetime.datetime.now())
             await self.bot.dB.push_slayer_data(Slayer.cSlayer)
             await interaction.followup.send(content=f"Régénération effectuée : Tu as récupéré {regen} ❤️", ephemeral=True)
+            #await Slayer.getPet(rate=1, pets=[192])
           else:
             await interaction.followup.send(content=f"Malheureusement, il te faut encore attendre un peu !\nProchaine régénération : **{int(Slayer.cSlayer.lastregen + waiting_time - datetime.datetime.timestamp(datetime.datetime.now()))}**s", ephemeral=True)
       else:

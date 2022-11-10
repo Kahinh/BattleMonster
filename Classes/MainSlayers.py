@@ -55,7 +55,7 @@ class MSlayer:
             await self.bot.dB.push_spe_list(self.cSlayer)
         else:
             self.cSlayer = Slayer(
-                id= self.rSlayer["id"],
+                id= self.rSlayer[0],
                 name= self.rSlayer["name"],
                 creation_date= self.rSlayer["creation_date"],
                 dead= self.rSlayer["dead"],
@@ -98,13 +98,13 @@ class MSlayer:
         hasbeenequipped = False
         alreadyequipped_list = []
         #D'ABORD ON CHECK QUE L'ITEM EST BIEN DANS L'INVENTAIRE
-        if self.isinInventory(cItem.item_id):
+        if self.isinInventory(cItem.id):
             #SI ON PEUT EQUIPER QU'UNE FOIS UN ITEM, ON S'EN FOUT. ON UPDATE OU INSERT
             if self.cSlayer.slots_count[cItem.slot]["count"] == 1:
                 #ON A DEJA UN ITEM EQUIPER ET IL FAUT SWITCH
                 if cItem.slot in self.cSlayer.slots:
                     #On sécurise si jamais l'item est déjà équippé
-                    if cItem.item_id not in self.cSlayer.slots[cItem.slot]:
+                    if cItem.id not in self.cSlayer.slots[cItem.slot]:
                         self.cSlayer.inventory_items[self.cSlayer.slots[cItem.slot][0]].unequip()
                         cItem.equip()
                         await self.bot.dB.switch_item(self.cSlayer, cItem, self.cSlayer.inventory_items[self.cSlayer.slots[cItem.slot][0]])
@@ -124,7 +124,7 @@ class MSlayer:
                 #SOIT ON A ENCORE DE LA PLACE
                 else:
                     #On sécurise si jamais l'item est déjà équippé
-                    if cItem.item_id not in self.cSlayer.slots[cItem.slot]:
+                    if cItem.id not in self.cSlayer.slots[cItem.slot]:
                         if len(self.cSlayer.slots[cItem.slot]) < self.cSlayer.slots_count[cItem.slot]["count"]:
                             cItem.equip()
                             await self.bot.dB.equip_item(self.cSlayer, cItem)
@@ -133,15 +133,15 @@ class MSlayer:
                         else:
                             alreadyequipped_list = self.cSlayer.slots[cItem.slot]
         if hasbeenequipped:
-            await self.bot.ActiveList.close_interface(self.cSlayer.id, cItem.item_id)
+            await self.bot.ActiveList.close_interface(self.cSlayer.id, cItem.id)
             await self.updateSlayer()
         return hasbeenequipped, alreadyequipped_list
 
     async def sell_item(self, cItem):
         #On update la BDD avec la vente
-        if self.isinInventory(cItem.item_id):
+        if self.isinInventory(cItem.id):
             self.removefromInventory(cItem)
-            await self.bot.ActiveList.close_interface(self.cSlayer.id, cItem.item_id)
+            await self.bot.ActiveList.close_interface(self.cSlayer.id, cItem.id)
             await self.updateSlayer()
             await self.bot.dB.sell_item(self.cSlayer, cItem)
             return True
@@ -150,10 +150,10 @@ class MSlayer:
 
     def getSlots(self):
         slots = {}
-        for item_id in self.cSlayer.inventory_items:
-            if self.cSlayer.inventory_items[item_id].equipped:
-                if self.cSlayer.inventory_items[item_id].slot not in slots: slots[self.cSlayer.inventory_items[item_id].slot] = []
-                slots[self.cSlayer.inventory_items[item_id].slot].append(item_id)
+        for id in self.cSlayer.inventory_items:
+            if self.cSlayer.inventory_items[id].equipped:
+                if self.cSlayer.inventory_items[id].slot not in slots: slots[self.cSlayer.inventory_items[id].slot] = []
+                slots[self.cSlayer.inventory_items[id].slot].append(id)
         return slots
 
     async def correctSlots(self):
@@ -172,15 +172,15 @@ class MSlayer:
             self.cSlayer.achievements["biggest_hit"] = damage
             await self.bot.dB.push_biggest_hit_achievement(self.cSlayer)
 
-    def isinInventory(self, item_id):
-        if item_id in self.cSlayer.inventory_items:
+    def isinInventory(self, id):
+        if id in self.cSlayer.inventory_items:
             return True
         else:
             return False
     
-    def isEquipped(self, item_id):
-        if item_id in self.cSlayer.inventory_items:
-            if self.cSlayer.inventory_items[item_id].equipped:
+    def isEquipped(self, id):
+        if id in self.cSlayer.inventory_items:
+            if self.cSlayer.inventory_items[id].equipped:
                 return True
             else:
                 return False
@@ -188,10 +188,10 @@ class MSlayer:
             return True
     
     def addtoInventory(self, cItem):
-        self.cSlayer.inventory_items[cItem.item_id] = cItem
+        self.cSlayer.inventory_items[cItem.id] = cItem
 
     def removefromInventory(self, cItem):
-        self.cSlayer.inventory_items.pop(cItem.item_id)
+        self.cSlayer.inventory_items.pop(cItem.id)
 
     def addMoney(self, money):
         self.cSlayer.money += money
@@ -213,8 +213,8 @@ class MSlayer:
 
     def equippedonSlot(self, slot):
         items_list = ""
-        for item_id in self.cSlayer.inventory_items:
-            cItem = self.cSlayer.inventory_items[item_id]
+        for id in self.cSlayer.inventory_items:
+            cItem = self.cSlayer.inventory_items[id]
             if cItem.equipped and cItem.slot == slot:
                 items_list += f"\n- {self.bot.rElements[cItem.element]['display_emote']} {cItem.name} - *{self.bot.rRarities[cItem.rarity]['display_text']}*"
         
@@ -227,16 +227,18 @@ class MSlayer:
     def getListEquippedOnSlot(self, slot):
         items_list = []
         if slot in self.cSlayer.slots:
-            for item_id in self.cSlayer.slots[slot]:
-                items_list.append(self.cSlayer.inventory_items[item_id])
+            for id in self.cSlayer.slots[slot]:
+                items_list.append(self.cSlayer.inventory_items[id])
         return items_list
     
     async def getPet(self, rate=0.005, pets=[]):
         if random.choices((rate, 1-rate), (True, False), k=1)[0]:
             pet_id = random.choice(pets)
-            rPet = await self.bot.dB.get_rPet(pet_id)
-            cPet = Item(rPet)
-            print(cPet.name)
+            if not self.isinInventory(pet_id):
+                rPet = await self.bot.dB.get_rPet(pet_id)
+                cPet = Item(rPet)
+
+                #On poste le message
 
 class Slayer:
     def __init__(
@@ -334,13 +336,13 @@ class Slayer:
             "vivacity": rBaseBonuses["vivacity"] + self.Spe.bonuses["vivacity"]
         }
 
-        for item_id in self.inventory_items:
-            if self.inventory_items[item_id].equipped:
-                for bonus in self.inventory_items[item_id].bonuses:
-                    if self.Spe.id == 2 and self.inventory_items[item_id].slot == "weapon" and (bonus == "parry_l" or bonus == "parry_h" or bonus == "fail_l" or bonus == "fail_h"): #Escrime Double
-                        bonuses[bonus] += self.inventory_items[item_id].bonuses[bonus] / 2
+        for id in self.inventory_items:
+            if self.inventory_items[id].equipped:
+                for bonus in self.inventory_items[id].bonuses:
+                    if self.Spe.id == 2 and self.inventory_items[id].slot == "weapon" and (bonus == "parry_l" or bonus == "parry_h" or bonus == "fail_l" or bonus == "fail_h"): #Escrime Double
+                        bonuses[bonus] += self.inventory_items[id].bonuses[bonus] / 2
                     else:
-                        bonuses[bonus] += self.inventory_items[item_id].bonuses[bonus]
+                        bonuses[bonus] += self.inventory_items[id].bonuses[bonus]
         self.bonuses = bonuses
 
     def calculateStats(self, rBaseBonuses):

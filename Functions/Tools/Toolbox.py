@@ -81,9 +81,9 @@ def disable_enable_InventoryView(children, list, index):
 
 def filter_items_list(items_list, slot=None, element=None, rarity=None):
     filtered_list = []
-    for item_id in items_list:
-        if (items_list[item_id].slot == slot or slot is None) and (items_list[item_id].element == element or element is None) and (items_list[item_id].rarity == rarity or rarity is None):
-            filtered_list.append(items_list[item_id])
+    for id in items_list:
+        if (items_list[id].slot == slot or slot is None) and (items_list[id].element == element or element is None) and (items_list[id].rarity == rarity or rarity is None):
+            filtered_list.append(items_list[id])
     return filtered_list
 
 def get_spe_row_by_id(rSpe, spe_id):
@@ -98,16 +98,16 @@ def get_content_looters(Battle):
             content += f"<@{id}> "
     return content
 
-def disable_enable_LootReviewView(children, Slayer, item_id):
+def disable_enable_LootReviewView(children, Slayer, id):
     for item in children:
         if hasattr(item, "label"):
             if item.label=="Équiper":
-                if Slayer.isEquipped(item_id):
+                if Slayer.isEquipped(id):
                     item.disabled = True
                 else:
                     item.disabled = False
             if item.label=="Vendre":
-                if Slayer.isinInventory(item_id) == False:
+                if Slayer.isinInventory(id) == False:
                     item.disabled = True
                 else:
                     item.disabled = False

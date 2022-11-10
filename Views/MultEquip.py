@@ -4,7 +4,7 @@ class Equiped_Dropdown(lib.discord.ui.Select):
     def __init__(self, List):
         options = []
         for item in List:
-            options.append(lib.discord.SelectOption(label=f"{item.rarity} {item.element} - {item.name}", value=item.item_id))
+            options.append(lib.discord.SelectOption(label=f"{item.rarity} {item.element} - {item.name}", value=item.id))
         super().__init__(placeholder='Objet à remplacer...', min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: lib.discord.Interaction):
@@ -26,7 +26,7 @@ class Equiped_Dropdown(lib.discord.ui.Select):
                 self.view.stop()
                 
                 self.view.Slayer.cSlayer.calculateStats(self.view.bot.rBaseBonuses)
-                await self.view.bot.ActiveList.close_interface(self.view.Slayer.cSlayer.id, self.view.cItem.item_id)
+                await self.view.bot.ActiveList.close_interface(self.view.Slayer.cSlayer.id, self.view.cItem.id)
                 await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
             except:
                 await interaction.followup.send("Une erreur s'est produite !", ephemeral=True)

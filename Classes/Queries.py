@@ -19,12 +19,12 @@ class qGameModesSpawnRate:
 class qSlayers:
     COUNT = 'SELECT COUNT(*) FROM "slayers"'
     SELECT_SLAYER = 'SELECT * FROM "slayers" LEFT JOIN "slayers_achievements" ON "slayers_achievements".id = "slayers".id WHERE "slayers".id = $1'
-    SELECT_SLAYER_ITEMS = 'SELECT * FROM "items" LEFT JOIN "Slayers_Slots" ON "items".id = "Slayers_Slots".item_id WHERE "Slayers_Slots".id = $1'
+    SELECT_SLAYER_ITEMS = 'SELECT * FROM "items" LEFT JOIN "Slayers_Slots" ON "items".id = "Slayers_Slots".id WHERE "Slayers_Slots".id = $1'
     SELECT_SLAYER_ROW_INVENTORY = 'SELECT "items".*, "slayers_inventory_items".level, "slayers_inventory_items".equipped FROM "items" LEFT JOIN "slayers_inventory_items" ON "items".id = "slayers_inventory_items".item_id WHERE "slayers_inventory_items".slayer_id = $1'
-    SELECT_SLAYER_INVENTORY = 'SELECT item_id FROM "slayers_inventory_items" WHERE id = $1'
+    SELECT_SLAYER_INVENTORY = 'SELECT id FROM "slayers_inventory_items" WHERE id = $1'
     SELECT_SLAYER_SPE_INVENTORY = 'SELECT specialization_list FROM "slayers_inventory_specializations" WHERE slayer_id = $1'
-    SELECT_SLAYER_SLOTS = 'SELECT slot, item_id FROM "Slayers_Slots" WHERE id = $1'
-    SELECT_SLAYER_SPECIFIC_SLOT = 'SELECT item_id FROM "Slayers_Slots" WHERE id = $1, slot = $2'
+    SELECT_SLAYER_SLOTS = 'SELECT slot, id FROM "Slayers_Slots" WHERE id = $1'
+    SELECT_SLAYER_SPECIFIC_SLOT = 'SELECT id FROM "Slayers_Slots" WHERE id = $1, slot = $2'
 
 class qChannels:
     SELECT_ALL = 'SELECT * FROM "channels" WHERE mode = $1'
@@ -55,7 +55,7 @@ class qLootSlot:
     pass
 
 class qSlayersInventoryItems:
-    SELECT_ALREADY = 'SELECT 1 FROM "slayers_inventory_items" WHERE id = $1 AND item_id = $2'
+    SELECT_ALREADY = 'SELECT 1 FROM "slayers_inventory_items" WHERE id = $1 AND id = $2'
 
 class qSlots:
     SELECT_ALL = 'SELECT * FROM "slots"'

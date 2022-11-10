@@ -3,7 +3,7 @@ class Item:
     self, 
     rItem
     ):
-    self.item_id = rItem["id"]
+    self.id = rItem["id"]
     self.level = 1 if "level" not in rItem else rItem["level"]
     self.name = rItem["name"]
     self.description = rItem["description"]
@@ -63,7 +63,7 @@ class Item:
     if cItem2 is not None:
       desc_stat += f"\n*Comparaison {cItem2.name}*"
     for bonus in self.bonuses:
-      if cItem2 is None or self.item_id == cItem2.item_id:
+      if cItem2 is None or self.id == cItem2.id:
         if self.bonuses[bonus] != 0:
           if bonus.find("_") != -1 and bonus[-1:] in ["l", "h", "s"]:
             if self.bonuses[bonus[:-1]+"l"] == self.bonuses[bonus[:-1]+"h"] == self.bonuses[bonus[:-1]+"s"]:

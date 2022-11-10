@@ -5,7 +5,7 @@ class Loot_Dropdown(lib.discord.ui.Select):
         options = []
         options.append(lib.discord.SelectOption(label="Recap", value="None", emoji="♾️"))
         for cItem in loot_recap["items"]:
-            options.append(lib.discord.SelectOption(label=cItem.name, value=cItem.item_id, emoji=bot.rSlots[cItem.slot]["display_emote"]))
+            options.append(lib.discord.SelectOption(label=cItem.name, value=cItem.id, emoji=bot.rSlots[cItem.slot]["display_emote"]))
 
         super().__init__(placeholder='Filtrer le butin ...', min_values=1, max_values=1, options=options)
 
@@ -25,7 +25,7 @@ class Equip_Button(lib.discord.ui.Button):
         if not self.view.obsolete:
 
             for cItem in self.view.recap_loot["items"]:
-                if int(cItem.item_id) == int(self.view.item_displayed):
+                if int(cItem.id) == int(self.view.item_displayed):
                     cItem_equipped = cItem
 
             isEquipped, List = await self.view.Slayer.equip_item(cItem_equipped)
@@ -51,7 +51,7 @@ class Sell_Button(lib.discord.ui.Button):
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
             for cItem in self.view.recap_loot["items"]:
-                if int(cItem.item_id) == int(self.view.item_displayed):
+                if int(cItem.id) == int(self.view.item_displayed):
                     cItem_sold = cItem
             Sold = await self.view.Slayer.sell_item(cItem_sold)
             await self.view.update_view(interaction)   
@@ -89,7 +89,7 @@ class LootReviewView(lib.discord.ui.View):
             await interaction.response.edit_message(embed=embed, view=self) 
         else:
             for item in self.recap_loot["items"]:
-                if int(item.item_id) == int(self.item_displayed):
+                if int(item.id) == int(self.item_displayed):
                     cItem = item
                     break
             embed = lib.Embed.create_embed_item(self.bot, cItem, self.Slayer)

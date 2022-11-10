@@ -156,7 +156,7 @@ class Compare_Dropdown(lib.discord.ui.Select):
     def __init__(self, itemsequipped_list):
         options = []
         for cItem in itemsequipped_list:
-            options.append(lib.discord.SelectOption(label=cItem.name, value=cItem.item_id))
+            options.append(lib.discord.SelectOption(label=cItem.name, value=cItem.id))
 
         super().__init__(placeholder="Objet à comparer...", min_values=1, max_values=1, options=options)
 
@@ -209,7 +209,7 @@ class InventoryView(lib.discord.ui.View):
             
 
     async def update_view(self, interaction=None, itemID_Compare=0, itemID_Updated=None):
-        if itemID_Updated is None or itemID_Updated in self.items_list_filtered[self.index].item_id:
+        if itemID_Updated is None or itemID_Updated in self.items_list_filtered[self.index].id:
             if interaction is None: self.items_list_filtered = lib.Toolbox.filter_items_list(self.Slayer.cSlayer.inventory_items, self.slot, self.element, self.rarity)
             
             self.get_itemsequipped_list()
@@ -220,7 +220,7 @@ class InventoryView(lib.discord.ui.View):
                     cItem = self.itemsequipped_list[0]
                 else:
                     for item in self.itemsequipped_list:
-                        if int(item.item_id) == int(itemID_Compare):
+                        if int(item.id) == int(itemID_Compare):
                             cItem = item
                             break
             elif len(self.itemsequipped_list) == 1:

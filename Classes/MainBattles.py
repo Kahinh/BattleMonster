@@ -244,7 +244,7 @@ class Battle:
         cItem = lib.Item(row)
 
         #ON VEND AUTOMATIQUEMENT L'ITEM
-        if Slayer.isinInventory(cItem.item_id):
+        if Slayer.isinInventory(cItem.id):
           self.stats["money"] += self.bot.rRarities[cItem.rarity]["price"]
           money_request.append((self.bot.rRarities[cItem.rarity]["price"], id))
           Slayer.addMoney(self.bot.rRarities[cItem.rarity]["price"])
@@ -253,7 +253,7 @@ class Battle:
         #ON AJOUTE DANS LA DB INVENTAIRE
         else:
           self.stats["loots"] += 1
-          loots_request.append((id, cItem.item_id, 1, False))
+          loots_request.append((id, cItem.id, 1, False))
           Slayer.addtoInventory(cItem)
           await self.bot.ActiveList.update_interface(id, "inventaire")
           self.loots[id]["items"].append(cItem)
