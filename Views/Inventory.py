@@ -119,7 +119,7 @@ class Equip_Button(lib.discord.ui.Button):
 
             if isEquipped:
                 await self.view.update_view(interaction) 
-                await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.slayer_id, "LootReview")
+                await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.id, "LootReview")
                 await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
             else:
                 if len(List) == 0:
@@ -142,7 +142,7 @@ class Sell_Button(lib.discord.ui.Button):
             self.view.index = 0
             self.itemID_compare = 0
 
-            await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.slayer_id, "LootReview")
+            await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.id, "LootReview")
             await self.view.update_view(interaction)   
 
             if Sold:
@@ -239,7 +239,7 @@ class InventoryView(lib.discord.ui.View):
                 await interaction.response.edit_message(embed=embed, view=view) 
 
     async def close_view(self):
-        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.slayer_id, "inventaire")
+        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.id, "inventaire")
         message = await self.interaction.original_response()
         await message.edit(view=None)
         self.stop()

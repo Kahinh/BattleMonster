@@ -10,14 +10,14 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
   
   @lib.app_commands.choices(
   data=[
-    lib.Choice(name='Gamemodes & Monsters Data', value="Monsters"),
-    lib.Choice(name='Slayers Data', value="Slayers")
+    lib.Choice(name='Gamemodes & Monsters Data', value="monsters"),
+    lib.Choice(name='Slayers Data', value="slayers")
   ])
   @lib.app_commands.command(name="updatebot")
   async def updatebot(self, interaction: lib.discord.Interaction, data: lib.Choice[str]) -> None:
     """ Admin Only - Commande afin de lancer un update du Bot. """
     await interaction.response.defer(ephemeral=True)
-    if data.value == "Monsters":
+    if data.value == "monsters":
       await self.bot.update_bot()
     else:
       self.bot.ActiveList.obsolete_interfaces()
@@ -74,10 +74,10 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
         Slayer.cSlayer.dead = False
         Slayer.cSlayer.damage_taken = 0
         await self.bot.dB.push_slayer_data(Slayer.cSlayer)
-        await self.bot.ActiveList.update_interface(Slayer.cSlayer.slayer_id, "profil")
+        await self.bot.ActiveList.update_interface(Slayer.cSlayer.id, "profil")
         await interaction.followup.send(content=f"{Slayer.cSlayer.name} a été réanimé !", ephemeral=True)
         channel = self.bot.get_channel(self.bot.rChannels["logs"])
-        await channel.send(content=f"<@{Slayer.cSlayer.slayer_id}> a été réanimé par <@{interaction.user.id}>!")
+        await channel.send(content=f"<@{Slayer.cSlayer.id}> a été réanimé par <@{interaction.user.id}>!")
       else:
         await interaction.followup.send(content=f"{user} n'existe pas", ephemeral=True)
     else:
@@ -105,10 +105,10 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
             cItem = lib.Item(item_row)
             Slayer.addtoInventory(cItem)
             await self.bot.dB.add_item(Slayer.cSlayer, cItem)
-            await self.bot.ActiveList.update_interface(Slayer.cSlayer.slayer_id, "inventaire")
+            await self.bot.ActiveList.update_interface(Slayer.cSlayer.id, "inventaire")
             await interaction.followup.send(content=f"{item_name} a été donné à {user}", ephemeral=True)
             channel = self.bot.get_channel(self.bot.rChannels["logs"])
-            await channel.send(content=f"<@{Slayer.cSlayer.slayer_id}> a obtenu {item_name} de la part de <@{interaction.user.id}>!")
+            await channel.send(content=f"<@{Slayer.cSlayer.id}> a obtenu {item_name} de la part de <@{interaction.user.id}>!")
         else:
           await interaction.followup.send(content=f"{item_name} n'existe pas", ephemeral=True)
       else:

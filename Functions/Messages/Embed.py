@@ -13,8 +13,8 @@ def create_embed_battle(self):
     )
     embed.add_field(name="Statistiques Avancées", \
         value= \
-            f"✊ Chance de blocage - Attaque Légère : **{int(self.Monsters[self.count].parry['parry_chance_L'] * 100)}%**\n" \
-            f"✊ Chance de blocage - Attaque Lourde : **{int(self.Monsters[self.count].parry['parry_chance_H'] * 100)}%**\n" \
+            f"✊ Chance de blocage - Attaque Légère : **{int(self.Monsters[self.count].parry['parry_chance_l'] * 100)}%**\n" \
+            f"✊ Chance de blocage - Attaque Lourde : **{int(self.Monsters[self.count].parry['parry_chance_h'] * 100)}%**\n" \
             f"🗡️ Létalité : **({int(self.Monsters[self.count].letality)}, {int(self.Monsters[self.count].letality_per *100)}%)**\n" \
             f"💠 Résistance Critique : **{self.Monsters[self.count].protect_crit}**\n", \
         inline=False)
@@ -145,13 +145,13 @@ def create_embed_profil(Slayer, avatar):
     description=description,
     color=0x1abc9c)   
 
-    for i in ("L", "H", "S"):
-        if not (i == "S" and Slayer.cSlayer.Spe.id == 8):
-            if i == "L":
+    for i in ("l", "h", "s"):
+        if not (i == "s" and Slayer.cSlayer.Spe.id == 8):
+            if i == "l":
                 name = "__Attaque Légère__"
-            elif i == "H":
+            elif i == "h":
                 name = "__Attaque Lourde__"
-            elif i == "S":
+            elif i == "s":
                 name = "__Capacité Spéciale__"
             description = \
             f"\n⚔️ Puissance : **{Slayer.cSlayer.stats['total_damage_' + i]}**" \
@@ -172,7 +172,7 @@ def create_embed_achievement(Slayer, avatar):
 
     description = \
     f"🎖️ Monstres tués : **{Slayer.cSlayer.achievements['monsters_killed']}**" \
-    f"\n🏆 Meilleur Attaque : **{Slayer.cSlayer.achievements['biggest_hit']}**"
+    f"\n🏆 Meilleur attaque : **{Slayer.cSlayer.achievements['biggest_hit']}**"
 
     embed=lib.discord.Embed(title=f"Prouesses de {Slayer.cSlayer.name}",
     description=description,

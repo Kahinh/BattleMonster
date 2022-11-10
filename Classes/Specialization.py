@@ -19,36 +19,36 @@ class Spe:
       "armor_per" : rSpe["armor_per"],
       "health" : rSpe["health"],
       "health_per" : rSpe["health_per"],
-      "parry_L" : rSpe["parry_L"],
-      "parry_H" : rSpe["parry_H"],
-      "parry_S" : rSpe["parry_S"],
-      "fail_L" : rSpe["fail_L"],
-      "fail_H" : rSpe["fail_H"],
+      "parry_l" : rSpe["parry_l"],
+      "parry_h" : rSpe["parry_h"],
+      "parry_s" : rSpe["parry_s"],
+      "fail_l" : rSpe["fail_l"],
+      "fail_h" : rSpe["fail_h"],
       "damage_weapon" : rSpe["damage_weapon"],
-      "damage_L" : rSpe["damage_L"],
-      "damage_H" : rSpe["damage_H"],
-      "damage_S" : rSpe["damage_S"],
-      "final_damage_L" : rSpe["final_damage_L"],
-      "final_damage_H" : rSpe["final_damage_H"],
-      "final_damage_S" : rSpe["final_damage_S"],
-      "damage_per_L" : rSpe["damage_per_L"],
-      "damage_per_H" : rSpe["damage_per_H"],
-      "damage_per_S" : rSpe["damage_per_S"],
-      "letality_L" : rSpe["letality_L"],
-      "letality_H" : rSpe["letality_H"],
-      "letality_S" : rSpe["letality_S"],
-      "letality_per_L" : rSpe["letality_per_L"],
-      "letality_per_H" : rSpe["letality_per_H"],
-      "letality_per_S" : rSpe["letality_per_S"],
-      "crit_chance_L" : rSpe["crit_chance_L"],
-      "crit_chance_H" : rSpe["crit_chance_H"],
-      "crit_chance_S" : rSpe["crit_chance_S"],
-      "crit_damage_L" : rSpe["crit_damage_L"],
-      "crit_damage_H" : rSpe["crit_damage_H"],
-      "crit_damage_S" : rSpe["crit_damage_S"],
-      "special_charge_L" : rSpe["special_charge_L"],
-      "special_charge_H" : rSpe["special_charge_H"],
-      "special_charge_S" : rSpe["special_charge_S"],
+      "damage_l" : rSpe["damage_l"],
+      "damage_h" : rSpe["damage_h"],
+      "damage_s" : rSpe["damage_s"],
+      "final_damage_l" : rSpe["final_damage_l"],
+      "final_damage_h" : rSpe["final_damage_h"],
+      "final_damage_s" : rSpe["final_damage_s"],
+      "damage_per_l" : rSpe["damage_per_l"],
+      "damage_per_h" : rSpe["damage_per_h"],
+      "damage_per_s" : rSpe["damage_per_s"],
+      "letality_l" : rSpe["letality_l"],
+      "letality_h" : rSpe["letality_h"],
+      "letality_s" : rSpe["letality_s"],
+      "letality_per_l" : rSpe["letality_per_l"],
+      "letality_per_h" : rSpe["letality_per_h"],
+      "letality_per_s" : rSpe["letality_per_s"],
+      "crit_chance_l" : rSpe["crit_chance_l"],
+      "crit_chance_h" : rSpe["crit_chance_h"],
+      "crit_chance_s" : rSpe["crit_chance_s"],
+      "crit_damage_l" : rSpe["crit_damage_l"],
+      "crit_damage_h" : rSpe["crit_damage_h"],
+      "crit_damage_s" : rSpe["crit_damage_s"],
+      "special_charge_l" : rSpe["special_charge_l"],
+      "special_charge_h" : rSpe["special_charge_h"],
+      "special_charge_s" : rSpe["special_charge_s"],
       "stacks_reduction" : rSpe["stacks_reduction"],
       "luck": rSpe["luck"],
       "vivacity": rSpe["vivacity"]
@@ -76,14 +76,14 @@ class Spe:
     elif self.id == 4: #Chef de Guerre
       return sum(cMonster.last_hits), ""
     elif self.id == 5: #Forgeron
-      for slayer_id in cMonster.slayers_hits:
-        cMonster.slayers_hits[slayer_id].timestamp_next_hit = datetime.datetime.timestamp(datetime.datetime.now())
+      for id in cMonster.slayers_hits:
+        cMonster.slayers_hits[id].timestamp_next_hit = datetime.datetime.timestamp(datetime.datetime.now())
       return 0, "(*Cooldown reset*)"
     elif self.id == 6: #Analyst Chasseur   
       if cMonster.armor == cMonster.armor_cap:
-        return int(cSlayer.stats["total_letality_S"] * (1+cSlayer.stats["total_letality_per_S"])), ""
+        return int(cSlayer.stats["total_letality_s"] * (1+cSlayer.stats["total_letality_per_s"])), ""
       else:
-        armor_reduction = int((cMonster.armor * cSlayer.stats["total_letality_per_S"] + cSlayer.stats["total_letality_S"]) / 5)
+        armor_reduction = int((cMonster.armor * cSlayer.stats["total_letality_per_s"] + cSlayer.stats["total_letality_s"]) / 5)
         armor_reduction = int(min(armor_reduction, cMonster.armor - cMonster.armor_cap))
         cMonster.armor -= armor_reduction
         return 0, f"(-{armor_reduction} 🛡️)"
@@ -94,9 +94,9 @@ class Spe:
     desc_stat = ""
     for bonus in self.bonuses:
       if self.bonuses[bonus] != 0:
-        if bonus.find("_") != -1 and bonus[-1:] in ["L", "H", "S"]:
-          if self.bonuses[bonus[:-1]+"L"] == self.bonuses[bonus[:-1]+"H"] == self.bonuses[bonus[:-1]+"S"]:
-            if bonus.find("L") != -1:
+        if bonus.find("_") != -1 and bonus[-1:] in ["l", "h", "s"]:
+          if self.bonuses[bonus[:-1]+"l"] == self.bonuses[bonus[:-1]+"h"] == self.bonuses[bonus[:-1]+"s"]:
+            if bonus.find("l") != -1:
               desc_stat += f"\n- {bonus[:-2]} : **{self.bonuses[bonus]}**" 
           else:
               desc_stat += f"\n- {bonus} : **{self.bonuses[bonus]}**"

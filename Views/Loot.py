@@ -13,14 +13,14 @@ class Equip_Button(lib.discord.ui.Button):
         super().__init__(label="Équiper", style=lib.discord.ButtonStyle.green)
         
     async def callback(self, interaction: lib.discord.Interaction):
-        if self.view.Slayer.cSlayer.slayer_id == interaction.user.id:
+        if self.view.Slayer.cSlayer.id == interaction.user.id:
             #On call la fonction
             Slayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, "")
             isEquipped, List = await Slayer.equip_item(self.view.cItem)
 
             if isEquipped:
                 #On update le Inventoryview ?
-                await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.slayer_id, "inventaire")
+                await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.id, "inventaire")
                 await interaction.response.send_message(content="L'objet a été équipé !", ephemeral=True) 
             else:
                 if len(List) == 0:
@@ -38,12 +38,12 @@ class Sell_Button(lib.discord.ui.Button):
         super().__init__(label="Vendre", style=lib.discord.ButtonStyle.red)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        if self.view.Slayer.cSlayer.slayer_id == interaction.user.id:
+        if self.view.Slayer.cSlayer.id == interaction.user.id:
 
             #On call la fonction
             Slayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, "")
             Sold = await Slayer.sell_item(self.view.cItem)
-            await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.slayer_id, "inventaire")
+            await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.id, "inventaire")
 
             if Sold:
                 await interaction.response.send_message("L'objet a été vendu !", ephemeral=True)
@@ -67,7 +67,7 @@ class LootView(lib.discord.ui.View):
             self.add_item(Sell_Button())
 
     async def end_view(self):
-        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.slayer_id, self.cItem.item_id)
+        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.id, self.cItem.item_id)
         await self.message.edit(view=None)
         self.stop()
 

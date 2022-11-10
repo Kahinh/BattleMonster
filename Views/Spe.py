@@ -89,7 +89,7 @@ class SpeView(lib.discord.ui.View):
 
 
     async def close_view(self):
-        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.slayer_id, "inventaire_spe")
+        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.id, "inventaire_spe")
         message = await self.interaction.original_response()
         await message.edit(view=None)
         self.stop()

@@ -6,7 +6,7 @@ class Light_Button(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         await interaction.response.defer(ephemeral=True)
-        content, damage = await self.view.Battle.getAttack(interaction, "L")
+        content, damage = await self.view.Battle.getAttack(interaction, "l")
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
         if damage != []:
@@ -18,7 +18,7 @@ class Heavy_Button(lib.discord.ui.Button):
         
     async def callback(self, interaction: lib.discord.Interaction):
         await interaction.response.defer(ephemeral=True)
-        content, damage = await self.view.Battle.getAttack(interaction, "H")
+        content, damage = await self.view.Battle.getAttack(interaction, "h")
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
         if damage != []:
@@ -31,7 +31,7 @@ class Special_Button(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         await interaction.response.defer(ephemeral=True)
-        content, damage = await self.view.Battle.getAttack(interaction, "S")
+        content, damage = await self.view.Battle.getAttack(interaction, "s")
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
         if damage != []:

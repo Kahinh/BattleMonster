@@ -112,7 +112,7 @@ class Battle:
     if Slayer.cSlayer.isAlive()[0]:
 
       #Si on fait le spécial
-      if hit == "S":
+      if hit == "s":
         if Slayer.cSlayer.canSpecial()[0]:
           Slayer.cSlayer.useStacks(hit)
           if Slayer.cSlayer.Spe.id != 8: #Berserker
@@ -205,23 +205,23 @@ class Battle:
     for i in self.Monsters:
       if self.Monsters[i].base_hp == 0 and len(self.LootTable[i]) > 0:
         #On fait le tour de tous les slayers ayant attaqué
-        for slayer_id in self.Monsters[i].slayers_hits:
+        for id in self.Monsters[i].slayers_hits:
             #On ne considère que les éligibles
-            if self.Monsters[i].slayers_hits[slayer_id].eligible:
+            if self.Monsters[i].slayers_hits[id].eligible:
 
                 #Achievement Behemoths Killed
-                Slayer = await self.bot.ActiveList.get_Slayer(slayer_id, "")
+                Slayer = await self.bot.ActiveList.get_Slayer(id, "")
                 Slayer.cSlayer.achievements["monsters_killed"] += 1
-                behemoths_killed_achievement_request.append((1, slayer_id))
+                behemoths_killed_achievement_request.append((1, id))
 
                 #On prend en compte le roll_dice
                 for j in range(self.Monsters[i].roll_dices):
                   #On calcule le loot obtenu
-                  isLoot = random.choices(population=[True, False], weights=[self.Monsters[i].slayers_hits[slayer_id].luck, 1-self.Monsters[i].slayers_hits[slayer_id].luck], k=1)[0]
+                  isLoot = random.choices(population=[True, False], weights=[self.Monsters[i].slayers_hits[id].luck, 1-self.Monsters[i].slayers_hits[id].luck], k=1)[0]
                   if isLoot:
 
-                    if slayer_id not in loots: loots[slayer_id] = []
-                    loots[slayer_id].append(lib.random.choice(self.LootTable[i]))
+                    if id not in loots: loots[id] = []
+                    loots[id].append(lib.random.choice(self.LootTable[i]))
 
     #Achievement Behemoths Killed
     await self.bot.dB.push_behemoths_killed_achievement(behemoths_killed_achievement_request)
@@ -233,30 +233,30 @@ class Battle:
     money_request = []
     loots_request = []
 
-    for slayer_id in loots:
-      Slayer = await self.bot.ActiveList.get_Slayer(slayer_id, "")
-      self.loots[slayer_id] = {}
-      self.loots[slayer_id]["items"] = []
-      self.loots[slayer_id]["money"] = 0
+    for id in loots:
+      Slayer = await self.bot.ActiveList.get_Slayer(id, "")
+      self.loots[id] = {}
+      self.loots[id]["items"] = []
+      self.loots[id]["money"] = 0
 
-      for row in loots[slayer_id]:
+      for row in loots[id]:
 
         cItem = lib.Item(row)
 
         #ON VEND AUTOMATIQUEMENT L'ITEM
         if Slayer.isinInventory(cItem.item_id):
           self.stats["money"] += self.bot.rRarities[cItem.rarity]["price"]
-          money_request.append((self.bot.rRarities[cItem.rarity]["price"], slayer_id))
+          money_request.append((self.bot.rRarities[cItem.rarity]["price"], id))
           Slayer.addMoney(self.bot.rRarities[cItem.rarity]["price"])
-          self.loots[slayer_id]["money"] += self.bot.rRarities[cItem.rarity]["price"]
+          self.loots[id]["money"] += self.bot.rRarities[cItem.rarity]["price"]
 
         #ON AJOUTE DANS LA DB INVENTAIRE
         else:
           self.stats["loots"] += 1
-          loots_request.append((slayer_id, cItem.item_id, 1, False))
+          loots_request.append((id, cItem.item_id, 1, False))
           Slayer.addtoInventory(cItem)
-          await self.bot.ActiveList.update_interface(slayer_id, "inventaire")
-          self.loots[slayer_id]["items"].append(cItem)
+          await self.bot.ActiveList.update_interface(id, "inventaire")
+          self.loots[id]["items"].append(cItem)
 
     await self.bot.dB.push_loots_money(loots_request, money_request)
 
@@ -274,9 +274,9 @@ class Monster:
     self.total_hp = int(Battle.Monsters[i]["base_hp"] * int(max(1,hp_scaling/2)) * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
     self.rarity = Battle.Monsters[i]["rarity"]
     self.parry = {
-      "parry_chance_L" : float(Battle.Monsters[i]["parry_chance_L"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
-      "parry_chance_H" : float(Battle.Monsters[i]["parry_chance_H"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
-      "parry_chance_S" : 0
+      "parry_chance_l" : float(Battle.Monsters[i]["parry_chance_l"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
+      "parry_chance_h" : float(Battle.Monsters[i]["parry_chance_h"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
+      "parry_chance_s" : 0
     }
     self.damage = int(Battle.Monsters[i]["damage"] * Battle.scaling["damage"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
     self.letality = int(Battle.Monsters[i]["letality"] * Battle.scaling["letality"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
@@ -329,18 +329,18 @@ class Monster:
       return f"\n\n> Le monstre possède désormais {int(self.base_hp)}/{int(self.total_hp)} ❤️"
 
   def slayer_canAttack(self, cSlayer):
-    if cSlayer.slayer_id in self.slayers_hits:
-      if self.slayers_hits[cSlayer.slayer_id].canAttack():
+    if cSlayer.id in self.slayers_hits:
+      if self.slayers_hits[cSlayer.id].canAttack():
         return True, ""
       else:
-        return False, f"\n> Pas si vite ! Prends ton temps ! Prochaine attaque disponible dans **{int(self.slayers_hits[cSlayer.slayer_id].timestamp_next_hit - lib.datetime.datetime.timestamp(lib.datetime.datetime.now()))}s**"
+        return False, f"\n> Pas si vite ! Prends ton temps ! Prochaine attaque disponible dans **{int(self.slayers_hits[cSlayer.id].timestamp_next_hit - lib.datetime.datetime.timestamp(lib.datetime.datetime.now()))}s**"
     else:
       return True, ""
 
   def slayer_storeAttack(self, cSlayer, damage, hit):
-    if cSlayer.slayer_id in self.slayers_hits:
-      self.slayers_hits[cSlayer.slayer_id].updateClass(damage, None if hit == "S" else cSlayer.stats["total_cooldown"], cSlayer.stats["total_luck"])
+    if cSlayer.id in self.slayers_hits:
+      self.slayers_hits[cSlayer.id].updateClass(damage, None if hit == "s" else cSlayer.stats["total_cooldown"], cSlayer.stats["total_luck"])
     else:
-      self.slayers_hits[cSlayer.slayer_id] = lib.DamageDone(0 if hit == "S" else cSlayer.stats["total_cooldown"], damage if damage > 0 else 0, True if damage > 0 else False, cSlayer.stats["total_luck"])
-    content = self.slayers_hits[cSlayer.slayer_id].checkStatus(damage, self.base_hp)
+      self.slayers_hits[cSlayer.id] = lib.DamageDone(0 if hit == "s" else cSlayer.stats["total_cooldown"], damage if damage > 0 else 0, True if damage > 0 else False, cSlayer.stats["total_luck"])
+    content = self.slayers_hits[cSlayer.id].checkStatus(damage, self.base_hp)
     return content

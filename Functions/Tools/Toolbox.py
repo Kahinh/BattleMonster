@@ -93,9 +93,9 @@ def get_spe_row_by_id(rSpe, spe_id):
 
 def get_content_looters(Battle):
     content = ""
-    for slayer_id in Battle.loots:
-        if Battle.loots[slayer_id]["items"] != []:
-            content += f"<@{slayer_id}> "
+    for id in Battle.loots:
+        if Battle.loots[id]["items"] != []:
+            content += f"<@{id}> "
     return content
 
 def disable_enable_LootReviewView(children, Slayer, item_id):

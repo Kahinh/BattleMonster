@@ -23,13 +23,13 @@ class ActiveList:
 
   async def remove_inactive(self):
     inactive_slayers = []
-    for slayer_id in self.active_slayers:
-      if self.active_slayers[slayer_id].isInactive():
-        inactive_slayers.append(slayer_id)
+    for id in self.active_slayers:
+      if self.active_slayers[id].isInactive():
+        inactive_slayers.append(id)
     
     if inactive_slayers != []:
-      for slayer_id in inactive_slayers:
-        self.active_slayers.pop(slayer_id)
+      for id in inactive_slayers:
+        self.active_slayers.pop(id)
 
   async def get_Slayer(self, user_id, user_name):
     if user_id not in self.active_slayers:
@@ -43,23 +43,23 @@ class ActiveList:
       self.active_slayers[user_id].timestamp = datetime.datetime.timestamp(datetime.datetime.now())
       return Slayer
 
-  async def add_interface(self, slayer_id, interface_name, interface_class):
+  async def add_interface(self, id, interface_name, interface_class):
     #On check si on peut add une interface, et on retourne si elle est déjà utilisée
-    if interface_name in self.active_slayers[slayer_id].interfaces:
-      await self.active_slayers[slayer_id].interfaces[interface_name].close_view()
-      self.active_slayers[slayer_id].interfaces[interface_name] = interface_class
+    if interface_name in self.active_slayers[id].interfaces:
+      await self.active_slayers[id].interfaces[interface_name].close_view()
+      self.active_slayers[id].interfaces[interface_name] = interface_class
     else:
-      self.active_slayers[slayer_id].interfaces[interface_name] = interface_class
+      self.active_slayers[id].interfaces[interface_name] = interface_class
   
-  async def update_interface(self, slayer_id, interface_name):
-    if slayer_id in self.active_slayers:
-      if interface_name in self.active_slayers[slayer_id].interfaces:
-        await self.active_slayers[slayer_id].interfaces[interface_name].update_view()
+  async def update_interface(self, id, interface_name):
+    if id in self.active_slayers:
+      if interface_name in self.active_slayers[id].interfaces:
+        await self.active_slayers[id].interfaces[interface_name].update_view()
 
-  async def close_interface(self, slayer_id, interface):
-    if interface in self.active_slayers[slayer_id].interfaces:
-      await self.active_slayers[slayer_id].interfaces[interface].close_view()
-      self.active_slayers[slayer_id].interfaces.pop(interface)
+  async def close_interface(self, id, interface):
+    if interface in self.active_slayers[id].interfaces:
+      await self.active_slayers[id].interfaces[interface].close_view()
+      self.active_slayers[id].interfaces.pop(interface)
 
   def get_active_Slayer(self, user_id):
     if user_id in self.active_slayers:
@@ -69,18 +69,18 @@ class ActiveList:
     else:
       return None
 
-  def add_active_slayer(self, slayer_id, Slayer):
-    self.active_slayers[slayer_id] = ActiveSlayer(Slayer)
+  def add_active_slayer(self, id, Slayer):
+    self.active_slayers[id] = ActiveSlayer(Slayer)
 
-  def remove_interface(self, slayer_id, interface):
-    if slayer_id in self.active_slayers:
-      if interface in self.active_slayers[slayer_id].interfaces:
-        self.active_slayers[slayer_id].interfaces.pop(interface)
+  def remove_interface(self, id, interface):
+    if id in self.active_slayers:
+      if interface in self.active_slayers[id].interfaces:
+        self.active_slayers[id].interfaces.pop(interface)
 
   def obsolete_interfaces(self):
-    for slayer_id in self.active_slayers:
-      for interface in self.active_slayers[slayer_id].interfaces:
-        self.active_slayers[slayer_id].interfaces[interface].obsolete = True
+    for id in self.active_slayers:
+      for interface in self.active_slayers[id].interfaces:
+        self.active_slayers[id].interfaces[interface].obsolete = True
   
   def reset_slayers_activelist(self):
     self.active_slayers = {}

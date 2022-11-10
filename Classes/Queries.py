@@ -1,46 +1,46 @@
 class qMonsters:
     SELECT_ALL = 'SELECT * FROM Monsters'
-    SELECT_RANDOM_ADVANCED = 'SELECT * FROM "Monsters" WHERE rarity = $1 AND element =$2 ORDER BY random() LIMIT 1'
-    SELECT_RANDOM = 'SELECT * FROM "Monsters" WHERE rarity = $1 ORDER BY random() LIMIT 1'
+    SELECT_RANDOM_ADVANCED = 'SELECT * FROM "monsters" WHERE rarity = $1 AND element =$2 ORDER BY random() LIMIT 1'
+    SELECT_RANDOM = 'SELECT * FROM "monsters" WHERE rarity = $1 ORDER BY random() LIMIT 1'
     INSERT = 'INSERT INTO Monsters VALUES ($1, $2, $3)'
 
 class qGameModes:
-    SELECT_ALL = 'SELECT * FROM "Gamemodes"'
-    SELECT_GAMEMODE = 'SELECT * FROM "Gamemodes" WHERE name = $1'
-    SELECT_RARITY_POPULATION = 'SELECT rarities FROM "Gamemodes_Spawn_Rates" WHERE gamemode_name = $1'
-    SELECT_RARITY_WEIGHT = 'SELECT spawn_rate FROM "Gamemodes_Spawn_Rates" WHERE gamemode_name = $1'
+    SELECT_ALL = 'SELECT * FROM "gamemodes"'
+    SELECT_GAMEMODE = 'SELECT * FROM "gamemodes" WHERE name = $1'
+    SELECT_RARITY_POPULATION = 'SELECT rarities FROM "gamemodes_spawn_rates WHERE gamemode_name = $1'
+    SELECT_RARITY_WEIGHT = 'SELECT spawn_rate FROM "gamemodes_spawn_rates WHERE gamemode_name = $1'
 
 class qGameModesLootSlot:
-    SELECT_ALL = 'SELECT * FROM "Gamemodes_Loot_Slot"'
+    SELECT_ALL = 'SELECT * FROM "gamemodes_loot_slot"'
 
 class qGameModesSpawnRate:
-    SELECT_ALL = 'SELECT * FROM "Gamemodes_Spawn_Rates"'
+    SELECT_ALL = 'SELECT * FROM "gamemodes_spawn_rates"'
 
 class qSlayers:
-    COUNT = 'SELECT COUNT(*) FROM "Slayers"'
-    SELECT_SLAYER = 'SELECT * FROM "Slayers" LEFT JOIN "slayers_achievements" ON "slayers_achievements".id = "Slayers".slayer_id WHERE slayer_id = $1'
-    SELECT_SLAYER_ITEMS = 'SELECT * FROM "Items" LEFT JOIN "Slayers_Slots" ON "Items".id = "Slayers_Slots".item_id WHERE "Slayers_Slots".slayer_id = $1'
-    SELECT_SLAYER_ROW_INVENTORY = 'SELECT "Items".*, "Slayers_Inventory_Items".level, "Slayers_Inventory_Items".equipped FROM "Items" LEFT JOIN "Slayers_Inventory_Items" ON "Items".id = "Slayers_Inventory_Items".item_id WHERE "Slayers_Inventory_Items".slayer_id = $1'
-    SELECT_SLAYER_INVENTORY = 'SELECT item_id FROM "Slayers_Inventory_Items" WHERE slayer_id = $1'
-    SELECT_SLAYER_SPE_INVENTORY = 'SELECT specialization_list FROM "Slayers_Inventory_Specializations" WHERE slayer_id = $1'
-    SELECT_SLAYER_SLOTS = 'SELECT slot, item_id FROM "Slayers_Slots" WHERE slayer_id = $1'
-    SELECT_SLAYER_SPECIFIC_SLOT = 'SELECT item_id FROM "Slayers_Slots" WHERE slayer_id = $1, slot = $2'
+    COUNT = 'SELECT COUNT(*) FROM "slayers"'
+    SELECT_SLAYER = 'SELECT * FROM "slayers" LEFT JOIN "slayers_achievements" ON "slayers_achievements".id = "slayers".id WHERE "slayers".id = $1'
+    SELECT_SLAYER_ITEMS = 'SELECT * FROM "items" LEFT JOIN "Slayers_Slots" ON "items".id = "Slayers_Slots".item_id WHERE "Slayers_Slots".id = $1'
+    SELECT_SLAYER_ROW_INVENTORY = 'SELECT "items".*, "slayers_inventory_items".level, "slayers_inventory_items".equipped FROM "items" LEFT JOIN "slayers_inventory_items" ON "items".id = "slayers_inventory_items".item_id WHERE "slayers_inventory_items".slayer_id = $1'
+    SELECT_SLAYER_INVENTORY = 'SELECT item_id FROM "slayers_Inventory_Items" WHERE id = $1'
+    SELECT_SLAYER_SPE_INVENTORY = 'SELECT specialization_list FROM "slayers_inventory_specializations" WHERE slayer_id = $1'
+    SELECT_SLAYER_SLOTS = 'SELECT slot, item_id FROM "Slayers_Slots" WHERE id = $1'
+    SELECT_SLAYER_SPECIFIC_SLOT = 'SELECT item_id FROM "Slayers_Slots" WHERE id = $1, slot = $2'
 
 class qChannels:
-    SELECT_ALL = 'SELECT * FROM "Channels" WHERE mode = $1'
-    SELECT_CHANNEL = 'SELECT channel_id FROM "Channels" WHERE mode = $1 AND name = $2'
+    SELECT_ALL = 'SELECT * FROM "channels" WHERE mode = $1'
+    SELECT_CHANNEL = 'SELECT channel_id FROM "channels" WHERE mode = $1 AND name = $2'
 
 class qBaseBonuses:
-    SELECT_ALL = 'SELECT * FROM "Base_Bonuses_Slayers"'
+    SELECT_ALL = 'SELECT * FROM "base_bonuses_slayers"'
 
 class qItems:
-    SELECT_RANDOM = 'SELECT * FROM "Items" WHERE rarity = $1 AND element =$2 AND slot = ANY($3::text[]) ORDER BY random() LIMIT 1'
-    SELECT_ITEM = 'SELECT * FROM "Items" WHERE id = $1'
+    SELECT_RANDOM = 'SELECT * FROM "items" WHERE rarity = $1 AND element =$2 AND slot = ANY($3::text[]) ORDER BY random() LIMIT 1'
+    SELECT_ITEM = 'SELECT * FROM "items" WHERE id = $1'
 
 class qRarities:
-    SELECT_ALL = 'SELECT * FROM "Rarities"'
-    SELECT_DISPLAY = 'SELECT display_text, display_color FROM "Rarities" WHERE name = $1'
-    SELECT_PRICE = 'SELECT price FROM "Rarities" WHERE name = $1'
+    SELECT_ALL = 'SELECT * FROM "rarities"'
+    SELECT_DISPLAY = 'SELECT display_text, display_color FROM "rarities" WHERE name = $1'
+    SELECT_PRICE = 'SELECT price FROM "rarities" WHERE name = $1'
 
 class qRaritiesLootRates:
     SELECT_ALL = 'SELECT * FROM "Rarities_Loot_Rates"'
@@ -48,18 +48,18 @@ class qRaritiesLootRates:
     SELECT_WEIGHTS = 'SELECT loot_rate FROM "Rarities_Loot_Rates" WHERE rarities_name = $1'
 
 class qElements:
-    SELECT_ALL = 'SELECT * FROM "Elements"'
-    SELECT_DISPLAY = 'SELECT display_text, display_emote FROM "Elements" WHERE name = $1'
+    SELECT_ALL = 'SELECT * FROM "elements"'
+    SELECT_DISPLAY = 'SELECT display_text, display_emote FROM "elements" WHERE name = $1'
 
 class qLootSlot:
     pass
 
 class qSlayersInventoryItems:
-    SELECT_ALREADY = 'SELECT 1 FROM "Slayers_Inventory_Items" WHERE slayer_id = $1 AND item_id = $2'
+    SELECT_ALREADY = 'SELECT 1 FROM "slayers_Inventory_Items" WHERE id = $1 AND item_id = $2'
 
 class qSlots:
-    SELECT_ALL = 'SELECT * FROM "Slots"'
+    SELECT_ALL = 'SELECT * FROM "slots"'
 
 class qSpe:
-    SELECT_SPE = 'SELECT * FROM "Specializations" WHERE id = $1'
-    SELECT_ALL = 'SELECT * FROM "Specializations"'
+    SELECT_SPE = 'SELECT * FROM "specializations" WHERE id = $1'
+    SELECT_ALL = 'SELECT * FROM "specializations"'

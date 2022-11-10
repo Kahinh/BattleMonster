@@ -4,7 +4,7 @@ class Gamemode_Dropdown(lib.discord.ui.Select):
     def __init__(self, rGamemodes):
         options = []
         for row in rGamemodes:
-            if row["CmdEvent"]:
+            if row["cmdevent"]:
                 options.append(lib.discord.SelectOption(label=row["name"], value=row["id"]))
 
         super().__init__(placeholder='Choisissez l\' à faire apparaître...', min_values=1, max_values=1, options=options)
