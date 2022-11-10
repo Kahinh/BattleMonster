@@ -235,3 +235,22 @@ def create_embed_recap_loot(bot, recap_loot):
     )        
     embed.set_thumbnail(url="https://media.discordapp.net/attachments/1000070083915304991/1034553474999922848/unknown.png?width=1022&height=1022")
     return embed        
+
+def create_embed_new_pet(bot, Slayer, cPet):
+    #Setup Description
+    description = \
+        f"*{bot.rElements[cPet.element]['display_emote']} {bot.rSlots[cPet.slot]['display_text']} {bot.rRarities[cPet.rarity]['display_text']}*" \
+        f"\n\n{cPet.description}"
+
+    description += \
+        f"\n\nOH OH ! Que voilà ?"
+
+    embed=lib.discord.Embed(title=f"{cPet.name}",
+    description= \
+        f"{description}",
+    color=int(bot.rRarities[cPet.rarity]["display_color"], 16)
+    )
+
+    embed.set_thumbnail(url=cPet.img_url)
+
+    return embed

@@ -13,6 +13,7 @@ sys.path.insert(0, parentdir)
 from Classes.Specialization import Spe
 from Classes.Items import Item
 from Classes.Queries import qSlayers, qSlayersInventoryItems, qSpe
+from Functions.Messages.Embed import create_embed_new_pet
 
 class MSlayer:
     def __init__(
@@ -238,7 +239,16 @@ class MSlayer:
                 rPet = await self.bot.dB.get_rPet(pet_id)
                 cPet = Item(rPet)
 
+                #On ajoute au stuff
+                self.addtoInventory(cPet)
+
+                #On ajoute le stuff à la dB
+                
+
                 #On poste le message
+                embed = create_embed_new_pet(self.bot, self, cPet)
+                channel = self.bot.get_channel(self.bot.rChannels["loots"])
+                await channel.send(content=f"<@{self.cSlayer.id}>",embed=embed)
 
 class Slayer:
     def __init__(
