@@ -230,6 +230,13 @@ class MSlayer:
             for item_id in self.cSlayer.slots[slot]:
                 items_list.append(self.cSlayer.inventory_items[item_id])
         return items_list
+    
+    async def getPet(self, rate=0.005, pets=[]):
+        if random.choices((rate, 1-rate), (True, False), k=1)[0]:
+            pet_id = random.choice(pets)
+            rPet = await self.bot.dB.get_rPet(pet_id)
+            cPet = Item(rPet)
+            print(cPet.name)
 
 class Slayer:
     def __init__(

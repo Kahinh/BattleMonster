@@ -8,26 +8,26 @@ class dB:
   async def sell_item(self, cSlayer, cItem):
     async with self.bot.db_pool.acquire() as conn:
         async with conn.transaction():
-            await conn.execute(f'DELETE FROM "slayers_Inventory_Items" WHERE id = {cSlayer.id} AND item_id = {cItem.item_id}')
+            await conn.execute(f'DELETE FROM "slayers_inventory_items" WHERE id = {cSlayer.id} AND item_id = {cItem.item_id}')
             await conn.execute(f'UPDATE "slayers" SET money = money + {self.bot.rRarities[cItem.rarity]["price"]} WHERE id = {cSlayer.id}')
 
   async def equip_item(self, cSlayer, cItem):
     async with self.bot.db_pool.acquire() as conn:
         async with conn.transaction():
-            await conn.execute(f'UPDATE "slayers_Inventory_Items" SET equipped = True WHERE id = {cSlayer.id} AND item_id = {cItem.item_id}')
+            await conn.execute(f'UPDATE "slayers_inventory_items" SET equipped = True WHERE id = {cSlayer.id} AND item_id = {cItem.item_id}')
             await conn.execute(f'UPDATE "slayers" SET damage_taken = {cSlayer.damage_taken} WHERE id = {cSlayer.id}')
 
   async def unequip_item(self, cSlayer, cItem):
     async with self.bot.db_pool.acquire() as conn:
         async with conn.transaction():
-            await conn.execute(f'UPDATE "slayers_Inventory_Items" SET equipped = False WHERE id = {cSlayer.id} AND item_id = {cItem.item_id}')
+            await conn.execute(f'UPDATE "slayers_inventory_items" SET equipped = False WHERE id = {cSlayer.id} AND item_id = {cItem.item_id}')
             await conn.execute(f'UPDATE "slayers" SET damage_taken = {cSlayer.damage_taken} WHERE id = {cSlayer.id}')
 
   async def switch_item(self, cSlayer, cItem1, cItem2):
     async with self.bot.db_pool.acquire() as conn:
         async with conn.transaction():
-            await conn.execute(f'UPDATE "slayers_Inventory_Items" SET equipped = True WHERE id = {cSlayer.id} AND item_id = {cItem1.item_id}')
-            await conn.execute(f'UPDATE "slayers_Inventory_Items" SET equipped = False WHERE id = {cSlayer.id} AND item_id = {cItem2.item_id}')
+            await conn.execute(f'UPDATE "slayers_inventory_items" SET equipped = True WHERE id = {cSlayer.id} AND item_id = {cItem1.item_id}')
+            await conn.execute(f'UPDATE "slayers_inventory_items" SET equipped = False WHERE id = {cSlayer.id} AND item_id = {cItem2.item_id}')
             await conn.execute(f'UPDATE "slayers" SET damage_taken = {cSlayer.damage_taken} WHERE id = {cSlayer.id}')
   
   async def pull_loottable(self, monster, lootslot):
@@ -50,7 +50,7 @@ class dB:
     async with self.bot.db_pool.acquire() as conn:
       async with conn.transaction():
         if data_loots != []:
-          await conn.executemany('INSERT INTO "slayers_Inventory_Items" (id, item_id, level, equipped) VALUES ($1, $2, $3, $4)', data_loots)
+          await conn.executemany('INSERT INTO "slayers_inventory_items" (id, item_id, level, equipped) VALUES ($1, $2, $3, $4)', data_loots)
         if data_money != []:
           await conn.executemany('UPDATE "slayers" SET money = money + $1 WHERE id = $2', data_money)
   
@@ -72,7 +72,7 @@ class dB:
   
   async def add_item(self, cSlayer, cItem):
     async with self.bot.db_pool.acquire() as conn:
-      await conn.execute('INSERT INTO "slayers_Inventory_Items" (id, item_id, level, equipped) VALUES ($1, $2, $3, $4)', cSlayer.id, cItem.item_id, 1, False)
+      await conn.execute('INSERT INTO "slayers_inventory_items" (id, item_id, level, equipped) VALUES ($1, $2, $3, $4)', cSlayer.id, cItem.item_id, 1, False)
   
   async def push_spe_list(self, cSlayer):
     async with self.bot.db_pool.acquire() as conn:
@@ -80,4 +80,9 @@ class dB:
             f" VALUES ($1, $2)" \
             ' ON CONFLICT (id) DO ' \
             f"UPDATE SET specialization_list=$2", cSlayer.id, str(cSlayer.inventory_specializations))
+  
+  async def get_rPet(self, pet_id):
+    async with self.bot.db_pool.acquire() as conn:
+      rPet = await conn.execute('SELECT * FROM "items" WHERE id = $1', pet_id)
+    return rPet
 
