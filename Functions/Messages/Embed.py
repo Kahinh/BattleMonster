@@ -120,7 +120,7 @@ def create_embed_item(bot, cItem1, Slayer, cItem2=None):
 
         description += f"\n\n__Statistiques :__{desc_stat}"
         
-        embed=lib.discord.Embed(title=f"{bot.rElements[cItem1.element]['display_emote']} {cItem1.name} ({cItem1.slot} / {bot.rRarities[cItem1.rarity]['display_text']})",
+        embed=lib.discord.Embed(title=f"{bot.rElements[cItem1.element]['display_emote']} {'[' + str(cItem1.level) + ']' if cItem1.level > 1 else ''} {cItem1.name} ({cItem1.slot} / {bot.rRarities[cItem1.rarity]['display_text']})",
         description= \
             f"{description}",
         color=int(bot.rRarities[cItem1.rarity]['display_color'], 16)

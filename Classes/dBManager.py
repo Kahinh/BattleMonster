@@ -76,7 +76,7 @@ class dB:
   
   async def push_spe_list(self, cSlayer):
     async with self.bot.db_pool.acquire() as conn:
-      await conn.execute('INSERT INTO "slayers_Inventory_Specializations" (id, specialization_list)' \
+      await conn.execute('INSERT INTO "slayers_inventory_specializations" (id, specialization_list)' \
             f" VALUES ($1, $2)" \
             ' ON CONFLICT (id) DO ' \
             f"UPDATE SET specialization_list=$2", cSlayer.id, str(cSlayer.inventory_specializations))

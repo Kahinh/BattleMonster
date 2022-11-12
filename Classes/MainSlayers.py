@@ -243,7 +243,7 @@ class MSlayer:
                 self.addtoInventory(cPet)
 
                 #On ajoute le stuff à la dB
-                
+                await self.bot.dB.add_item(self.cSlayer, cPet)
 
                 #On poste le message
                 embed = create_embed_new_pet(self.bot, self, cPet)
