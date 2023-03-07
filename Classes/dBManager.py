@@ -9,7 +9,7 @@ class dB:
     async with self.bot.db_pool.acquire() as conn:
         async with conn.transaction():
             await conn.execute(f'DELETE FROM "slayers_inventory_items" WHERE slayer_id = {cSlayer.id} AND id = {cItem.id}')
-            await conn.execute(f'UPDATE "slayers" SET money = money + {self.bot.rRarities[cItem.rarity]["price"]} WHERE item_id = {cSlayer.id}')
+            await conn.execute(f'UPDATE "slayers" SET money = money + {self.bot.Rarities[cItem.rarity].price} WHERE item_id = {cSlayer.id}')
 
   async def equip_item(self, cSlayer, cItem):
     async with self.bot.db_pool.acquire() as conn:

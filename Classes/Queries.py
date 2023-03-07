@@ -63,3 +63,9 @@ class qSlots:
 class qSpe:
     SELECT_SPE = 'SELECT * FROM "specializations" WHERE id = $1'
     SELECT_ALL = 'SELECT * FROM "specializations"'
+
+class qGatherables:
+    SELECT_ALL = 'SELECT * FROM "gatherables"'
+
+class qGatherables_Spawn:
+    SELECT_ALL = 'SELECT * FROM "gatherables_spawn"'

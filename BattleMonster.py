@@ -14,6 +14,11 @@ intents.message_content = True
 
 class BattleMonster(lib.commands.Bot):
     def __init__(self):
+
+        self.Gatherables = {}
+        self.GatherablesSpawn = {}
+        self.Rarities = {}
+
         super().__init__(
             command_prefix='$',
             intents=intents)
@@ -44,14 +49,21 @@ class BattleMonster(lib.commands.Bot):
                 rRarities = await conn.fetch(lib.qRarities.SELECT_ALL)
                 rSlots = await conn.fetch(lib.qSlots.SELECT_ALL)
                 self.rSpe = await conn.fetch(lib.qSpe.SELECT_ALL)
+                rGatherables = await conn.fetch(lib.qGatherables.SELECT_ALL)
+                rGatherablesSpawn = await conn.fetch(lib.qGatherables_Spawn.SELECT_ALL)
 
         self.rGameModesLootSlot = lib.Toolbox.transformGamemodesLootSlot(rGameModesLootSlot)
         self.rGameModesSpawnRate = lib.Toolbox.transformGamemodesSpawnRate(rGameModesSpawnRate)
         self.rSlots = lib.Toolbox.transformSlots(rSlots) 
         self.rElements = lib.Toolbox.transformRaritiesANDElements(rElements) 
-        self.rRarities = lib.Toolbox.transformRaritiesANDElements(rRarities)
         self.rChannels = lib.Toolbox.transformChannels(rChannels)
-        
+
+        #Rarities
+        for row in rRarities: self.Rarities[row["name"]] = lib.Rarities(row)
+        #Gatherables
+        for row in rGatherables: self.Gatherables[row["id"]] = lib.Gatherables(row, self.Rarities[row["rarity"]].gatherables_spawn)
+        #GatherablesSpawn
+        for row in rGatherablesSpawn: self.GatherablesSpawn[row["id"]] = lib.GatherablesSpawn(row, self.Gatherables)
 
     async def on_ready(self):
         print('Bot is Ready!')

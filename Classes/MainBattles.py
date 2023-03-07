@@ -245,10 +245,10 @@ class Battle:
 
         #ON VEND AUTOMATIQUEMENT L'ITEM
         if Slayer.isinInventory(cItem.id):
-          self.stats["money"] += self.bot.rRarities[cItem.rarity]["price"]
-          money_request.append((self.bot.rRarities[cItem.rarity]["price"], id))
-          Slayer.addMoney(self.bot.rRarities[cItem.rarity]["price"])
-          self.loots[id]["money"] += self.bot.rRarities[cItem.rarity]["price"]
+          self.stats["money"] += self.bot.Rarities[cItem.rarity].price
+          money_request.append((self.bot.Rarities[cItem.rarity].price, id))
+          Slayer.addMoney(self.bot.Rarities[cItem.rarity].price)
+          self.loots[id]["money"] += self.bot.Rarities[cItem.rarity].price
 
         #ON AJOUTE DANS LA DB INVENTAIRE
         else:

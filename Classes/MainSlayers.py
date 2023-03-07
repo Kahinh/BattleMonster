@@ -205,11 +205,11 @@ class MSlayer:
         for item in self.cSlayer.inventory_items:
             if self.cSlayer.inventory_items[item].equipped:
                 if (self.cSlayer.Spe.id == 2 and self.cSlayer.inventory_items[item].slot == "weapon"): #Escrime Double
-                    gearscore += self.bot.rRarities[self.cSlayer.inventory_items[item].rarity]["gearscore"] / 2
+                    gearscore += self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore / 2
                 elif (self.cSlayer.Spe.id == 3 and (self.cSlayer.inventory_items[item].slot == "shield" or self.cSlayer.inventory_items[item].slot == "weapon")): #Templier
-                    gearscore += self.bot.rRarities[self.cSlayer.inventory_items[item].rarity]["gearscore"] / 2
+                    gearscore += self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore / 2
                 else:
-                    gearscore += self.bot.rRarities[self.cSlayer.inventory_items[item].rarity]["gearscore"]
+                    gearscore += self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore
         self.cSlayer.gearscore = gearscore
 
     def equippedonSlot(self, slot):
@@ -217,7 +217,7 @@ class MSlayer:
         for id in self.cSlayer.inventory_items:
             cItem = self.cSlayer.inventory_items[id]
             if cItem.equipped and cItem.slot == slot:
-                items_list += f"\n- {self.bot.rElements[cItem.element]['display_emote']} {cItem.name} - *{self.bot.rRarities[cItem.rarity]['display_text']}*"
+                items_list += f"\n- {self.bot.rElements[cItem.element]['display_emote']} {cItem.name} - *{self.bot.Rarities[cItem.rarity].display_text}*"
         
         if items_list != "":
             description = "\n\n__Objet(s) actuellement équipés à cet emplacement :__" + items_list
