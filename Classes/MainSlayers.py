@@ -5,6 +5,9 @@ import os
 import inspect
 import sys
 from copy import deepcopy
+from collections import defaultdict
+
+from dataclasses import dataclass
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -12,7 +15,6 @@ sys.path.insert(0, parentdir)
 
 from Classes.Specialization import Spe
 from Classes.Items import Item
-from Classes.Queries import qSlayers, qSlayersInventoryItems, qSpe
 from Functions.Messages.Embed import create_embed_new_pet
 
 class MSlayer:
@@ -27,57 +29,45 @@ class MSlayer:
         self.user_name = user_name
         self.cSlayer = None
         
-    async def extractdB(self):
-        async with self.bot.db_pool.acquire() as conn:
-            async with conn.transaction():
-                self.rSlayer = await conn.fetchrow(qSlayers.SELECT_SLAYER, self.user_id)
-                if self.rSlayer is not None:
-                    self.rSlayerInventory = await conn.fetch(qSlayers.SELECT_SLAYER_ROW_INVENTORY, self.user_id)
-                    self.rSlayerSpeInventory = await conn.fetchrow(qSlayers.SELECT_SLAYER_SPE_INVENTORY, self.user_id)
-                    if self.rSlayerSpeInventory is None:
-                        self.rSlayerSpeInventory = []
-                    else:
-                        self.rSlayerSpeInventory = list(self.rSlayerSpeInventory)[0]
-                        self.rSlayerSpeInventory = self.rSlayerSpeInventory.strip('][').split(', ')
-                        self.rSlayerSpeInventory = [eval(i) for i in self.rSlayerSpeInventory]
-                        
-                    self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, self.rSlayer["specialization"])
-                else:
-                    self.rSpe = await conn.fetchrow(qSpe.SELECT_SPE, 1)
-                    self.rSlayerInventory = []
-    
     async def constructClass(self):
-        await self.extractdB()
-        if self.rSlayer is None:
-            self.cSlayer = Slayer(id=self.user_id, name=self.user_name, bot=self.bot)
-            self.cSlayer.Spe = Spe(self.rSpe)
+        Slayer_Data, Slayer_Inventory_Items, Slayer_Spe_Inventory, Spe_Data, Slayer_Inventory_Gatherables = await self.bot.dB.pull_slayer_data(self.user_id)
+        self.cSlayer = Slayer(
+            id = self.user_id if Slayer_Data is None else Slayer_Data[0],
+            name= self.user_name if Slayer_Data is None else Slayer_Data["name"],
+            creation_date = datetime.datetime.timestamp(datetime.datetime.now()) if Slayer_Data is None else Slayer_Data["creation_date"],
+            dead= False if Slayer_Data is None else Slayer_Data["dead"],
+            xp= 0 if Slayer_Data is None else Slayer_Data["xp"],
+            money= 0 if Slayer_Data is None else Slayer_Data["money"],
+            damage_taken= 0 if Slayer_Data is None else Slayer_Data["damage_taken"],
+            special_stacks= 0 if Slayer_Data is None else Slayer_Data["special_stacks"],
+            faction= 0 if Slayer_Data is None else Slayer_Data["faction"],
+            specialization= 1 if Slayer_Data is None else Slayer_Data["specialization"],
+            Spe = Spe(Spe_Data),
+            inventory_items = {}, #Gérer plus bas
+            inventory_gatherables = {},
+            inventory_specializations= [1] if Slayer_Spe_Inventory is None else Slayer_Spe_Inventory[0].strip('][').split(','),
+            bot = self.bot,
+
+            #Achievements
+            monsters_killed = 0 if Slayer_Data is None else Slayer_Data["monsters_killed"],
+            biggest_hit = 0 if Slayer_Data is None else Slayer_Data["biggest_hit"]
+        )
+
+        #Transforme liste inventaire en liste Class Items dans l'inventaire
+        for row in Slayer_Inventory_Items:
+            self.cSlayer.inventory_items.update({row["id"]: Item(row, self.bot)})
+        #On corrige la liste des specializations en liste d'int
+        self.cSlayer.inventory_specializations = [eval(str(i)) for i in self.cSlayer.inventory_specializations]
+
+        #Transforme la liste des Slayer Inventory Gatherables
+        for row in Slayer_Inventory_Gatherables:
+            self.cSlayer.inventory_gatherables.update({row['gatherable_id']: row["amount"]})
+
+        #On crée les tables si besoin
+        if Slayer_Data is None:
             await self.bot.dB.push_slayer_data(self.cSlayer)
             await self.bot.dB.push_achievement_data(self.cSlayer)
             await self.bot.dB.push_spe_list(self.cSlayer)
-        else:
-            self.cSlayer = Slayer(
-                id= self.rSlayer[0],
-                name= self.rSlayer["name"],
-                creation_date= self.rSlayer["creation_date"],
-                dead= self.rSlayer["dead"],
-                xp= self.rSlayer["xp"],
-                money= self.rSlayer["money"],
-                damage_taken= self.rSlayer["damage_taken"],
-                special_stacks= self.rSlayer["special_stacks"],
-                faction= self.rSlayer["faction"],
-                specialization= self.rSlayer["specialization"],
-                Spe = Spe(self.rSpe),
-                inventory_items={},
-                inventory_specializations=self.rSlayerSpeInventory,
-                bot = self.bot,
-
-                #Achievements
-                monsters_killed = self.rSlayer["monsters_killed"],
-                biggest_hit = self.rSlayer["biggest_hit"]
-            )
-
-        for row in self.rSlayerInventory:
-            self.cSlayer.inventory_items[row["id"]] = Item(row)
 
         await self.updateSlayer()   
 
@@ -217,7 +207,7 @@ class MSlayer:
         for id in self.cSlayer.inventory_items:
             cItem = self.cSlayer.inventory_items[id]
             if cItem.equipped and cItem.slot == slot:
-                items_list += f"\n- {self.bot.rElements[cItem.element]['display_emote']} {cItem.name} - *{self.bot.Rarities[cItem.rarity].display_text}*"
+                items_list += f"\n- {self.bot.Elements[cItem.element].display_emote} {cItem.name} - *{self.bot.Rarities[cItem.rarity].display_text}*"
         
         if items_list != "":
             description = "\n\n__Objet(s) actuellement équipés à cet emplacement :__" + items_list
@@ -237,7 +227,7 @@ class MSlayer:
             pet_id = random.choice(pets)
             if not self.isinInventory(pet_id):
                 rPet = await self.bot.dB.get_rPet(pet_id)
-                cPet = Item(rPet)
+                cPet = Item(rPet, self.bot)
 
                 #On ajoute au stuff
                 self.addtoInventory(cPet)
@@ -250,7 +240,21 @@ class MSlayer:
                 channel = self.bot.get_channel(self.bot.rChannels["loots"])
                 await channel.send(content=f"<@{self.cSlayer.id}>",embed=embed)
 
+    async def update_inventory_gatherables(self, gatherable_id, amount):
+        self.cSlayer.inventory_gatherables[gatherable_id] += amount
+        await self.bot.dB.push_Gather(self.cSlayer.id, gatherable_id, self.cSlayer.inventory_gatherables[gatherable_id])
+
+@dataclass
 class Slayer:
+    id: int
+    name: str
+    money: int
+    damage_taken: int
+    special_stacks: int
+    faction: int
+    specialization: int
+    dead: bool
+
     def __init__(
         self,
         id,
@@ -263,10 +267,11 @@ class Slayer:
         damage_taken=0,
         special_stacks=0,
         faction=0,
-        specialization=1,
-        Spe=None,
+        specialization=1, #TODO Nettoyer pour eviter les deux Specialization & Spe
+        Spe=None, #TODO Nettoyer pour eviter les deux Specialization & Spe
         inventory_items={},
         inventory_specializations=[1],
+        inventory_gatherables={},
         slots={},
         stats = {},
         slots_count = {},
@@ -289,6 +294,8 @@ class Slayer:
         self.Spe = Spe
         self.inventory_items = inventory_items
         self.inventory_specializations = inventory_specializations
+        self.inventory_gatherables = inventory_gatherables
+        self.inventory_gatherables = defaultdict(int)
         self.slots = slots
         self.stats = stats
         self.slots_count = slots_count

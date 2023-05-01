@@ -102,7 +102,7 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
           if Slayer.isinInventory(item_row["id"]):
             await interaction.followup.send(content=f"{user} possède déjà {item_name}", ephemeral=True)
           else:
-            cItem = lib.Item(item_row)
+            cItem = lib.Item(item_row, self.bot)
             Slayer.addtoInventory(cItem)
             await self.bot.dB.add_item(Slayer.cSlayer, cItem)
             await self.bot.ActiveList.update_interface(Slayer.cSlayer.id, "inventaire")
@@ -118,4 +118,4 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
       
 async def setup(bot: lib.commands.Bot) -> None:
   await bot.add_cog(Commands_Admin(bot))
-  print("Commands_Admin : √")
+  lib.logging.warning("Commands_Admin : OK")

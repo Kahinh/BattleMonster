@@ -2,6 +2,7 @@ import random
 import os
 import inspect
 import sys
+from dataclasses import dataclass
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -57,6 +58,7 @@ class Battle:
       return True
   
   async def fetchMonsters(self, raritiestospawn, elementstospawn):
+    #TODO MEttre ça dans le dB Manager
     async with self.bot.db_pool.acquire() as conn:
       async with conn.transaction():
         for i in self.Monsters:
@@ -74,8 +76,9 @@ class Battle:
       for i in range(self.spawns_count):
         self.Monsters[i] = {}
         self.LootTable[i] = {}
+        #TODO Mettre ça dans le dB Manager
         raritiestospawn.append(random.choices(list(self.bot.rGameModesSpawnRate[self.name].keys()), list(self.bot.rGameModesSpawnRate[self.name].values()), k=1)[0])
-        elementstospawn.append(random.choice(list(self.bot.rElements.keys())))
+        elementstospawn.append(random.choice(list(self.bot.Elements.keys())))
       await self.fetchMonsters(raritiestospawn, elementstospawn)
       self.getclassMonster()
       #Puis, on invoque:
@@ -146,6 +149,7 @@ class Battle:
         if cMonster.slayer_canAttack(Slayer.cSlayer)[0]:
           for i in range(Slayer.cSlayer.getNbrHit()):
             #On touche ou on fail ?
+            ## TODO Mettre un Walrus Operator ici
             isSuccess, message = Slayer.cSlayer.isSuccess(hit)
             if isSuccess:
               #on est parry ou on hit ?
@@ -164,6 +168,7 @@ class Battle:
 
           #Recap fin des attaques
           if sum(damage) > 0:
+            await Slayer.getPet(pets=[194])
             content += cMonster.recapDamageTaken(sum(damage))
             cMonster.storeLastHits(sum(damage), Slayer.cSlayer.Spe)
             content += Slayer.cSlayer.recapStacks()
@@ -173,6 +178,7 @@ class Battle:
             await Slayer.update_biggest_hit(sum(damage))
 
           if sum(parries) > 0:
+            await Slayer.getPet(pets=[193])
             isDead, message = Slayer.cSlayer.recapHealth(parries)
             content += message
             self.stats['attacks_done'] += sum(parries)
@@ -241,7 +247,7 @@ class Battle:
 
       for row in loots[id]:
 
-        cItem = lib.Item(row)
+        cItem = lib.Item(row, self.bot)
 
         #ON VEND AUTOMATIQUEMENT L'ITEM
         if Slayer.isinInventory(cItem.id):
@@ -260,7 +266,10 @@ class Battle:
 
     await self.bot.dB.push_loots_money(loots_request, money_request)
 
+@dataclass
 class Monster:
+  #TODO Dataclass
+
   def __init__(
     self, 
     i,

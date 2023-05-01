@@ -34,6 +34,17 @@ class Achievements_Button(lib.discord.ui.Button):
         else:
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
+class Gatherables_Button(lib.discord.ui.Button):
+    def __init__(self):
+        super().__init__(label="Ressources", style=lib.discord.ButtonStyle.grey)
+
+    async def callback(self, interaction: lib.discord.Interaction):
+        if not self.view.obsolete:
+            self.view.tab = "Ressources"
+            await self.view.update_view(interaction)
+        else:
+            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
+
 class SlayerView(lib.discord.ui.View):
     def __init__(self, bot, Slayer, interaction, avatar, interface_name="profil"):
         super().__init__(timeout=60)
@@ -48,6 +59,7 @@ class SlayerView(lib.discord.ui.View):
         self.add_item(Profil_Button())
         self.add_item(Equipment_Button())
         self.add_item(Achievements_Button())
+        self.add_item(Gatherables_Button())
 
         for item in self.children:
             if item.label=="Profil":
@@ -58,6 +70,8 @@ class SlayerView(lib.discord.ui.View):
             embed = lib.Embed.create_embed_equipment(self.bot, self.Slayer, self.avatar)
         elif self.tab == "Prouesses":
             embed = lib.Embed.create_embed_achievement(self.Slayer, self.avatar)
+        elif self.tab == "Ressources":
+            embed = lib.Embed.create_embed_gatherables_profil(self.Slayer, self.avatar, self.bot)
         else: #Profil
             embed = lib.Embed.create_embed_profil(self.Slayer, self.avatar)
 

@@ -54,4 +54,4 @@ class Sync(lib.discord.ext.commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Sync(bot))
-    print("Sync : √")
+    lib.logging.warning("Sync : OK")

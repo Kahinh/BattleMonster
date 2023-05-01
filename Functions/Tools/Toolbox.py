@@ -1,14 +1,6 @@
 from typing import KeysView
 import lib
 
-def transformRaritiesANDElements(fetch):
-    dict_record = {}
-    for row in fetch:
-        dict_record[list(dict(row).values())[0]] = {}
-        for item in list(dict(row).keys())[1:len(list(dict(row).keys()))]:
-            dict_record[list(dict(row).values())[0]][item] = row[item]
-    return dict_record
-
 def transformSlots(fetch):
     dict_record = {}
     for row in fetch:

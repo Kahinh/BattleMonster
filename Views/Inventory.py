@@ -1,11 +1,11 @@
 import lib
 
 class Rarity_Dropdown(lib.discord.ui.Select):
-    def __init__(self, rRarities):
+    def __init__(self, Rarities):
         options = []
         options.append(lib.discord.SelectOption(label="Toutes", value="None", emoji="♾️"))
-        for rarity in rRarities:
-            options.append(lib.discord.SelectOption(label=rRarities[rarity]["display_text"].capitalize(), value=rarity, emoji=rRarities[rarity]["display_emote"]))
+        for rarity in Rarities:
+            options.append(lib.discord.SelectOption(label=Rarities[rarity].display_text.capitalize(), value=rarity, emoji=Rarities[rarity].display_emote))
 
         super().__init__(placeholder='Filtrer la rareté...', min_values=1, max_values=1, options=options)
 
@@ -28,11 +28,11 @@ class Rarity_Dropdown(lib.discord.ui.Select):
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Element_Dropdown(lib.discord.ui.Select):
-    def __init__(self, rElements):
+    def __init__(self, Elements):
         options = []
         options.append(lib.discord.SelectOption(label="Tous", value="None", emoji="♾️"))
-        for element in rElements:
-            options.append(lib.discord.SelectOption(label=rElements[element]["display_text"].capitalize(), value=element, emoji=rElements[element]["display_emote"]))
+        for element in Elements:
+            options.append(lib.discord.SelectOption(label=Elements[element].display_text.capitalize(), value=element, emoji=Elements[element].display_emote))
 
         super().__init__(placeholder="Filtrer l'élément...", min_values=1, max_values=1, options=options)
 
@@ -189,8 +189,8 @@ class InventoryView(lib.discord.ui.View):
         self.add_item(Sell_Button())
         self.add_item(Next_Button())
         self.add_item(Slot_Dropdown(self.bot.rSlots))
-        self.add_item(Element_Dropdown(self.bot.rElements))
-        self.add_item(Rarity_Dropdown(self.bot.rRarities))
+        self.add_item(Element_Dropdown(self.bot.Elements))
+        self.add_item(Rarity_Dropdown(self.bot.Rarities))
 
         lib.Toolbox.disable_enable_InventoryView(self.children, self.items_list_filtered, self.index)
 

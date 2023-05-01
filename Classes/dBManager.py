@@ -1,3 +1,8 @@
+import logging
+logging.basicConfig(filename='logs.log', 
+                    level=logging.INFO, 
+                    format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s') 
+
 class dB:
   def __init__(
     self,
@@ -5,6 +10,17 @@ class dB:
     ):
     self.bot = bot
 
+  async def pull_slayer_data(self, Slayer_id):
+    async with self.bot.db_pool.acquire() as conn:
+      async with conn.transaction():
+          Slayer_Data = await conn.fetchrow('SELECT * FROM "slayers" LEFT JOIN "slayers_achievements" ON "slayers_achievements".id = "slayers".id WHERE "slayers".id = $1', Slayer_id)
+          Slayer_Inventory = await conn.fetch('SELECT "items".*, "slayers_inventory_items".level, "slayers_inventory_items".equipped FROM "items" LEFT JOIN "slayers_inventory_items" ON "items".id = "slayers_inventory_items".item_id WHERE "slayers_inventory_items".slayer_id = $1', Slayer_id)
+          Slayer_Gatherables = await conn.fetch('SELECT * FROM "slayers_inventory_gatherables" WHERE slayer_id = $1', Slayer_id)
+          Slayer_Spe_Inventory = await conn.fetchrow('SELECT specialization_list FROM "slayers_inventory_specializations" WHERE slayer_id = $1', Slayer_id)
+          Spe_Data = await conn.fetchrow('SELECT * FROM "specializations" WHERE id = $1', 1 if Slayer_Data is None else Slayer_Data["specialization"])
+    logging.info(f"PULL SLAYER_DATA : {Slayer_id}")
+    return Slayer_Data, Slayer_Inventory, Slayer_Spe_Inventory, Spe_Data, Slayer_Gatherables
+  
   async def sell_item(self, cSlayer, cItem):
     async with self.bot.db_pool.acquire() as conn:
         async with conn.transaction():
@@ -53,6 +69,8 @@ class dB:
           await conn.executemany('INSERT INTO "slayers_inventory_items" (slayer_id, item_id, level, equipped) VALUES ($1, $2, $3, $4)', data_loots)
         if data_money != []:
           await conn.executemany('UPDATE "slayers" SET money = money + $1 WHERE id = $2', data_money)
+
+    logging.info(f"PUSH LOOTS_MONEY : {data_loots} {data_money}")
   
   async def push_slayer_data(self, cSlayer):
     async with self.bot.db_pool.acquire() as conn:
@@ -61,9 +79,13 @@ class dB:
             ' ON CONFLICT (id) DO ' \
             f"UPDATE SET xp=$2, money=$3, damage_taken=$4, special_stacks=$5, faction=$6, specialization=$7, dead=$10, gearscore=$11", cSlayer.id, cSlayer.xp, cSlayer.money, cSlayer.damage_taken, cSlayer.special_stacks, cSlayer.faction, cSlayer.specialization, cSlayer.creation_date, cSlayer.name, cSlayer.dead, cSlayer.gearscore)
 
+    logging.info(f"PUSH SLAYER_DATA : {cSlayer}")
+
   async def push_achievement_data(self, cSlayer):
     async with self.bot.db_pool.acquire() as conn:
       await conn.execute('INSERT INTO "slayers_achievements" (id) VALUES ($1)', cSlayer.id)
+
+    logging.info(f"PUSH CREATION_ACHIEVEMENT_DATA : {cSlayer.id}")
 
   async def get_itemrow(self, item_name):
     async with self.bot.db_pool.acquire() as conn:
@@ -73,6 +95,8 @@ class dB:
   async def add_item(self, cSlayer, cItem):
     async with self.bot.db_pool.acquire() as conn:
       await conn.execute('INSERT INTO "slayers_inventory_items" (slayer_id, item_id, level, equipped) VALUES ($1, $2, $3, $4)', cSlayer.id, cItem.id, 1, False)
+
+    logging.info(f"PUSH ADD_ITEM : {cSlayer.id} {cItem.id}")
   
   async def push_spe_list(self, cSlayer):
     async with self.bot.db_pool.acquire() as conn:
@@ -80,8 +104,31 @@ class dB:
             f" VALUES ($1, $2)" \
             ' ON CONFLICT (slayer_id) DO ' \
             f"UPDATE SET specialization_list=$2", cSlayer.id, str(cSlayer.inventory_specializations))
+    
+    logging.info(f"PUSH SPE_LIST : {cSlayer.id} {str(cSlayer.inventory_specializations)}")
   
   async def get_rPet(self, pet_id):
     async with self.bot.db_pool.acquire() as conn:
       rPet = await conn.fetchrow('SELECT * FROM "items" WHERE id = $1', pet_id)
+
+    logging.info(f"PULL - GET_PET : {pet_id}")
     return rPet
+  
+  async def push_Gather(self, slayer_id, gatherable_id, amount):
+    async with self.bot.db_pool.acquire() as conn :
+      await conn.execute('INSERT INTO slayers_inventory_gatherables (slayer_id, gatherable_id, amount)' \
+        ' VALUES ($1, $2, $3)' \
+        ' ON CONFLICT ON CONSTRAINT slayer_and_gatherable_unique' \
+        ' DO UPDATE' \
+        ' SET amount = $3', slayer_id, gatherable_id, amount)
+      
+    logging.info(f"PUSH - SLAYERS_INVENTORY_GATHERABLES : {slayer_id} {gatherable_id} {amount}")
+
+  async def push_update_item_level(self, cSlayer, cItem):
+    async with self.bot.db_pool.acquire() as conn:
+      await conn.execute('UPDATE slayers_inventory_items' \
+        ' SET level = $1' \
+        ' WHERE slayers_inventory_items.slayer_id = $2 AND slayers_inventory_items.item_id = $3', cItem.level, cSlayer.id, cItem.id)
+      
+    logging.info(f"PUSH - SLAYERS_INVENTORY_ITEMS LEVEL : {cSlayer.id} {cItem.id} {cItem.level}")
+

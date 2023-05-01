@@ -20,6 +20,7 @@ class ActiveList:
     self.active_slayers = {}
     self.active_battles = {}
     self.active_lootrecap = {}
+    self.active_gather = {}
 
   async def remove_inactive(self):
     inactive_slayers = []
@@ -98,6 +99,20 @@ class ActiveList:
       await self.active_battles[message_id].updateBattle(timeout=True, poweroff=True)
       await asyncio.sleep(2)
     self.active_battles = {}
+
+  ##########ACTIVE GATHER
+  def add_gather(self, message_id, Gather):
+    self.active_gather[message_id] = Gather
+  
+  def remove_gather(self, message_id):
+    if message_id in self.active_gather:
+      self.active_gather.pop(message_id)
+
+  async def clear_all_gather(self):
+    for message_id in self.active_gather:
+      await self.active_gather[message_id].end_view(poweroff=True)
+      await asyncio.sleep(2)
+    self.active_gather = {}
 
   ###########ACTIVE LOOT RECAP
   def add_recap(self, message_id, Recap):

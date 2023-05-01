@@ -18,6 +18,8 @@ class BattleMonster(lib.commands.Bot):
         self.Gatherables = {}
         self.GatherablesSpawn = {}
         self.Rarities = {}
+        self.Elements = {}
+        self.PetFood = {}
 
         super().__init__(
             command_prefix='$',
@@ -27,7 +29,8 @@ class BattleMonster(lib.commands.Bot):
             'Cogs.Commands_Admin',
             'Cogs.Sync',
             'Cogs.Commands_Slayer',
-            'Cogs.Context_Menus'
+            'Cogs.Context_Menus',
+            'Cogs.Commands_Enhancement'
         ]
 
     async def setup_hook(self):
@@ -38,35 +41,42 @@ class BattleMonster(lib.commands.Bot):
             await self.load_extension(ext)
     
     async def update_bot(self):
+        #TODO Mettre tout ça dans le dBManager
         async with self.db_pool.acquire() as conn:
             async with conn.transaction():
                 self.rGamemodes = await conn.fetch(lib.qGameModes.SELECT_ALL)    
                 rGameModesLootSlot = await conn.fetch(lib.qGameModesLootSlot.SELECT_ALL) 
                 rGameModesSpawnRate = await conn.fetch(lib.qGameModesSpawnRate.SELECT_ALL)
+                #TODO rBaseBonuses -> Class
                 self.rBaseBonuses = await conn.fetchrow(lib.qBaseBonuses.SELECT_ALL)   
                 rChannels = await conn.fetch(lib.qChannels.SELECT_ALL, lib.tokens.TestProd)  
                 rElements = await conn.fetch(lib.qElements.SELECT_ALL)
                 rRarities = await conn.fetch(lib.qRarities.SELECT_ALL)
+                #TODO rSlots -> Class
                 rSlots = await conn.fetch(lib.qSlots.SELECT_ALL)
                 self.rSpe = await conn.fetch(lib.qSpe.SELECT_ALL)
                 rGatherables = await conn.fetch(lib.qGatherables.SELECT_ALL)
                 rGatherablesSpawn = await conn.fetch(lib.qGatherables_Spawn.SELECT_ALL)
+                rPetFood = await conn.fetch("SELECT * FROM pet_food")
 
         self.rGameModesLootSlot = lib.Toolbox.transformGamemodesLootSlot(rGameModesLootSlot)
         self.rGameModesSpawnRate = lib.Toolbox.transformGamemodesSpawnRate(rGameModesSpawnRate)
         self.rSlots = lib.Toolbox.transformSlots(rSlots) 
-        self.rElements = lib.Toolbox.transformRaritiesANDElements(rElements) 
         self.rChannels = lib.Toolbox.transformChannels(rChannels)
 
         #Rarities
-        for row in rRarities: self.Rarities[row["name"]] = lib.Rarities(row)
+        for row in rRarities: self.Rarities.update({row["name"]: lib.Rarities(row)})
+        #Elements
+        for row in rElements: self.Elements.update({row["name"]: lib.Elements(row)})
         #Gatherables
-        for row in rGatherables: self.Gatherables[row["id"]] = lib.Gatherables(row, self.Rarities[row["rarity"]].gatherables_spawn)
+        for row in rGatherables: self.Gatherables.update({row["id"]: lib.Gatherables(row, self.Rarities[row["rarity"]].gatherables_spawn)})
         #GatherablesSpawn
-        for row in rGatherablesSpawn: self.GatherablesSpawn[row["id"]] = lib.GatherablesSpawn(row, self.Gatherables)
+        for row in rGatherablesSpawn: self.GatherablesSpawn.update({row["id"]: lib.GatherablesSpawn(row, self.Gatherables)})
+        #PetGood
+        for row in rPetFood: self.PetFood.update({row["pet_id"]: self.Gatherables[row["food_id"]]})
 
     async def on_ready(self):
-        print('Bot is Ready!')
+        print(">>>>>>>>>> BOT LIVE <<<<<<<<<<")
 
 async def main():
     async with asyncpg.create_pool(user=user, password=password,

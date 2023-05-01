@@ -3,4 +3,7 @@ gitignore/
 .DS_Store
 dB_Manager.py
 .tmp.driveupload/
+.tmp.drivedownload/
 .gitignore
+logs.log
+.log

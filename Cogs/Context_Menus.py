@@ -25,4 +25,4 @@ class Context_Menus(lib.commands.Cog):
 
 async def setup(bot: lib.commands.Bot) -> None:
   await bot.add_cog(Context_Menus(bot))
-  print("Context_Menus : √")
+  lib.logging.warning("Context_Menus : OK")
