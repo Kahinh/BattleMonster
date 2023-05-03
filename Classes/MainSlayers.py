@@ -186,7 +186,7 @@ class MSlayer:
 
     def addMoney(self, money):
         self.cSlayer.money += money
-    
+
     def removeMoney(self, money):
         self.cSlayer.money -= money
 

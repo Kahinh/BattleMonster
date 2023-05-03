@@ -38,6 +38,7 @@ from Views.LootReview import LootReviewView
 from Views.CmdEvent import CmdEvent
 from Views.Gather import GatherView
 from Views.Enhancement_Pets import EnhancementPetsView
+from Views.Enhancement_Mythics import EnhancementMythicsView
 
 #CLASSES
 from Classes.DamageDone import DamageDone

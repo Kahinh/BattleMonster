@@ -48,7 +48,8 @@ class Battle:
       'attacks_done': 0,
       'loots': 0,
       'kills': 0,
-      'money' : 0
+      'money' : 0,
+      'mythic_stones' : 0
     }
 
   def isDataOK(self):
@@ -207,9 +208,10 @@ class Battle:
   async def calculateLoot(self):
     loots = {}
     behemoths_killed_achievement_request = []
+    mythic_stones_request = []
     #On fait le tour des Monstres.
     for i in self.Monsters:
-      if self.Monsters[i].base_hp == 0 and len(self.LootTable[i]) > 0:
+      if self.Monsters[i].base_hp == 0: #and len(self.LootTable[i]) > 0:
         #On fait le tour de tous les slayers ayant attaqué
         for id in self.Monsters[i].slayers_hits:
             #On ne considère que les éligibles
@@ -219,6 +221,10 @@ class Battle:
                 Slayer = await self.bot.ActiveList.get_Slayer(id, "")
                 Slayer.cSlayer.achievements["monsters_killed"] += 1
                 behemoths_killed_achievement_request.append((1, id))
+                if self.Monsters[i].rarity == "mythic":
+                  Slayer.cSlayer.inventory_gatherables[5] += 1
+                  mythic_stones_request.append((id, 5, 1))
+                  self.stats["mythic_stones"] += 1
 
                 #On prend en compte le roll_dice
                 for j in range(self.Monsters[i].roll_dices):
@@ -231,6 +237,8 @@ class Battle:
 
     #Achievement Behemoths Killed
     await self.bot.dB.push_behemoths_killed_achievement(behemoths_killed_achievement_request)
+    if self.Monsters[i].rarity == "mythic":
+      await self.bot.dB.push_MythicStones(mythic_stones_request)
     #On requete les items dans la dB
     await self.getrowLoot(loots)
 

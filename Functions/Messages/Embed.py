@@ -45,6 +45,8 @@ def create_embed_end_battle(Battle, timeout):
     description += f"\n💀 Slayers morts : {Battle.stats['kills']}"
     description += f"\n🎁 Butins récupérés : {Battle.stats['loots']}"
     description += f"\n🪙 Or distribué : {Battle.stats['money']}"
+    if Battle.stats["mythic_stones"] != 0:
+       description += f"\n💠 Pierres Mythiques : {Battle.stats['mythic_stones']}" 
     embed=lib.discord.Embed(title=title, description=description, color=0xe74c3c if timeout else 0x2ecc71)
     embed.set_thumbnail(url='https://images-ext-2.discordapp.net/external/K5FrBGB9d-8IbCg_bnZyheglS9Q61aXohV4hJSMiImA/%3Fcb%3D20200801054948/https/static.wikia.nocookie.net/dauntless_gamepedia_en/images/1/13/Hunt_Icon.png/revision/latest')
     return embed
@@ -313,11 +315,32 @@ def create_embed_enhancement_pet(Slayer, pet_list, index, bot):
         description += pet_list[index].getDisplayStats()
 
         description += "\n\n**__Nourriture :__**"
-        description += f"\n{bot.PetFood[pet_list[index].id].display_emote} {bot.PetFood[pet_list[index].id].name} - Requis : {100-pet_list[index].level}"
+        description += f"\n{bot.PetFood[pet_list[index].id].display_emote} {bot.PetFood[pet_list[index].id].name} - **{Slayer.cSlayer.inventory_gatherables[bot.PetFood[pet_list[index].id].id]}/{100-pet_list[index].level}** requis pour atteindre le nv. max."
 
         embed=lib.discord.Embed(title=f"{pet_list[index].name} - Niveau : {pet_list[index].level}",
         description=description,
         color=0x1abc9c)   
 
         embed.set_thumbnail(url=pet_list[index].img_url)
+    return embed
+
+def create_embed_enhancement_mythic(Slayer, mythic_list, index, bot):
+    if mythic_list == []:   
+        embed=lib.discord.Embed(title=f"Pas d'améliorations disponibles",
+        description="Vous ne possédez pas de mythiques améliorables.",
+        color=0x1abc9c)   
+        #embed.set_thumbnail(url=avatar)
+    else:
+        description = mythic_list[index].description
+        description += "\n"
+        description += mythic_list[index].getDisplayStats()
+
+        description += "\n\n**__Améliorations :__**"
+        description += f"\n{bot.Gatherables[5].display_emote} {bot.Gatherables[5].name} - **{Slayer.cSlayer.inventory_gatherables[5]}** disponibles."
+
+        embed=lib.discord.Embed(title=f"{mythic_list[index].name} - Niveau : {mythic_list[index].level}",
+        description=description,
+        color=0x1abc9c)   
+
+        embed.set_thumbnail(url=mythic_list[index].img_url)
     return embed

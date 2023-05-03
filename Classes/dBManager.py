@@ -132,3 +132,14 @@ class dB:
       
     logging.info(f"PUSH - SLAYERS_INVENTORY_ITEMS LEVEL : {cSlayer.id} {cItem.id} {cItem.level}")
 
+  async def push_MythicStones(self, data_mythic_stones):
+    if data_mythic_stones != []:  
+      async with self.bot.db_pool.acquire() as conn :
+        await conn.executemany('INSERT INTO slayers_inventory_gatherables (slayer_id, gatherable_id, amount)' \
+          ' VALUES ($1, $2, $3)' \
+          ' ON CONFLICT ON CONSTRAINT slayer_and_gatherable_unique' \
+          ' DO UPDATE' \
+          ' SET amount = $3 + slayers_inventory_gatherables.amount', data_mythic_stones)
+  
+    logging.info(f"PUSH - MYTHIC STONES : {data_mythic_stones}")
+
