@@ -53,7 +53,14 @@ class Battle:
     }
 
   def isDataOK(self):
+    #TODO Logging
     if self.name not in self.bot.rGameModesLootSlot or self.name not in self.bot.rGameModesSpawnRate or (self.interaction is None and self.name not in self.bot.rChannels):
+      if self.name not in self.bot.rGameModesLootSlot:
+        print(f"{self.name} not in rGameModesLootSlot")
+      if self.name not in self.bot.rGameModesSpawnRate:
+        print(f"{self.name} not in rGameModesSpawnRate")
+      if self.name not in self.bot.rChannels:
+        print(f"{self.name} not in rChannels")
       return False
     else:
       return True

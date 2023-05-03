@@ -5,7 +5,7 @@ class GatherablesSpawn:
     id: int
     channel_id: int
     description: str
-    spawn_weight: int
+    spawn_weight: float
     gatherables: list
 
     def __init__(
@@ -16,7 +16,7 @@ class GatherablesSpawn:
         self.id = rGatherablesSpawn["id"]
         self.channel_id = rGatherablesSpawn["channel_id"]
         self.description = rGatherablesSpawn["description"]
-        self.spawn_weight = int(rGatherablesSpawn["spawn_weight"])
+        self.spawn_weight = float(rGatherablesSpawn["spawn_weight"])
         
         #class ID des gatherables
         gatherables_id = rGatherablesSpawn["gatherables_ids"].strip('][').split(',')
