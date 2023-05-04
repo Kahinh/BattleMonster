@@ -234,9 +234,6 @@ class Battle:
             if self.Monsters[i].slayers_hits[id].eligible:
                 
                 #On crée le storage des loots money / items / stones
-                self.loots[id] = {}
-                self.loots[id]["mythic_stones"] = 0
-
                 #Achievement Behemoths Killed
                 Slayer = await self.bot.ActiveList.get_Slayer(id, "")
                 Slayer.cSlayer.achievements["monsters_killed"] += 1
@@ -245,6 +242,10 @@ class Battle:
                   Slayer.cSlayer.inventory_gatherables[5] += 1
                   mythic_stones_request.append((id, 5, 1))
                   self.stats["mythic_stones"] += 1
+
+                  #Loots id
+                  if id not in self.loots: self.loots[id] = {}
+                  if "mythic_stones" not in self.loots[id]: self.loots[id]["mythic_stones"] = 0
                   self.loots[id]["mythic_stones"] += 1
 
                 #On prend en compte le roll_dice
@@ -270,8 +271,9 @@ class Battle:
 
     for id in loots:
       Slayer = await self.bot.ActiveList.get_Slayer(id, "")
-      self.loots[id]["items"] = []
-      self.loots[id]["money"] = 0
+      if id not in self.loots: self.loots[id] = {}
+      if "items" not in self.loots[id]: self.loots[id]["items"] = []
+      if "money" not in self.loots[id]: self.loots[id]["money"] = 0
 
       for row in loots[id]:
 
