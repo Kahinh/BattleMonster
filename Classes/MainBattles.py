@@ -129,6 +129,11 @@ class Battle:
           if Slayer.cSlayer.Spe.id != 8: #Berserker
             for i in range(Slayer.cSlayer.getNbrHit()):
               attack, contents = Slayer.cSlayer.dealDamage(hit, cMonster)
+
+              #Pet crit
+              if "‼️" in contents:
+                Slayer.getPet(rate=0.004, pets=[230])
+
               content += contents
               damage.append(attack)
               cMonster.getDamage(attack)
@@ -168,6 +173,10 @@ class Battle:
                 content += message
               else:
                 attack, contents = Slayer.cSlayer.dealDamage(hit, cMonster)
+                #Pet crit
+                if "‼️" in contents:
+                  Slayer.getPet(rate=0.004, pets=[230])
+
                 content += contents
                 damage.append(attack)
                 cMonster.getDamage(attack)
@@ -223,6 +232,10 @@ class Battle:
         for id in self.Monsters[i].slayers_hits:
             #On ne considère que les éligibles
             if self.Monsters[i].slayers_hits[id].eligible:
+                
+                #On crée le storage des loots money / items / stones
+                self.loots[id] = {}
+                self.loots[id]["mythic_stones"] = 0
 
                 #Achievement Behemoths Killed
                 Slayer = await self.bot.ActiveList.get_Slayer(id, "")
@@ -232,6 +245,7 @@ class Battle:
                   Slayer.cSlayer.inventory_gatherables[5] += 1
                   mythic_stones_request.append((id, 5, 1))
                   self.stats["mythic_stones"] += 1
+                  self.loots[id]["mythic_stones"] += 1
 
                 #On prend en compte le roll_dice
                 for j in range(self.Monsters[i].roll_dices):
@@ -256,7 +270,6 @@ class Battle:
 
     for id in loots:
       Slayer = await self.bot.ActiveList.get_Slayer(id, "")
-      self.loots[id] = {}
       self.loots[id]["items"] = []
       self.loots[id]["money"] = 0
 

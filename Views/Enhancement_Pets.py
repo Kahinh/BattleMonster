@@ -92,7 +92,7 @@ class EnhancementPetsView(lib.discord.ui.View):
 
     def disable_enable_previous_next_buttons(self):
         len_list = len(self.pet_list)
-        if self.index == len_list - 1:
+        if self.index == len_list - 1  or len_list == 0:
             for item in self.children:
                 if hasattr(item, "label"):
                     if item.label==">>":
@@ -159,7 +159,7 @@ class EnhancementPetsView(lib.discord.ui.View):
             await interaction.response.edit_message(embed=self.embed, view=self) 
 
     async def close_view(self, embed=None):
-        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.id, "inventaire")
+        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.id, "ameliopet")
         message = await self.interaction.original_response()
         if embed is not None:
             await message.edit(embed=embed, view=None)

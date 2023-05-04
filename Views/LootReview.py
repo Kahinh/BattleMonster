@@ -97,9 +97,12 @@ class LootReviewView(lib.discord.ui.View):
             await interaction.response.edit_message(embed=embed, view=self)
 
     async def close_view(self):
-        message = await self.interaction.original_response()
         self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.id, "LootReview")
-        await message.edit(view=None)
+        try:
+            message = await self.interaction.original_response()
+            await message.edit(view=None)
+        except:
+            pass
         self.stop()
 
     async def on_timeout(self) -> None:

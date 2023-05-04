@@ -192,14 +192,15 @@ class MSlayer:
 
     def GetGearScore(self):
         gearscore = 0
+        #TODO A refaire plus propre avec une sous fonction pour reprendre le gearscore +=
         for item in self.cSlayer.inventory_items:
             if self.cSlayer.inventory_items[item].equipped:
                 if (self.cSlayer.Spe.id == 2 and self.cSlayer.inventory_items[item].slot == "weapon"): #Escrime Double
-                    gearscore += self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore / 2
+                    gearscore += (self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore + self.cSlayer.inventory_items[item].rarity) / 2
                 elif (self.cSlayer.Spe.id == 3 and (self.cSlayer.inventory_items[item].slot == "shield" or self.cSlayer.inventory_items[item].slot == "weapon")): #Templier
-                    gearscore += self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore / 2
+                    gearscore += (self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore + self.cSlayer.inventory_items[item].rarity) / 2
                 else:
-                    gearscore += self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore
+                    gearscore += self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore + self.cSlayer.inventory_items[item].level
         self.cSlayer.gearscore = gearscore
 
     def equippedonSlot(self, slot):
@@ -300,7 +301,11 @@ class Slayer:
         self.stats = stats
         self.slots_count = slots_count
         self.bot = bot
+
+        #regen
         self.lastregen = datetime.datetime.timestamp(datetime.datetime.now()) - 1200
+        self.firstregen = False
+
         self.gearscore = 0
 
         self.mult_damage = 0 #Spe Démon
@@ -323,6 +328,7 @@ class Slayer:
             "parry_s" : 0,
             "fail_l" : rBaseBonuses["fail_l"] + self.Spe.bonuses["fail_l"],
             "fail_h" : rBaseBonuses["fail_h"] + self.Spe.bonuses["fail_h"],
+            "fail_s" : 0,
             "damage_weapon" : 0 + self.Spe.bonuses["damage_weapon"],
             "damage_l" : rBaseBonuses["damage_l"] + self.Spe.bonuses["damage_l"],
             "damage_h" : rBaseBonuses["damage_h"] + self.Spe.bonuses["damage_h"],

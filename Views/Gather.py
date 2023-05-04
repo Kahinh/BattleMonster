@@ -33,7 +33,7 @@ class Gather_Button(lib.discord.ui.Button):
 
 class GatherView(lib.discord.ui.View):
     def __init__(self, Gather):
-        super().__init__(timeout=600)
+        super().__init__(timeout=200)
         self.bot = Gather.bot
         self.cGather = Gather
         self.Slayer_user = []
@@ -43,7 +43,7 @@ class GatherView(lib.discord.ui.View):
         self.add_item(Gather_Button())
 
     async def end_view(self, poweroff=False):
-        await self.message.edit(view=None)
+        await self.message.delete()
         if not poweroff:
             #On remove le combat de la liste
             self.bot.ActiveList.remove_gather(self.message.id)

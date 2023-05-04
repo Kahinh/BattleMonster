@@ -225,7 +225,9 @@ def create_embed_spe(Slayer, cSpe):
 
 def create_embed_recap_loot(bot, recap_loot):
 
-    description = f"🪙 récupéré : {recap_loot['money']}"
+    description = f"🪙 récupérés : {recap_loot['money']}"
+    if recap_loot['mythic_stones'] != 0:
+        description = f"💠 récupérées : {recap_loot['mythic_stones']}"
     if recap_loot['items'] != []:
         description += f"\n\n__Item(s) récupéré(s) :__"
         for cItem in recap_loot['items']:

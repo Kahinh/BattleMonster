@@ -62,9 +62,13 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
         if Slayer.cSlayer.dead:
           waiting_time = 1200 #7200
           #Si on a attendu suffisamment
-          if datetime.datetime.timestamp(datetime.datetime.now()) - Slayer.cSlayer.lastregen >= waiting_time:
+          if datetime.datetime.timestamp(datetime.datetime.now()) - Slayer.cSlayer.lastregen >= waiting_time or not Slayer.cSlayer.firstregen:
             #On rez
+
+            #Register Regen
             Slayer.cSlayer.lastregen = datetime.datetime.timestamp(datetime.datetime.now())
+            Slayer.cSlayer.firstregen = True
+
             Slayer.cSlayer.dead = False
             regen = Slayer.cSlayer.regen()
             await self.bot.dB.push_slayer_data(Slayer.cSlayer)
@@ -75,9 +79,13 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
         else:
           waiting_time = 600 #3600
           #Si on a attendu suffisamment
-          if datetime.datetime.timestamp(datetime.datetime.now()) - Slayer.cSlayer.lastregen >= waiting_time:
+          if datetime.datetime.timestamp(datetime.datetime.now()) - Slayer.cSlayer.lastregen >= waiting_time or not Slayer.cSlayer.firstregen:
             regen = Slayer.cSlayer.regen()
+
+            #Register Regen
             Slayer.cSlayer.lastregen = datetime.datetime.timestamp(datetime.datetime.now())
+            Slayer.cSlayer.firstregen = True
+
             await self.bot.dB.push_slayer_data(Slayer.cSlayer)
             await interaction.followup.send(content=f"Régénération effectuée : Tu as récupéré {regen} ❤️", ephemeral=True)
             await Slayer.getPet(pets=[192])

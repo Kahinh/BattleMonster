@@ -44,6 +44,7 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
         self.bot.ActiveList.obsolete_interfaces()
         await self.bot.ActiveList.clear_all_battles()
         await self.bot.ActiveList.clear_all_recap()
+        await self.bot.ActiveList.clear_all_gather()
     else:
       self.bot.power = True
     await interaction.followup.send(content=f"BOT : {power.value} / RESET BATTLES : {reset.value}", ephemeral=True)

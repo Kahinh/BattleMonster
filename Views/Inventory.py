@@ -192,7 +192,7 @@ class InventoryView(lib.discord.ui.View):
         self.add_item(Element_Dropdown(self.bot.Elements))
         self.add_item(Rarity_Dropdown(self.bot.Rarities))
 
-        lib.Toolbox.disable_enable_InventoryView(self.children, self.items_list_filtered, self.index)
+        self.disable_enable_InventoryView()
 
     def get_itemsequipped_list(self):
         #On get si on a des items équipés à cet endroit là
@@ -229,7 +229,7 @@ class InventoryView(lib.discord.ui.View):
                 cItem = None
 
             embed = lib.Embed.create_embed_item(self.bot, None if self.items_list_filtered == [] else self.items_list_filtered[self.index], self.Slayer, cItem)
-            lib.Toolbox.disable_enable_InventoryView(self.children, self.items_list_filtered, self.index)
+            self.disable_enable_InventoryView()
             view = self  
 
             if interaction is None:
@@ -237,6 +237,42 @@ class InventoryView(lib.discord.ui.View):
                 await message.edit(embed=embed, view=view)
             else:
                 await interaction.response.edit_message(embed=embed, view=view) 
+
+    def disable_enable_InventoryView(self):
+        len_list = len(self.items_list_filtered)
+        if self.index == len_list - 1 or len_list == 0:
+            for item in self.children:
+                if hasattr(item, "label"):
+                    if item.label==">>":
+                        item.disabled = True   
+        if self.index > 0:
+            for item in self.children:
+                if hasattr(item, "label"):
+                    if item.label=="<<":
+                        item.disabled = False 
+        if self.index == 0:
+            for item in self.children:
+                if hasattr(item, "label"):
+                    if item.label=="<<":
+                        item.disabled = True
+        if self.index < len_list - 1:
+            for item in self.children:
+                if hasattr(item, "label"):
+                    if item.label==">>":
+                        item.disabled = False
+        for item in self.children:
+            if hasattr(item, "label"):
+                if item.label=="Équiper":
+                    if len(self.items_list_filtered) > 0 :
+                        if self.items_list_filtered[self.index].equipped:
+                            item.disabled = True
+                        else:
+                            item.disabled = False
+                    else:
+                        item.disabled = True
+                if item.label=="Vendre":
+                    if len(self.items_list_filtered) == 0 :
+                        item.disabled = True
 
     async def close_view(self):
         self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.id, "inventaire")
