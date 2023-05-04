@@ -196,9 +196,9 @@ class MSlayer:
         for item in self.cSlayer.inventory_items:
             if self.cSlayer.inventory_items[item].equipped:
                 if (self.cSlayer.Spe.id == 2 and self.cSlayer.inventory_items[item].slot == "weapon"): #Escrime Double
-                    gearscore += (self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore + self.cSlayer.inventory_items[item].rarity) / 2
+                    gearscore += (self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore + self.cSlayer.inventory_items[item].level) / 2
                 elif (self.cSlayer.Spe.id == 3 and (self.cSlayer.inventory_items[item].slot == "shield" or self.cSlayer.inventory_items[item].slot == "weapon")): #Templier
-                    gearscore += (self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore + self.cSlayer.inventory_items[item].rarity) / 2
+                    gearscore += (self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore + self.cSlayer.inventory_items[item].level) / 2
                 else:
                     gearscore += self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore + self.cSlayer.inventory_items[item].level
         self.cSlayer.gearscore = gearscore
