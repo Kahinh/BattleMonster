@@ -132,7 +132,7 @@ class Battle:
 
               #Pet crit
               if "‼️" in contents:
-                Slayer.getPet(rate=0.004, pets=[230])
+                await Slayer.getPet(rate=0.004, pets=[230])
 
               content += contents
               damage.append(attack)
@@ -175,7 +175,7 @@ class Battle:
                 attack, contents = Slayer.cSlayer.dealDamage(hit, cMonster)
                 #Pet crit
                 if "‼️" in contents:
-                  Slayer.getPet(rate=0.004, pets=[230])
+                  await Slayer.getPet(rate=0.004, pets=[230])
 
                 content += contents
                 damage.append(attack)
