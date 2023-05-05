@@ -546,12 +546,13 @@ class Slayer:
             content += f"\n> Tu es mort !"
             self.dead = True
             self.lastregen = datetime.datetime.timestamp(datetime.datetime.now())
+            self.firstregen = True
         else:
             content += f"\n> Il te reste {int(self.stats['total_max_health'] - self.damage_taken)}/{self.stats['total_max_health']} ❤️ !"
         return self.dead, content
     
     def regen(self):
-        regen = 0.1 * self.stats["total_max_health"]
+        regen = 0.3 * self.stats["total_max_health"]
         regen = min(self.damage_taken, regen)
         self.damage_taken -= regen
         return regen
