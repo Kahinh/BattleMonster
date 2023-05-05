@@ -7,3 +7,4 @@ dB_Manager.py
 .gitignore
 logs.log
 .log
+.env

@@ -81,7 +81,7 @@ class LootReviewView(lib.discord.ui.View):
         self.clear_items()
         if self.item_displayed is not None:
             self.add_item(Equip_Button())
-            self.add_item(Sell_Button())
+            #self.add_item(Sell_Button())
 
         self.add_item(Loot_Dropdown(self.bot, self.recap_loot))
         if self.item_displayed is None:
