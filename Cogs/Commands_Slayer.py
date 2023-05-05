@@ -87,8 +87,8 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
             Slayer.cSlayer.firstregen = True
 
             await self.bot.dB.push_slayer_data(Slayer.cSlayer)
-            await interaction.followup.send(content=f"Régénération effectuée : Tu as récupéré {regen} ❤️", ephemeral=True)
             await Slayer.getPet(pets=[192])
+            await interaction.followup.send(content=f"Régénération effectuée : Tu as récupéré {regen} ❤️", ephemeral=True)
           else:
             await interaction.followup.send(content=f"Malheureusement, il te faut encore attendre un peu !\nProchaine régénération : **{int(Slayer.cSlayer.lastregen + waiting_time - datetime.datetime.timestamp(datetime.datetime.now()))}**s", ephemeral=True)
       else:
