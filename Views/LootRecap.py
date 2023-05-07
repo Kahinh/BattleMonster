@@ -9,7 +9,7 @@ class Details_Button(lib.discord.ui.Button):
             embed = lib.Embed.create_embed_recap_loot(self.view.bot, self.view.Battle.loots[interaction.user.id])
             Slayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
 
-            if self.view.Battle.loots[interaction.user.id]["items"] != []:
+            if self.view.Battle.loots[interaction.user.id].get("items", []) != []:
                 view=lib.LootReviewView(self.view.bot, self.view.Battle.loots[interaction.user.id], Slayer, interaction)
                 await self.view.bot.ActiveList.add_interface(interaction.user.id, "LootReview", view)
                 await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
