@@ -6,11 +6,11 @@ class Light_Button(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         await interaction.response.defer(ephemeral=True)
-        content, damage = await self.view.Battle.getAttack(interaction, "l")
+        content, damage, monster_killed = await self.view.Battle.getAttack(interaction, "l")
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
         if damage != []:
-            await self.view.updateBattle()
+            await self.view.updateBattle(monster_killed=monster_killed)
 
 class Heavy_Button(lib.discord.ui.Button):
     def __init__(self):
@@ -18,11 +18,11 @@ class Heavy_Button(lib.discord.ui.Button):
         
     async def callback(self, interaction: lib.discord.Interaction):
         await interaction.response.defer(ephemeral=True)
-        content, damage = await self.view.Battle.getAttack(interaction, "h")
+        content, damage, monster_killed = await self.view.Battle.getAttack(interaction, "h")
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
         if damage != []:
-            await self.view.updateBattle()
+            await self.view.updateBattle(monster_killed=monster_killed)
 
 
 class Special_Button(lib.discord.ui.Button):
@@ -31,11 +31,11 @@ class Special_Button(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         await interaction.response.defer(ephemeral=True)
-        content, damage = await self.view.Battle.getAttack(interaction, "s")
+        content, damage, monster_killed = await self.view.Battle.getAttack(interaction, "s")
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
         if damage != []:
-            await self.view.updateBattle()
+            await self.view.updateBattle(monster_killed=monster_killed)
         
 
 class BattleView(lib.discord.ui.View):
@@ -48,7 +48,7 @@ class BattleView(lib.discord.ui.View):
         self.add_item(Heavy_Button())
         self.add_item(Special_Button())
 
-    async def updateBattle(self, timeout=False, poweroff=False):
+    async def updateBattle(self, timeout=False, poweroff=False, monster_killed=False):
         if self.Battle.EndNotPublished:
             if hasattr(self, "interaction"): message = await self.interaction.original_response()
             if hasattr(self, "message"): message = self.message
@@ -84,7 +84,10 @@ class BattleView(lib.discord.ui.View):
             else:
                 embed = lib.Embed.create_embed_battle(self.Battle)
                 view = self
-                await message.edit(embed=embed, view=view)
+                if monster_killed:
+                    await message.edit(content=self.Battle.role_tracker_content(), embed=embed, view=view)
+                else:
+                    await message.edit(embed=embed, view=view)
 
     async def on_timeout(self) -> None:
         await self.updateBattle(True)

@@ -25,86 +25,86 @@ class Item:
     self.rarity = rItem["rarity"]
     self.base_bonuses = {
       "armor" : rItem["armor"],
-      "armor_per" : rItem["armor_per"],
+      "armor_per" : float(rItem["armor_per"]),
       "health" : rItem["health"],
-      "health_per" : rItem["health_per"],
-      "parry_l" : rItem["parry_l"],
-      "parry_h" : rItem["parry_h"],
-      "parry_s" : rItem["parry_s"],
-      "fail_l" : rItem["fail_l"],
-      "fail_h" : rItem["fail_h"],
-      "fail_s" : 0,
+      "health_per" : float(rItem["health_per"]),
+      "parry_l" : float(rItem["parry_l"]),
+      "parry_h" : float(rItem["parry_h"]),
+      "parry_s" : float(rItem["parry_s"]),
+      "fail_l" : float(rItem["fail_l"]),
+      "fail_h" : float(rItem["fail_h"]),
+      "fail_s" : float(0),
       "damage_weapon" : rItem["damage_weapon"],
       "damage_l" : rItem["damage_l"],
       "damage_h" : rItem["damage_h"],
       "damage_s" : rItem["damage_s"],
-      "final_damage_l" : rItem["final_damage_l"],
-      "final_damage_h" : rItem["final_damage_h"],
-      "final_damage_s" : rItem["final_damage_s"],
-      "damage_per_l" : rItem["damage_per_l"],
-      "damage_per_h" : rItem["damage_per_h"],
-      "damage_per_s" : rItem["damage_per_s"],
+      "final_damage_l" : float(rItem["final_damage_l"]),
+      "final_damage_h" : float(rItem["final_damage_h"]),
+      "final_damage_s" : float(rItem["final_damage_s"]),
+      "damage_per_l" : float(rItem["damage_per_l"]),
+      "damage_per_h" : float(rItem["damage_per_h"]),
+      "damage_per_s" : float(rItem["damage_per_s"]),
       "letality_l" : rItem["letality_l"],
       "letality_h" : rItem["letality_h"],
       "letality_s" : rItem["letality_s"],
-      "letality_per_l" : rItem["letality_per_l"],
-      "letality_per_h" : rItem["letality_per_h"],
-      "letality_per_s" : rItem["letality_per_s"],
-      "crit_chance_l" : rItem["crit_chance_l"],
-      "crit_chance_h" : rItem["crit_chance_h"],
-      "crit_chance_s" : rItem["crit_chance_s"],
-      "crit_damage_l" : rItem["crit_damage_l"],
-      "crit_damage_h" : rItem["crit_damage_h"],
-      "crit_damage_s" : rItem["crit_damage_s"],
+      "letality_per_l" : float(rItem["letality_per_l"]),
+      "letality_per_h" : float(rItem["letality_per_h"]),
+      "letality_per_s" : float(rItem["letality_per_s"]),
+      "crit_chance_l" : float(rItem["crit_chance_l"]),
+      "crit_chance_h" : float(rItem["crit_chance_h"]),
+      "crit_chance_s" : float(rItem["crit_chance_s"]),
+      "crit_damage_l" : float(rItem["crit_damage_l"]),
+      "crit_damage_h" : float(rItem["crit_damage_h"]),
+      "crit_damage_s" : float(rItem["crit_damage_s"]),
       "special_charge_l" : rItem["special_charge_l"],
       "special_charge_h" : rItem["special_charge_h"],
       "special_charge_s" : rItem["special_charge_s"],
       "stacks_reduction" : rItem["stacks_reduction"],
-      "luck": rItem["luck"] * self.level,
-      "vivacity": rItem["vivacity"] * self.level
+      "luck": float(rItem["luck"]),
+      "vivacity": rItem["vivacity"]
     }
     self.calculate_bonuses()
   
   def calculate_bonuses(self):
     self.bonuses = {
-      "armor" : self.base_bonuses["armor"] * self.level,
-      "armor_per" : self.base_bonuses["armor_per"] * self.level,
-      "health" : self.base_bonuses["health"] * self.level,
-      "health_per" : self.base_bonuses["health_per"] * self.level,
-      "parry_l" : self.base_bonuses["parry_l"] * self.level,
-      "parry_h" : self.base_bonuses["parry_h"] * self.level,
-      "parry_s" : self.base_bonuses["parry_s"] * self.level,
-      "fail_l" : self.base_bonuses["fail_l"] * self.level,
-      "fail_h" : self.base_bonuses["fail_h"] * self.level,
-      "fail_s" : self.base_bonuses["fail_s"] * self.level,
-      "damage_weapon" : self.base_bonuses["damage_weapon"] * self.level,
-      "damage_l" : self.base_bonuses["damage_l"] * self.level,
-      "damage_h" : self.base_bonuses["damage_h"] * self.level,
-      "damage_s" : self.base_bonuses["damage_s"] * self.level,
-      "final_damage_l" : self.base_bonuses["final_damage_l"] * self.level,
-      "final_damage_h" : self.base_bonuses["final_damage_h"] * self.level,
-      "final_damage_s" : self.base_bonuses["final_damage_s"] * self.level,
-      "damage_per_l" : self.base_bonuses["damage_per_l"] * self.level,
-      "damage_per_h" : self.base_bonuses["damage_per_h"] * self.level,
-      "damage_per_s" : self.base_bonuses["damage_per_s"] * self.level,
-      "letality_l" : self.base_bonuses["letality_l"] * self.level,
-      "letality_h" : self.base_bonuses["letality_h"] * self.level,
-      "letality_s" : self.base_bonuses["letality_s"] * self.level,
-      "letality_per_l" : self.base_bonuses["letality_per_l"] * self.level,
-      "letality_per_h" : self.base_bonuses["letality_per_h"] * self.level,
-      "letality_per_s" : self.base_bonuses["letality_per_s"] * self.level,
-      "crit_chance_l" : self.base_bonuses["crit_chance_l"] * self.level,
-      "crit_chance_h" : self.base_bonuses["crit_chance_h"] * self.level,
-      "crit_chance_s" : self.base_bonuses["crit_chance_s"] * self.level,
-      "crit_damage_l" : self.base_bonuses["crit_damage_l"] * self.level,
-      "crit_damage_h" : self.base_bonuses["crit_damage_h"] * self.level,
-      "crit_damage_s" : self.base_bonuses["crit_damage_s"] * self.level,
-      "special_charge_l" : self.base_bonuses["special_charge_l"] * self.level,
-      "special_charge_h" : self.base_bonuses["special_charge_h"] * self.level,
-      "special_charge_s" : self.base_bonuses["special_charge_s"] * self.level,
-      "stacks_reduction" : self.base_bonuses["stacks_reduction"] * self.level,
-      "luck": self.base_bonuses["luck"] * self.level,
-      "vivacity": self.base_bonuses["vivacity"] * self.level
+      "armor" : int(self.base_bonuses["armor"] * self.level),
+      "armor_per" : round(self.base_bonuses["armor_per"] * self.level,4),
+      "health" : int(self.base_bonuses["health"] * self.level),
+      "health_per" : round(self.base_bonuses["health_per"] * self.level,4),
+      "parry_l" : round(self.base_bonuses["parry_l"] * self.level,4),
+      "parry_h" : round(self.base_bonuses["parry_h"] * self.level,4),
+      "parry_s" : round(self.base_bonuses["parry_s"] * self.level,4),
+      "fail_l" : round(self.base_bonuses["fail_l"] * self.level,4),
+      "fail_h" : round(self.base_bonuses["fail_h"] * self.level,4),
+      "fail_s" : round(self.base_bonuses["fail_s"] * self.level,4),
+      "damage_weapon" : int(self.base_bonuses["damage_weapon"] * self.level),
+      "damage_l" : int(self.base_bonuses["damage_l"] * self.level),
+      "damage_h" : int(self.base_bonuses["damage_h"] * self.level),
+      "damage_s" : int(self.base_bonuses["damage_s"] * self.level),
+      "final_damage_l" : round(self.base_bonuses["final_damage_l"] * self.level,4),
+      "final_damage_h" : round(self.base_bonuses["final_damage_h"] * self.level,4),
+      "final_damage_s" : round(self.base_bonuses["final_damage_s"] * self.level,4),
+      "damage_per_l" : round(self.base_bonuses["damage_per_l"] * self.level,4),
+      "damage_per_h" : round(self.base_bonuses["damage_per_h"] * self.level,4),
+      "damage_per_s" : round(self.base_bonuses["damage_per_s"] * self.level,4),
+      "letality_l" : int(self.base_bonuses["letality_l"] * self.level),
+      "letality_h" : int(self.base_bonuses["letality_h"] * self.level),
+      "letality_s" : int(self.base_bonuses["letality_s"] * self.level),
+      "letality_per_l" : round(self.base_bonuses["letality_per_l"] * self.level,4),
+      "letality_per_h" : round(self.base_bonuses["letality_per_h"] * self.level,4),
+      "letality_per_s" : round(self.base_bonuses["letality_per_s"] * self.level,4),
+      "crit_chance_l" : round(self.base_bonuses["crit_chance_l"] * self.level,4),
+      "crit_chance_h" : round(self.base_bonuses["crit_chance_h"] * self.level,4),
+      "crit_chance_s" : round(self.base_bonuses["crit_chance_s"] * self.level,4),
+      "crit_damage_l" : round(self.base_bonuses["crit_damage_l"] * self.level,4),
+      "crit_damage_h" : round(self.base_bonuses["crit_damage_h"] * self.level,4),
+      "crit_damage_s" : round(self.base_bonuses["crit_damage_s"] * self.level,4),
+      "special_charge_l" : int(self.base_bonuses["special_charge_l"] * self.level),
+      "special_charge_h" : int(self.base_bonuses["special_charge_h"] * self.level),
+      "special_charge_s" : int(self.base_bonuses["special_charge_s"] * self.level),
+      "stacks_reduction" : int(self.base_bonuses["stacks_reduction"] * self.level),
+      "luck": round(self.base_bonuses["luck"] * self.level,4),
+      "vivacity": int(self.base_bonuses["vivacity"] * self.level)
     }
 
   def equip(self):
@@ -125,11 +125,11 @@ class Item:
           if bonus.find("_") != -1 and bonus[-1:] in ["l", "h", "s"]:
             if self.bonuses[bonus[:-1]+"l"] == self.bonuses[bonus[:-1]+"h"] == self.bonuses[bonus[:-1]+"s"]:
               if bonus.find("l") != -1:
-                desc_stat += f"\n- {bonus[:-2]} : **{self.bonuses[bonus]}**" 
+                desc_stat += f"\n- {bonus[:-2]} : **{self.format_float_int_numbers(self.bonuses[bonus])}**" 
             else:
-                desc_stat += f"\n- {bonus} : **{self.bonuses[bonus]}**"
+                desc_stat += f"\n- {bonus} : **{self.format_float_int_numbers(self.bonuses[bonus])}**"
           else:
-            desc_stat += f"\n- {bonus} : **{self.bonuses[bonus]}**"      
+            desc_stat += f"\n- {bonus} : **{self.format_float_int_numbers(self.bonuses[bonus])}**"      
       else:
         if self.bonuses[bonus] != 0 or cItem2.bonuses[bonus] != 0:
           if bonus.find("_") != -1 and bonus[-1:] in ["l", "h", "s"]:
@@ -146,7 +146,7 @@ class Item:
                 else:
                   emote = ""
 
-                desc_stat += f"\n- {bonus[:-2]} : **{self.bonuses[bonus]}** [← {cItem2.bonuses[bonus]}] {emote}"
+                desc_stat += f"\n- {bonus[:-2]} : **{self.format_float_int_numbers(self.bonuses[bonus])}** [← {self.format_float_int_numbers(cItem2.bonuses[bonus])}] {emote}"
             else:
 
               #emote
@@ -159,7 +159,7 @@ class Item:
               else:
                 emote = ""
 
-              desc_stat += f"\n- {bonus} : **{self.bonuses[bonus]}** [← {cItem2.bonuses[bonus]}] {emote}"
+              desc_stat += f"\n- {bonus} : **{self.format_float_int_numbers(self.bonuses[bonus])}** [← {self.format_float_int_numbers(cItem2.bonuses[bonus])}] {emote}"
           else:
 
             #emote
@@ -172,9 +172,15 @@ class Item:
             else:
               emote = ""
 
-            desc_stat += f"\n- {bonus} : **{self.bonuses[bonus]}** [← {cItem2.bonuses[bonus]}] {emote}"
+            desc_stat += f"\n- {bonus} : **{self.format_float_int_numbers(self.bonuses[bonus])}** [← {self.format_float_int_numbers(cItem2.bonuses[bonus])}] {emote}"
 
     return desc_stat
+
+  def format_float_int_numbers(self, number):
+    if isinstance(number, float):
+      return f"{round(number*100,2)}%"
+    else:
+      return f"{number}"
 
   async def update_item_level(self, level_upgrade, cSlayer):
       self.level += level_upgrade

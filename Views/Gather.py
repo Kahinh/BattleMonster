@@ -11,19 +11,27 @@ class Gather_Button(lib.discord.ui.Button):
 
             if interaction.user.id not in self.view.Slayer_user:
 
-                #On enregistre que le joueur a joué pour pas qu'il puisse utiliser à nouveau
-                self.view.Slayer_user.append(interaction.user.id)
-
-                nbr = 1
-                self.view.stock -= nbr
-                embed = lib.Embed.create_embed_gatherables_gathered(self.view.cGather, nbr)
-                await interaction.followup.send(embed=embed, ephemeral=True)
-
                 Slayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, "")
-                await Slayer.update_inventory_gatherables(self.view.cGather.gatherable_id, nbr)
+                if Slayer.cSlayer.dead:
+                    await interaction.followup.send("Tu es mort, tu ne peux pas récolter", ephemeral=True)
+                else:
+                    #On enregistre que le joueur a joué pour pas qu'il puisse utiliser à nouveau
+                    self.view.Slayer_user.append(interaction.user.id)
+                    nbr = 1
 
-                if self.view.stock == 0:
-                    await self.view.end_view()
+                    #Si le pet équipé se nourrit de la bouffe, on fait +1
+                    if int(self.view.bot.PetFood[Slayer.cSlayer.slots["pet"][0]].id) == int(self.view.cGather.gatherable_id):
+                        nbr += 1
+                    
+                    #On remove du stock, et on envoie les gatherables dans l'inventaire du slayer. 
+                    self.view.stock -= nbr
+                    embed = lib.Embed.create_embed_gatherables_gathered(self.view.cGather, nbr)
+                    await interaction.followup.send(embed=embed, ephemeral=True)
+                    await Slayer.update_inventory_gatherables(self.view.cGather.gatherable_id, nbr)
+
+                    #end view si le stock est fini
+                    if self.view.stock == 0:
+                        await self.view.end_view()
             
             else:
                 await interaction.followup.send("Tu as déjà récolté ici !", ephemeral=True)

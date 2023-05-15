@@ -9,6 +9,7 @@ class Rarities:
     price: int
     display_emote: str
     gatherables_spawn: int
+    tracker_role_id: int
 
     def __init__(
         self, 
@@ -21,3 +22,4 @@ class Rarities:
         self.price = rRarities["price"]
         self.display_emote = rRarities["display_emote"]
         self.gatherables_spawn = rRarities["gatherables_spawn"]
+        self.tracker_role_id = rRarities["tracker_role_id"]

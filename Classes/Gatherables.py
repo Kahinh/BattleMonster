@@ -27,4 +27,5 @@ class Gatherables:
         self.stock_min = rGatherables["stock_min"]
         self.stock_max = rGatherables["stock_max"]
         self.display_emote = rGatherables["display_emote"]
+        self.tracker_role_id = rGatherables["tracker_role_id"]
         self.spawn_rate = float(spawn_rate)

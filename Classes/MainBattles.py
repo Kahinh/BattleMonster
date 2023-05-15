@@ -1,8 +1,7 @@
-import random
-import os
-import inspect
-import sys
+import random, os, inspect, sys
+
 from dataclasses import dataclass
+from Classes.Opponents import Monster
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -97,18 +96,19 @@ class Battle:
   async def spawnBattle(self, interaction=None):
     embed = lib.Embed.create_embed_battle(self)
     view = lib.BattleView(self) if self.Monsters[self.count].base_hp != 0 else None
+    
     if interaction is None:
       if self.interaction is None:
         channel = self.bot.get_channel(self.bot.rChannels[self.name])
-        view.message = await channel.send(embed=embed, view=view)
+        view.message = await channel.send(content=self.role_tracker_content(), embed=embed, view=view)
         self.bot.ActiveList.add_battle(view.message.id, view)
       else:
         channel = self.bot.get_channel(self.interaction.channel.id)
         self.interaction = None
-        view.message = await channel.send(embed=embed, view=view)
+        view.message = await channel.send(content=self.role_tracker_content(), embed=embed, view=view)
         self.bot.ActiveList.add_battle(view.message.id, view)
     else:
-      await interaction.message.edit(embed=embed, view=view)
+      await interaction.message.edit(content=self.role_tracker_content(), embed=embed, view=view)
 
   async def getAttack(self, interaction, hit):
     #ON RECUPERE LES DONNEES
@@ -212,14 +212,16 @@ class Battle:
     #On update l'embed du combat
     await self.bot.dB.push_slayer_data(Slayer.cSlayer)
 
+    monster_killed = False
     if self.Monsters[self.count].base_hp == 0:
         if self.count == self.spawns_count - 1:
             self.end = True
         else:
             self.count += 1
+            monster_killed = True
 
     #On clôture l'action
-    return content, damage
+    return content, damage, monster_killed
 
   async def calculateLoot(self):
     loots = {}
@@ -239,14 +241,15 @@ class Battle:
                 Slayer.cSlayer.achievements["monsters_killed"] += 1
                 behemoths_killed_achievement_request.append((1, id))
                 if self.Monsters[i].rarity == "mythic":
-                  Slayer.cSlayer.inventory_gatherables[5] += 1
-                  mythic_stones_request.append((id, 5, 1))
-                  self.stats["mythic_stones"] += 1
+                  stones_earned = lib.random.randint(1,3)
+                  Slayer.cSlayer.inventory_gatherables[5] += stones_earned
+                  mythic_stones_request.append((id, 5, stones_earned))
+                  self.stats["mythic_stones"] += stones_earned
 
-                  #Loots id
+                  #mythic stone
                   if id not in self.loots: self.loots[id] = {}
                   if "mythic_stones" not in self.loots[id]: self.loots[id]["mythic_stones"] = 0
-                  self.loots[id]["mythic_stones"] += 1
+                  self.loots[id]["mythic_stones"] += stones_earned
 
                 #On prend en compte le roll_dice
                 for j in range(self.Monsters[i].roll_dices):
@@ -296,90 +299,9 @@ class Battle:
 
     await self.bot.dB.push_loots_money(loots_request, money_request)
 
-@dataclass
-class Monster:
-  #TODO Dataclass
-
-  def __init__(
-    self, 
-    i,
-    Battle,
-    hp_scaling
-    ):
-    self.name = Battle.Monsters[i]["name"]
-    self.description = Battle.Monsters[i]["description"]
-    self.element = Battle.Monsters[i]["element"]
-    self.base_hp = int(Battle.Monsters[i]["base_hp"] * int(max(1,hp_scaling/2)) * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.total_hp = int(Battle.Monsters[i]["base_hp"] * int(max(1,hp_scaling/2)) * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.rarity = Battle.Monsters[i]["rarity"]
-    self.parry = {
-      "parry_chance_l" : float(Battle.Monsters[i]["parry_chance_l"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
-      "parry_chance_h" : float(Battle.Monsters[i]["parry_chance_h"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
-      "parry_chance_s" : 0
-    }
-    self.damage = int(Battle.Monsters[i]["damage"] * Battle.scaling["damage"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.letality = int(Battle.Monsters[i]["letality"] * Battle.scaling["letality"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.letality_per = min(Battle.Monsters[i]["letality_per"] * max(int(Battle.scaling["letality"]/3),1) * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]),1)
-    self.armor = int(Battle.Monsters[i]["armor"] * Battle.scaling["armor"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.armor_cap = int(Battle.Monsters[i]["armor"])
-    self.protect_crit = int(Battle.Monsters[i]["protect_crit"] * Battle.scaling["protect_crit"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.img_url_normal = Battle.Monsters[i]["img_url_normal"]
-    self.img_url_enraged = Battle.Monsters[i]["img_url_enraged"]
-    self.bg_url = Battle.Monsters[i]["bg_url"]
-    self.roll_dices = random.randint(Battle.min_dice, Battle.max_dice)
-
-    self.last_hits = []
-    self.slayers_hits = {}
-
-  def dealDamage(self, Slayer):
-    armor = int(self.reduceArmor(Slayer.cSlayer.stats["total_armor"]))
-    damage = int(self.damage)
-    #Armor
-    damage = int(max(damage * 1000/(1000+armor), 0))
-    #Max HP
-    damage = int(min(damage, Slayer.cSlayer.stats["total_max_health"] - Slayer.cSlayer.damage_taken))
-    return damage, f"\n> - Attaque contrée : Le monstre t'a infligé {int(damage)} dégâts"
-
-  def reduceArmor(self, armor):
-      armor = max((int(armor*(1-float(self.letality_per)))-int(self.letality)), 0)
-      return int(armor)
-
-  def storeLastHits(self, damage, Spe):
-    if Spe.id != 4 and damage != 0:
-      self.last_hits.append(damage)
-      if len(self.last_hits) > 5:
-        self.last_hits.pop(0)
-
-  def isParry(self, hit, Slayer):
-    ParryChance = min(max(self.parry[f"parry_chance_{hit}"] + Slayer.cSlayer.stats[f"total_parry_{hit}"], 0), 1)
-    isParry = random.choices(population=[True, False], weights=[ParryChance, 1-ParryChance], k=1)[0]
-    if isParry:
-      return True
+  def role_tracker_content(self):
+    #TODO Colonne dans gamemode pour activer ou non le roletracker -> Remplacer self.name == "" avec cette donnée
+    if self.name == "" or self.bot.Rarities[self.Monsters[self.count].rarity].tracker_role_id == 0:
+      return ""
     else:
-      return False
-
-  def getDamage(self, damage):
-    self.base_hp -= int(damage)
-
-  def recapDamageTaken(self, damage):  
-    if self.base_hp == 0:
-      return f"\n\n> Le monstre est mort ! 💀"
-    else:
-      return f"\n\n> Le monstre possède désormais {int(self.base_hp)}/{int(self.total_hp)} ❤️"
-
-  def slayer_canAttack(self, cSlayer):
-    if cSlayer.id in self.slayers_hits:
-      if self.slayers_hits[cSlayer.id].canAttack():
-        return True, ""
-      else:
-        return False, f"\n> Pas si vite ! Prends ton temps ! Prochaine attaque disponible dans **{int(self.slayers_hits[cSlayer.id].timestamp_next_hit - lib.datetime.datetime.timestamp(lib.datetime.datetime.now()))}s**"
-    else:
-      return True, ""
-
-  def slayer_storeAttack(self, cSlayer, damage, hit):
-    if cSlayer.id in self.slayers_hits:
-      self.slayers_hits[cSlayer.id].updateClass(damage, None if hit == "s" else cSlayer.stats["total_cooldown"], cSlayer.stats["total_luck"])
-    else:
-      self.slayers_hits[cSlayer.id] = lib.DamageDone(0 if hit == "s" else cSlayer.stats["total_cooldown"], damage if damage > 0 else 0, True if damage > 0 else False, cSlayer.stats["total_luck"])
-    content = self.slayers_hits[cSlayer.id].checkStatus(damage, self.base_hp)
-    return content
+      return f"<@&{self.bot.Rarities[self.Monsters[self.count].rarity].tracker_role_id}>"

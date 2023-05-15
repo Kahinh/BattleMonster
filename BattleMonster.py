@@ -59,6 +59,7 @@ class BattleMonster(lib.commands.Bot):
                 rGatherablesSpawn = await conn.fetch(lib.qGatherables_Spawn.SELECT_ALL)
                 rPetFood = await conn.fetch("SELECT * FROM pet_food")
 
+        #TODO rGameModesLootSlot & rGameModesSpawnRate dans la class Gamemodes
         self.rGameModesLootSlot = lib.Toolbox.transformGamemodesLootSlot(rGameModesLootSlot)
         self.rGameModesSpawnRate = lib.Toolbox.transformGamemodesSpawnRate(rGameModesSpawnRate)
         self.rSlots = lib.Toolbox.transformSlots(rSlots) 
