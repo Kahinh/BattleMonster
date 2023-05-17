@@ -49,6 +49,7 @@ class BattleView(lib.discord.ui.View):
         self.add_item(Special_Button())
 
     async def updateBattle(self, timeout=False, poweroff=False, monster_killed=False):
+        #TODO A SPLITTER EN PLUSIEURS SOUS ASYNC DEF
         if self.Battle.EndNotPublished:
             if hasattr(self, "interaction"): message = await self.interaction.original_response()
             if hasattr(self, "message"): message = self.message
@@ -57,7 +58,7 @@ class BattleView(lib.discord.ui.View):
                 self.Battle.EndNotPublished = False
 
                 if self.Battle.end:
-                    await self.Battle.calculateLoot()
+                    await lib.Loot(self.Battle).award_eligibleLooters()
 
                 if self.Battle.stats['attacks_received'] > 0 and poweroff==False:
                     content = lib.Toolbox.get_content_looters(self.Battle)

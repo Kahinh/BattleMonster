@@ -31,9 +31,6 @@ class Item:
       "parry_l" : float(rItem["parry_l"]),
       "parry_h" : float(rItem["parry_h"]),
       "parry_s" : float(rItem["parry_s"]),
-      "fail_l" : float(rItem["fail_l"]),
-      "fail_h" : float(rItem["fail_h"]),
-      "fail_s" : float(0),
       "damage_weapon" : rItem["damage_weapon"],
       "damage_l" : rItem["damage_l"],
       "damage_h" : rItem["damage_h"],
@@ -64,7 +61,7 @@ class Item:
       "vivacity": rItem["vivacity"]
     }
     self.calculate_bonuses()
-  
+
   def calculate_bonuses(self):
     self.bonuses = {
       "armor" : int(self.base_bonuses["armor"] * self.level),
@@ -74,9 +71,6 @@ class Item:
       "parry_l" : round(self.base_bonuses["parry_l"] * self.level,4),
       "parry_h" : round(self.base_bonuses["parry_h"] * self.level,4),
       "parry_s" : round(self.base_bonuses["parry_s"] * self.level,4),
-      "fail_l" : round(self.base_bonuses["fail_l"] * self.level,4),
-      "fail_h" : round(self.base_bonuses["fail_h"] * self.level,4),
-      "fail_s" : round(self.base_bonuses["fail_s"] * self.level,4),
       "damage_weapon" : int(self.base_bonuses["damage_weapon"] * self.level),
       "damage_l" : int(self.base_bonuses["damage_l"] * self.level),
       "damage_h" : int(self.base_bonuses["damage_h"] * self.level),
@@ -115,72 +109,136 @@ class Item:
       #TODO Mettre un self.bot.db 
       self.equipped = False
   
-  def getDisplayStats(self, cItem2=None):
+  def getDisplayStats(self, cItem=None):
     desc_stat = ""
-    if cItem2 is not None:
-      desc_stat += f"\n*Comparaison {cItem2.name}*"
-    for bonus in self.bonuses:
-      if cItem2 is None or self.id == cItem2.id:
-        if self.bonuses[bonus] != 0:
-          if bonus.find("_") != -1 and bonus[-1:] in ["l", "h", "s"]:
-            if self.bonuses[bonus[:-1]+"l"] == self.bonuses[bonus[:-1]+"h"] == self.bonuses[bonus[:-1]+"s"]:
-              if bonus.find("l") != -1:
-                desc_stat += f"\n- {bonus[:-2]} : **{self.format_float_int_numbers(self.bonuses[bonus])}**" 
-            else:
-                desc_stat += f"\n- {bonus} : **{self.format_float_int_numbers(self.bonuses[bonus])}**"
-          else:
-            desc_stat += f"\n- {bonus} : **{self.format_float_int_numbers(self.bonuses[bonus])}**"      
-      else:
-        if self.bonuses[bonus] != 0 or cItem2.bonuses[bonus] != 0:
-          if bonus.find("_") != -1 and bonus[-1:] in ["l", "h", "s"]:
-            if self.bonuses[bonus[:-1]+"l"] == self.bonuses[bonus[:-1]+"h"] == self.bonuses[bonus[:-1]+"s"] and cItem2.bonuses[bonus[:-1]+"l"] == cItem2.bonuses[bonus[:-1]+"h"] == cItem2.bonuses[bonus[:-1]+"s"]:
-              if bonus.find("l") != -1:
+    #Bonuses Items 2
+    if cItem is not None:
+      bonuses_item2 = cItem.bonuses
+    else:
+      bonuses_item2 = {}
 
-                #emote
-                if self.bonuses[bonus] == cItem2.bonuses[bonus]:
-                  emote = "🔸"
-                elif self.bonuses[bonus] > cItem2.bonuses[bonus]:
-                  emote = "🔹"
-                elif self.bonuses[bonus] < cItem2.bonuses[bonus]:
-                  emote = "🔻"
-                else:
-                  emote = ""
+    #Armor
+    desc_stat += self.create_desc_stat_1_line(bonuses_item2, "armor", "Armure", "🛡️")
+    
+    #Armor_Per
+    desc_stat += self.create_desc_stat_1_line(bonuses_item2, "armor_per", "Bonus Armure", "🛡️")
+    
+    #Health
+    desc_stat += self.create_desc_stat_1_line(bonuses_item2, "health", "Vie", "❤️")
+    
+    #Health_Per
+    desc_stat += self.create_desc_stat_1_line(bonuses_item2, "health_per", "Bonus Vie", "💖")
+    
+    #Parry
+    desc_stat += self.create_desc_stat_2_lines(bonuses_item2, "parry", "Parade", "↪️", 0)
 
-                desc_stat += f"\n- {bonus[:-2]} : **{self.format_float_int_numbers(self.bonuses[bonus])}** [← {self.format_float_int_numbers(cItem2.bonuses[bonus])}] {emote}"
-            else:
+    #Damage_Weapon
+    desc_stat += self.create_desc_stat_1_line(bonuses_item2, "damage_weapon", "Puissance Arme", "⚔️")
+    
+    #Damage
+    desc_stat += self.create_desc_stat_3_lines(bonuses_item2, "damage", "Puissance", "🔥")
+    
+    #Damage_Per
+    desc_stat += self.create_desc_stat_3_lines(bonuses_item2, "damage_per", "Bonus Puissance", "🔥")
+    
+    #Final_Damage
+    desc_stat += self.create_desc_stat_3_lines(bonuses_item2, "final_damage", "Dégâts Finaux", "💯")
+    
+    #Letality
+    desc_stat += self.create_desc_stat_3_lines(bonuses_item2, "letality", "Pénétration", "🗡️")
+    
+    #Letality_Per
+    desc_stat += self.create_desc_stat_3_lines(bonuses_item2, "letality_per", "Bonus Pénétration", "🗡️")
+    
+    #Crit_Chance
+    desc_stat += self.create_desc_stat_3_lines(bonuses_item2, "crit_chance", "Chance Critique", "✨")
+    
+    #Crit_Damage
+    desc_stat += self.create_desc_stat_3_lines(bonuses_item2, "crit_damage", "Dégâts Critiques", "💢")
+    
+    #Special Charge 
+    desc_stat += self.create_desc_stat_3_lines(bonuses_item2, "special_charge", "Gain Charge", "⏫")
+    
+    #Stacks Reduction
+    desc_stat += self.create_desc_stat_1_line(bonuses_item2, "stacks_reduction", "Réduction Charge", "☄️")
+    
+    #Luck
+    desc_stat += self.create_desc_stat_1_line(bonuses_item2, "luck", "Prospérité", "🍀")
 
-              #emote
-              if self.bonuses[bonus] == cItem2.bonuses[bonus]:
-                emote = "🔸"
-              elif self.bonuses[bonus] > cItem2.bonuses[bonus]:
-                emote = "🔹"
-              elif self.bonuses[bonus] < cItem2.bonuses[bonus]:
-                emote = "🔻"
-              else:
-                emote = ""
-
-              desc_stat += f"\n- {bonus} : **{self.format_float_int_numbers(self.bonuses[bonus])}** [← {self.format_float_int_numbers(cItem2.bonuses[bonus])}] {emote}"
-          else:
-
-            #emote
-            if self.bonuses[bonus] == cItem2.bonuses[bonus]:
-              emote = "🔸"
-            elif self.bonuses[bonus] > cItem2.bonuses[bonus]:
-              emote = "🔹"
-            elif self.bonuses[bonus] < cItem2.bonuses[bonus]:
-              emote = "🔻"
-            else:
-              emote = ""
-
-            desc_stat += f"\n- {bonus} : **{self.format_float_int_numbers(self.bonuses[bonus])}** [← {self.format_float_int_numbers(cItem2.bonuses[bonus])}] {emote}"
+    #Vivacity   
+    desc_stat += self.create_desc_stat_1_line(bonuses_item2, "vivacity", "Vivacité", "🌪️")
 
     return desc_stat
 
-  def format_float_int_numbers(self, number):
+  def create_desc_stat_1_line(self, bonuses_item2, stat, name, emote):
+    desc_stat = ""
+    if self.bonuses[stat] != 0 or bonuses_item2.get(stat, 0) != 0:
+      desc_stat += f"```ansi\n{emote}{name}: {self.ffin(self.bonuses[stat])} {self.sa(self.bonuses[stat], bonuses_item2.get(stat, 0)) + '[' + str(self.ffin(bonuses_item2.get(stat, 0))) + ']' if bonuses_item2 != {} else ''}```"    
+    return desc_stat
+
+  def create_desc_stat_2_lines(self, bonuses_item2, stat, name, emote, order=1):
+    desc_stat = ""
+    if (int(self.bonuses[f"{stat}_l"]) != 0 or int(self.bonuses[f"{stat}_h"]) != 0 or int(bonuses_item2.get(f"{stat}_l", 0)) != 0 or int(bonuses_item2.get(f"{stat}_h", 0)) != 0):
+      #Le cas où l'un ou l'autre est différent
+      if ((self.bonuses[f"{stat}_l"] != self.bonuses[f"{stat}_h"]) or (bonuses_item2.get(f"{stat}_l", 0) != bonuses_item2.get(f"{stat}_h", 0))):
+        desc_stat += f"```ansi\n{emote}{name}:"
+        #Parry L
+        desc_stat += f"\n\u001b[0;0m  Légère: {self.ffin(self.bonuses[f'{stat}_l'])} {self.sa(self.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0), order) + '[' + str(self.ffin(bonuses_item2.get(f'{stat}_l', 0))) + ']' if bonuses_item2 != {} else ''}"
+        #Parry H
+        desc_stat += f"\n\u001b[0;0m  Lourde: {self.ffin(self.bonuses[f'{stat}_h'])} {self.sa(self.bonuses[f'{stat}_h'], bonuses_item2.get(f'{stat}_h', 0), order) + '[' + str(self.ffin(bonuses_item2.get(f'{stat}_h', 0))) + ']' if bonuses_item2 != {} else ''}```"
+      #Le cas où les deux sont semblables
+      else:
+        if self.bonuses[f"{stat}_l"] != 0 or bonuses_item2.get(f"{stat}_l", 0) != 0:
+          desc_stat += f"```ansi\n{emote}{name}: {self.ffin(self.bonuses[f'{stat}_l'])} {self.sa(self.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0), order) + '[' + str(self.ffin(bonuses_item2.get(f'{stat}_l', 0))) + ']' if bonuses_item2 != {} else ''}```" 
+    return desc_stat  
+
+  def create_desc_stat_3_lines(self, bonuses_item2, stat, name, emote, order=1):
+    desc_stat = ""
+    if (int(self.bonuses[f"{stat}_l"]) != 0 or int(self.bonuses[f"{stat}_h"]) != 0 or int(self.bonuses[f"{stat}_s"]) != 0 or int(bonuses_item2.get(f"{stat}_l", 0)) != 0 or int(bonuses_item2.get(f"{stat}_h", 0)) != 0 or int(bonuses_item2.get(f"{stat}_s", 0)) != 0):
+      #Le cas où l'un ou l'autre est différent
+      if ((self.bonuses[f"{stat}_l"] != self.bonuses[f"{stat}_h"] != self.bonuses[f"{stat}_s"]) or (bonuses_item2.get(f"{stat}_l", 0) != bonuses_item2.get(f"{stat}_h", 0) != bonuses_item2.get(f"{stat}_s", 0))):
+        desc_stat += f"```ansi\n{emote}{name}:"
+        #Damage L
+        desc_stat += f"\n\u001b[0;0m  Légère: {self.ffin(self.bonuses[f'{stat}_l'])} {self.sa(self.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0), order) + '[' + str(self.ffin(bonuses_item2.get(f'{stat}_l', 0))) + ']' if bonuses_item2 != {} else ''}"
+        #Damage H
+        desc_stat += f"\n\u001b[0;0m  Lourde: {self.ffin(self.bonuses[f'{stat}_h'])} {self.sa(self.bonuses[f'{stat}_h'], bonuses_item2.get(f'{stat}_h', 0), order) + '[' + str(self.ffin(bonuses_item2.get(f'{stat}_h', 0))) + ']' if bonuses_item2 != {} else ''}"
+        #Damage s
+        desc_stat += f"\n\u001b[0;0m  Spécial: {self.ffin(self.bonuses[f'{stat}_s'])} {self.sa(self.bonuses[f'{stat}_s'], bonuses_item2.get(f'{stat}_s', 0), order) + '[' + str(self.ffin(bonuses_item2.get(f'{stat}_s', 0))) + ']' if bonuses_item2 != {} else ''}"
+
+        #on referme le ```
+        desc_stat += "```"
+      #Le cas où les deux sont semblables
+      else:
+        if self.bonuses[f"{stat}_l"] != 0 or bonuses_item2.get(f"{stat}_l", 0) != 0:
+          desc_stat += f"```ansi\n{emote}{name}: {self.ffin(self.bonuses[f'{stat}_l'])} {self.sa(self.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0)) + '[' + str(self.ffin(bonuses_item2.get(f'{stat}_l', 0))) + ']' if bonuses_item2 != {} else ''}```"
+    return desc_stat
+  
+  def ffin(self, number):
+  #format float int numbers
     if isinstance(number, float):
-      return f"{round(number*100,2)}%"
+      return f"{int(round(number*100,0))}%"
     else:
       return f"{number}"
+    
+  def sa(self, equippednumber, secondnumber, order=1):
+  #select ANSI
+    #Basique : \u001b[0;0m
+    #Rouge : \u001b[1;31m
+    #Vert : \u001b[1;32m
+    #Jaune : \u001b[1;33m
+    if equippednumber == secondnumber:
+      return "\u001b[1;33m"
+    else:
+      if order == 0:
+        if equippednumber > secondnumber:
+          return "\u001b[1;31m"
+        else:
+          return "\u001b[1;32m"
+      else:
+        if equippednumber > secondnumber:
+          return "\u001b[1;32m"
+        else:
+          return "\u001b[1;31m"
 
   async def update_item_level(self, level_upgrade, cSlayer):
       self.level += level_upgrade

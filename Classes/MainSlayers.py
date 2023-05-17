@@ -326,9 +326,6 @@ class Slayer:
             "parry_l" : float(self.Spe.bonuses["parry_l"]),
             "parry_h" : float(self.Spe.bonuses["parry_h"]),
             "parry_s" : float(0),
-            "fail_l" : float(rBaseBonuses["fail_l"]) + float(self.Spe.bonuses["fail_l"]),
-            "fail_h" : float(rBaseBonuses["fail_h"]) + float(self.Spe.bonuses["fail_h"]),
-            "fail_s" : float(0),
             "damage_weapon" : self.Spe.bonuses["damage_weapon"],
             "damage_l" : rBaseBonuses["damage_l"] + self.Spe.bonuses["damage_l"],
             "damage_h" : rBaseBonuses["damage_h"] + self.Spe.bonuses["damage_h"],
@@ -362,7 +359,7 @@ class Slayer:
         for id in self.inventory_items:
             if self.inventory_items[id].equipped:
                 for bonus in self.inventory_items[id].bonuses:
-                    if self.Spe.id == 2 and self.inventory_items[id].slot == "weapon" and (bonus == "parry_l" or bonus == "parry_h" or bonus == "fail_l" or bonus == "fail_h"): #Escrime Double
+                    if self.Spe.id == 2 and self.inventory_items[id].slot == "weapon" and (bonus == "parry_l" or bonus == "parry_h"): #Escrime Double
                         bonuses[bonus] += self.inventory_items[id].bonuses[bonus] / 2
                     else:
                         bonuses[bonus] += self.inventory_items[id].bonuses[bonus]
@@ -375,9 +372,6 @@ class Slayer:
         stats = {
             "total_armor" : int(bonuses["armor"]*(1+bonuses["armor_per"])),
             "total_max_health" : int(bonuses["health"]*(1+bonuses["health_per"])),
-            "total_fail_l" : float(min(max(bonuses["fail_l"],0),1)),
-            "total_fail_h" : float(min(max(bonuses["fail_h"],0),1)),
-            "total_fail_s" : 0,
             "total_parry_l" : float(bonuses["parry_l"]),
             "total_parry_h" : float(bonuses["parry_h"]),
             "total_parry_s" : 0,
@@ -421,77 +415,51 @@ class Slayer:
             return True, ""
         else:
             return False, f"\n> ☄️ Tu ne possèdes pas le nombre de charges nécessaires - Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
-
-    def isSuccess(self, hit):
-        isFail = random.choices(population=[True, False], weights=[self.stats[f"total_fail_{hit}"], 1-self.stats[f"total_fail_{hit}"]], k=1)[0]
-        if isFail :
-            return False, f"\n> - **Attaque esquivée !**"
-        else:
-            return True, ""
     
     def isCrit(self, hit):
         isCrit = random.choices(population=[True, False], weights=[float(self.stats[f"total_crit_chance_{hit}"]), float(1-self.stats[f"total_crit_chance_{hit}"])], k=1)[0]
         return isCrit
 
-    def dealDamage(self, hit, cMonster):
-        armor = self.reduceArmor(hit, cMonster.armor)
-        protect_crit = cMonster.protect_crit
+    def dealDamage(self, hit, cOpponent, isCrit, CritMult, ProtectCrit, ArmorMult):
         if hit == "s":
-            additionnal_damage, additionnal_ability = self.Spe.get_damage(cMonster, self)
+            additionnal_damage, additionnal_ability = self.Spe.get_damage(cOpponent, self)
             mult_damage = self.mult_damage
         else:
             additionnal_damage, additionnal_ability = 0, ""
             mult_damage = 0
-        if self.isCrit(hit):
 
-            #Calcul des dégâts avec crit
-            damage = int(self.stats[f"total_damage_{hit}"] + additionnal_damage + mult_damage)
-            
-            damage = int(damage*(1 + (self.stats[f"total_crit_damage_{hit}"])) * (1 + self.stats[f"total_final_damage_{hit}"]))
-            #ProtectCrit
-            damage = int(max(damage - protect_crit, 0))
-            #Armor
-            if armor >= 0:
-                damage = int(max(damage * (1000/(1000+armor)), 1))
-            if armor < 0:
-                damage = int(damage * ((1000+abs(armor))/1000))
-            #Vie du monstre
-            damage = int(min(damage, cMonster.base_hp))
+        #Dégâts de base :
+        damage = int(self.stats[f"total_damage_{hit}"] + additionnal_damage + mult_damage)
+        #On applique les Mult : Crit & Finaux
+        damage = int(damage*(1 + CritMult) * (1 + self.stats[f"total_final_damage_{hit}"]))
+        #ProtectCrit
+        damage = int(max(damage - ProtectCrit, 0))
+        #ArmorMult
+        damage = int(max(damage * ArmorMult, 0))
+        #A ce stade, si damage = 0, alors le monstre a trop d'armures
+        if damage == 0:
+            return 0, f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} - L'adversaire possédait trop de défense !"
+        #Vie du monstre
+        damage = int(min(damage, cOpponent.base_hp))
+        if damage == 0:
+            return 0, f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} - Le monstre est déjà mort !"
 
-            if damage == 0:
-                content = f"\n> Raté !"
-            else:
-                stacks_earned = self.getStacks(hit)
-                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} ‼️ [+{stacks_earned}☄️] {'[🔥+' + str(mult_damage) + ']' if mult_damage > 0 else ''} {additionnal_ability if additionnal_ability != '' else ''} {'[🪓' + str(self.berserker_mode -1) + 'restants]' if self.berserker_mode > 0 else ''}"
-                
-                #Berserker
-                if self.berserker_mode > 0:
-                    self.berserker_mode -= 1
-                    if self.berserker_mode == 0:
-                        self.calculateStats(self.bot.rBaseBonuses)
-                        
-        else:
-            #Calcul des dégâts sans crit
-            damage = int(self.stats[f"total_damage_{hit}"] + additionnal_damage + mult_damage)
-                
-            damage = int(damage * (1 + self.stats[f"total_final_damage_{hit}"]))
-            #Armor
-            if armor >= 0:
-                damage = int(max(damage * (1000/(1000+armor)), 1))
-            if armor < 0:
-                damage = int(damage * ((1000+abs(armor))/1000))
-            #Vie du monstre
-            damage = int(min(damage, cMonster.base_hp))          
+        content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} {'‼️' if isCrit else ''} {'[🔥+' + str(mult_damage) + ']' if mult_damage > 0 else ''} {additionnal_ability if additionnal_ability != '' else ''} {'[🪓' + str(self.berserker_mode -1) + 'restants]' if self.berserker_mode > 0 else ''}"
             
-            if damage == 0:
-                content = f"\n> Raté !"
-            else:
-                stacks_earned = self.getStacks(hit)
-                content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} [+{stacks_earned}☄️] {'[🔥+' + str(mult_damage) + ']' if mult_damage > 0 else ''} {additionnal_ability if additionnal_ability != '' else ''}"
+        #Berserker
+        if self.berserker_mode > 0 and hit != "S":
+            self.berserker_mode -= 1
+            if self.berserker_mode == 0:
+                self.calculateStats(self.bot.rBaseBonuses)
+
         return damage, content
     
     def reduceArmor(self, hit, armor):
-        armor = ((armor*(1-float(self.stats[f"total_letality_per_{hit}"])))-int(self.stats[f"total_letality_{hit}"]))
+        #Reduction Fix
+        armor = (armor-int(self.stats[f"total_letality_{hit}"]))
+        #Reudction %
+        if armor > 0:
+            armor = armor*(1-float(self.stats[f"total_letality_per_{hit}"]))
         return int(armor)
 
     def getStacks(self, hit):
@@ -515,6 +483,8 @@ class Slayer:
 
     def getDamage(self, damage):
         self.damage_taken += damage
+        if self.stats["total_max_health"] == self.damage_taken:
+            self.dead = True
 
     def isAlive(self):
         if self.dead:
@@ -540,11 +510,10 @@ class Slayer:
             content = f"\n\n ☄️ Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
         return content
 
-    def recapHealth(self, parries):
-        content = f"\n\n> Le monstre t'a infligé {int(sum(parries))} dégâts."
-        if self.stats["total_max_health"] == self.damage_taken:
+    def recapHealth(self, total_damage_taken):
+        content = f"\n\n> Le monstre t'a infligé {int(total_damage_taken)} dégâts."
+        if self.dead:
             content += f"\n> Tu es mort !"
-            self.dead = True
             self.lastregen = datetime.datetime.timestamp(datetime.datetime.now())
             self.firstregen = True
         else:

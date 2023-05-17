@@ -1,8 +1,8 @@
-class qMonsters:
-    SELECT_ALL = 'SELECT * FROM Monsters'
+class qOpponents:
+    SELECT_ALL = 'SELECT * FROM Opponents'
     SELECT_RANDOM_ADVANCED = 'SELECT * FROM "monsters" WHERE rarity = $1 AND element =$2 ORDER BY random() LIMIT 1'
     SELECT_RANDOM = 'SELECT * FROM "monsters" WHERE rarity = $1 ORDER BY random() LIMIT 1'
-    INSERT = 'INSERT INTO Monsters VALUES ($1, $2, $3)'
+    INSERT = 'INSERT INTO Opponents VALUES ($1, $2, $3)'
 
 class qGameModes:
     SELECT_ALL = 'SELECT * FROM "gamemodes"'

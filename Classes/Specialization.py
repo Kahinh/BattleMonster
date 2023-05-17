@@ -22,8 +22,6 @@ class Spe:
       "parry_l" : rSpe["parry_l"],
       "parry_h" : rSpe["parry_h"],
       "parry_s" : rSpe["parry_s"],
-      "fail_l" : rSpe["fail_l"],
-      "fail_h" : rSpe["fail_h"],
       "damage_weapon" : rSpe["damage_weapon"],
       "damage_l" : rSpe["damage_l"],
       "damage_h" : rSpe["damage_h"],
@@ -70,22 +68,23 @@ class Spe:
       base += 1
     return base
   
-  def get_damage(self, cMonster, cSlayer):
+  def get_damage(self, cOpponent, cSlayer):
     if self.id == 3: #Templier
       return int(cSlayer.stats["total_armor"]), ""
     elif self.id == 4: #Chef de Guerre
-      return sum(cMonster.last_hits), ""
+      return sum(cOpponent.last_hits), ""
     elif self.id == 5: #Forgeron
-      for id in cMonster.slayers_hits:
-        cMonster.slayers_hits[id].timestamp_next_hit = datetime.datetime.timestamp(datetime.datetime.now())
+      for id in cOpponent.slayers_hits:
+        cOpponent.slayers_hits[id].timestamp_next_hit = datetime.datetime.timestamp(datetime.datetime.now())
       return 0, "(*Cooldown reset*)"
     elif self.id == 6: #Analyst Chasseur   
-      if cMonster.armor == cMonster.armor_cap:
+      if cOpponent.armor == cOpponent.armor_cap:
         return int(cSlayer.stats["total_letality_s"] * (1+cSlayer.stats["total_letality_per_s"])), ""
       else:
-        armor_reduction = int((cMonster.armor * cSlayer.stats["total_letality_per_s"] + cSlayer.stats["total_letality_s"]) / 5)
-        armor_reduction = int(min(armor_reduction, cMonster.armor - cMonster.armor_cap))
-        cMonster.armor -= armor_reduction
+        #TODO A REFAIRE POUR LE REWORK LETA
+        armor_reduction = int((cOpponent.armor * cSlayer.stats["total_letality_per_s"] + cSlayer.stats["total_letality_s"]) / 5)
+        armor_reduction = int(min(armor_reduction, cOpponent.armor - cOpponent.armor_cap))
+        cOpponent.armor -= armor_reduction
         return 0, f"(-{armor_reduction} 🛡️)"
     else:
       return 0, ""

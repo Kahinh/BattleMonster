@@ -53,7 +53,9 @@ from Classes.Elements import Elements
 from Classes.Gatherables import Gatherables
 from Classes.GatherablesSpawn import GatherablesSpawn
 from Classes.Gather import Gather
-from Classes.Queries import qGameModes, qMonsters, qChannels, qBaseBonuses, qRaritiesLootRates, qItems, qElements, qRarities, qGameModesLootSlot, qGameModesSpawnRate, qSlots, qSpe, qGatherables, qGatherables_Spawn
+from Classes.Handler_Attack import Attack, Hit
+from Classes.Handler_Loot import Loot
+from Classes.Queries import qGameModes, qOpponents, qChannels, qBaseBonuses, qRaritiesLootRates, qItems, qElements, qRarities, qGameModesLootSlot, qGameModesSpawnRate, qSlots, qSpe, qGatherables, qGatherables_Spawn
 
 #FUNCTIONS
 import Functions.Messages.Embed as Embed

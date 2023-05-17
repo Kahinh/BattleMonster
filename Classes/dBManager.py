@@ -52,10 +52,10 @@ class dB:
     return loottable
   
   async def push_behemoths_killed_achievement(self, data_behemoths_killed_achievement):
-    async with self.bot.db_pool.acquire() as conn:
-      async with conn.transaction():
-        if data_behemoths_killed_achievement != []:    
-          await conn.executemany('UPDATE "slayers_achievements" SET monsters_killed = monsters_killed + $1 WHERE id = $2', data_behemoths_killed_achievement)
+    if data_behemoths_killed_achievement != []: 
+      async with self.bot.db_pool.acquire() as conn:
+        async with conn.transaction():   
+            await conn.executemany('UPDATE "slayers_achievements" SET monsters_killed = monsters_killed + $1 WHERE id = $2', data_behemoths_killed_achievement)
 
   async def push_biggest_hit_achievement(self, cSlayer):
     async with self.bot.db_pool.acquire() as conn:

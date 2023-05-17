@@ -10,7 +10,7 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
   
   @lib.app_commands.choices(
   data=[
-    lib.Choice(name='Gamemodes & Monsters Data', value="monsters"),
+    lib.Choice(name='Gamemodes & Opponents Data', value="monsters"),
     lib.Choice(name='Slayers Data', value="slayers")
   ])
   @lib.app_commands.command(name="updatebot")

@@ -23,26 +23,26 @@ class Monster:
     Battle,
     hp_scaling
     ):
-    self.name = Battle.Monsters[i]["name"]
-    self.description = Battle.Monsters[i]["description"]
-    self.element = Battle.Monsters[i]["element"]
-    self.base_hp = int(Battle.Monsters[i]["base_hp"] * int(max(1,hp_scaling/2)) * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.total_hp = int(Battle.Monsters[i]["base_hp"] * int(max(1,hp_scaling/2)) * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.rarity = Battle.Monsters[i]["rarity"]
+    self.name = Battle.Opponents[i]["name"]
+    self.description = Battle.Opponents[i]["description"]
+    self.element = Battle.Opponents[i]["element"]
+    self.base_hp = int(Battle.Opponents[i]["base_hp"] * int(max(1,hp_scaling/2)) * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
+    self.total_hp = int(Battle.Opponents[i]["base_hp"] * int(max(1,hp_scaling/2)) * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
+    self.rarity = Battle.Opponents[i]["rarity"]
     self.parry = {
-      "parry_chance_l" : float(Battle.Monsters[i]["parry_chance_l"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
-      "parry_chance_h" : float(Battle.Monsters[i]["parry_chance_h"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
+      "parry_chance_l" : float(Battle.Opponents[i]["parry_chance_l"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
+      "parry_chance_h" : float(Battle.Opponents[i]["parry_chance_h"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
       "parry_chance_s" : 0
     }
-    self.damage = int(Battle.Monsters[i]["damage"] * Battle.scaling["damage"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.letality = int(Battle.Monsters[i]["letality"] * Battle.scaling["letality"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.letality_per = min(Battle.Monsters[i]["letality_per"] * max(int(Battle.scaling["letality"]/3),1) * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]),1)
-    self.armor = int(Battle.Monsters[i]["armor"] * Battle.scaling["armor"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.armor_cap = int(Battle.Monsters[i]["armor"])
-    self.protect_crit = int(Battle.Monsters[i]["protect_crit"] * Battle.scaling["protect_crit"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.img_url_normal = Battle.Monsters[i]["img_url_normal"]
-    self.img_url_enraged = Battle.Monsters[i]["img_url_enraged"]
-    self.bg_url = Battle.Monsters[i]["bg_url"]
+    self.damage = int(Battle.Opponents[i]["damage"] * Battle.scaling["damage"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
+    self.letality = int(Battle.Opponents[i]["letality"] * Battle.scaling["letality"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
+    self.letality_per = min(Battle.Opponents[i]["letality_per"] * max(int(Battle.scaling["letality"]/3),1) * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]),1)
+    self.armor = int(Battle.Opponents[i]["armor"] * Battle.scaling["armor"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
+    self.armor_cap = int(Battle.Opponents[i]["armor"])
+    self.protect_crit = int(Battle.Opponents[i]["protect_crit"] * Battle.scaling["protect_crit"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
+    self.img_url_normal = Battle.Opponents[i]["img_url_normal"]
+    self.img_url_enraged = Battle.Opponents[i]["img_url_enraged"]
+    self.bg_url = Battle.Opponents[i]["bg_url"]
     self.roll_dices = random.randint(Battle.min_dice, Battle.max_dice)
 
     self.last_hits = []
@@ -68,12 +68,11 @@ class Monster:
         self.last_hits.pop(0)
 
   def isParry(self, hit, Slayer):
-    ParryChance = min(max(self.parry[f"parry_chance_{hit}"] + Slayer.cSlayer.stats[f"total_parry_{hit}"], 0), 1)
-    isParry = random.choices(population=[True, False], weights=[ParryChance, 1-ParryChance], k=1)[0]
-    if isParry:
+    if self.parry["parry_chance_L"] >= 1 and self.parry["parry_chance_H"] >= 1:
       return True
     else:
-      return False
+      ParryChance = min(max(self.parry[f"parry_chance_{hit}"] + Slayer.cSlayer.stats[f"total_parry_{hit}"], 0), 1)
+      return random.choices(population=[True, False], weights=[ParryChance, 1-ParryChance], k=1)[0]
 
   def getDamage(self, damage):
     self.base_hp -= int(damage)

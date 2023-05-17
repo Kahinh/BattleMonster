@@ -2,26 +2,26 @@ import lib
 
 def create_embed_battle(self):
 
-    embed=lib.discord.Embed(title=f"{self.Monsters[self.count].name} ({'{:,}'.format(int(self.Monsters[self.count].base_hp)).replace(',', ' ')}/{'{:,}'.format(int(self.Monsters[self.count].total_hp)).replace(',', ' ')} ❤️) {'💩💩' if len(self.LootTable[self.count]) == 0 else ''}",
+    embed=lib.discord.Embed(title=f"{self.Opponents[self.count].name} ({'{:,}'.format(int(self.Opponents[self.count].base_hp)).replace(',', ' ')}/{'{:,}'.format(int(self.Opponents[self.count].total_hp)).replace(',', ' ')} ❤️) {'💩💩' if len(self.LootTable[self.count]) == 0 else ''}",
     description= \
-        f"**Monstre {self.bot.Rarities[self.Monsters[self.count].rarity].display_text.capitalize()}**\n" \
-        f"⚔️ Puissance : **{int(self.Monsters[self.count].damage)}** {self.bot.Elements[self.Monsters[self.count].element].display_emote}\n" \
-        f"🛡️ Armure : **{int(self.Monsters[self.count].armor)}** *({int(self.Monsters[self.count].armor_cap)} min.)*\n" \
-        f"🎲 Butin Disponible : **{self.Monsters[self.count].roll_dices}**\n\n" \
-        f"{self.Monsters[self.count].description}", \
-    color=int(self.bot.Rarities[self.Monsters[self.count].rarity].display_color, 16)
+        f"**Monstre {self.bot.Rarities[self.Opponents[self.count].rarity].display_text.capitalize()}**\n" \
+        f"⚔️ Puissance : **{int(self.Opponents[self.count].damage)}** {self.bot.Elements[self.Opponents[self.count].element].display_emote}\n" \
+        f"🛡️ Armure : **{int(self.Opponents[self.count].armor)}** *({int(self.Opponents[self.count].armor_cap)} min.)*\n" \
+        f"🎲 Butin Disponible : **{self.Opponents[self.count].roll_dices}**\n\n" \
+        f"{self.Opponents[self.count].description}", \
+    color=int(self.bot.Rarities[self.Opponents[self.count].rarity].display_color, 16)
     )
     embed.add_field(name="Statistiques Avancées", \
         value= \
-            f"✊ Chance de blocage - Attaque Légère : **{int(self.Monsters[self.count].parry['parry_chance_l'] * 100)}%**\n" \
-            f"✊ Chance de blocage - Attaque Lourde : **{int(self.Monsters[self.count].parry['parry_chance_h'] * 100)}%**\n" \
-            f"🗡️ Létalité : **({int(self.Monsters[self.count].letality)}, {int(self.Monsters[self.count].letality_per *100)}%)**\n" \
-            f"💠 Résistance Critique : **{self.Monsters[self.count].protect_crit}**\n", \
+            f"✊ Chance de blocage - Attaque Légère: **{int(self.Opponents[self.count].parry['parry_chance_l'] * 100)}%**\n" \
+            f"✊ Chance de blocage - Attaque Lourde: **{int(self.Opponents[self.count].parry['parry_chance_h'] * 100)}%**\n" \
+            f"🗡️ Létalité : **({int(self.Opponents[self.count].letality)}, {int(self.Opponents[self.count].letality_per *100)}%)**\n" \
+            f"💠 Résistance Critique : **{self.Opponents[self.count].protect_crit}**\n", \
         inline=False)
-    if self.Monsters[self.count].img_url_normal is not None:
-        embed.set_thumbnail(url=f"{self.Monsters[self.count].img_url_normal}")
-    if self.Monsters[self.count].bg_url is not None:
-        embed.set_image(url=f"{self.Monsters[self.count].bg_url}")
+    if self.Opponents[self.count].img_url_normal is not None:
+        embed.set_thumbnail(url=f"{self.Opponents[self.count].img_url_normal}")
+    if self.Opponents[self.count].bg_url is not None:
+        embed.set_image(url=f"{self.Opponents[self.count].bg_url}")
     if self.spawns_count > 1:   
         embed.set_footer(text=f"Monstre : {self.count+1}/{self.spawns_count}")
     return embed
@@ -34,11 +34,11 @@ def create_embed_end_battle(Battle, timeout):
         title = f"**{Battle.name.capitalize()} achevé : 🐉 Vous avez échoué et les monstres se sont enfuis.**"
     
     description = "**Bilan du combat :**"
-    for i in Battle.Monsters:
-        if int(Battle.Monsters[i].base_hp) == 0:
-            description += f"\n- {i + 1} {Battle.bot.Elements[Battle.Monsters[i].element].display_emote} {Battle.Monsters[i].name} ({int(Battle.Monsters[i].base_hp)}/{int(Battle.Monsters[i].total_hp)} 💀)"
+    for i in Battle.Opponents:
+        if int(Battle.Opponents[i].base_hp) == 0:
+            description += f"\n- {i + 1} {Battle.bot.Elements[Battle.Opponents[i].element].display_emote} {Battle.Opponents[i].name} ({int(Battle.Opponents[i].base_hp)}/{int(Battle.Opponents[i].total_hp)} 💀)"
         else:
-            description += f"\n- {i + 1} {Battle.bot.Elements[Battle.Monsters[i].element].display_emote} {Battle.Monsters[i].name} ({int(Battle.Monsters[i].base_hp)}/{int(Battle.Monsters[i].total_hp)} ❤️)"
+            description += f"\n- {i + 1} {Battle.bot.Elements[Battle.Opponents[i].element].display_emote} {Battle.Opponents[i].name} ({int(Battle.Opponents[i].base_hp)}/{int(Battle.Opponents[i].total_hp)} ❤️)"
     
     description += f"\n\n⚔️ Attaques reçues : {Battle.stats['attacks_received']}"
     description += f"\n🩸 Dégâts infligés : {Battle.stats['attacks_done']}"
@@ -162,7 +162,6 @@ def create_embed_profil(Slayer, avatar):
             f"\n✨ Chance Critique : **{int(Slayer.cSlayer.stats['total_crit_chance_' + i]*100)}**%" \
             f"\n💢 Dégâts Critiques : **{int(Slayer.cSlayer.stats['total_crit_damage_' + i]*100)}**%" \
             f"\n🗡️ Létalité : **{Slayer.cSlayer.stats['total_letality_' + i]}**,  **{int(Slayer.cSlayer.stats['total_letality_per_' + i]*100)}**%" \
-            f"\n🎯 Echec : **{Slayer.cSlayer.stats['total_fail_' + i]*100}**%" \
             f"\n✊ Blocage : **{int(Slayer.cSlayer.stats['total_parry_' + i]*100)}**%"
             embed.add_field(name=name, value=description, inline=False)
 
