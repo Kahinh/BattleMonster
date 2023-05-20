@@ -44,18 +44,16 @@ from Views.Enhancement_Mythics import EnhancementMythicsView
 from Classes.DamageDone import DamageDone
 from Classes.dBManager import dB
 from Classes.ActiveList import ActiveList
-from Classes.Items import Item
 from Classes.MainSlayers import MSlayer, Slayer
-from Classes.MainBattles import Battle, Monster
+from Classes.Attributes import Rarities, Elements
+from Classes.Handler_Gatherables import Gather, GatherablesSpawn, Gatherables
+from Classes.Opponents import Opponent, Monster, Banner, Mythique1, Mythique2, Mythique3, Mythique4, Mythique5, Mythique6
+from Classes.Gamemodes import Gamemode, Hunt, FactionWar, Donjon
 from Classes.Specialization import Spe
-from Classes.Rarities import Rarities
-from Classes.Elements import Elements
-from Classes.Gatherables import Gatherables
-from Classes.GatherablesSpawn import GatherablesSpawn
-from Classes.Gather import Gather
-from Classes.Handler_Attack import Attack, Hit
-from Classes.Handler_Loot import Loot
-from Classes.Queries import qGameModes, qOpponents, qChannels, qBaseBonuses, qRaritiesLootRates, qItems, qElements, qRarities, qGameModesLootSlot, qGameModesSpawnRate, qSlots, qSpe, qGatherables, qGatherables_Spawn
+from Classes.Objects import Item, Mythic, Pet
+
+#TODO TODELETE
+from Classes.Queries import qGameModes, qOpponents, qChannels, qBaseBonuses, qRaritiesLootRates, qItems, qElements, qRarities, qGameModesSpawnRate, qSlots, qSpe, qGatherables, qGatherables_Spawn
 
 #FUNCTIONS
 import Functions.Messages.Embed as Embed

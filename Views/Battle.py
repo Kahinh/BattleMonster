@@ -61,7 +61,7 @@ class BattleView(lib.discord.ui.View):
                     await lib.Loot(self.Battle).award_eligibleLooters()
 
                 if self.Battle.stats['attacks_received'] > 0 and poweroff==False:
-                    content = lib.Toolbox.get_content_looters(self.Battle)
+                    content = self.get_content_looters(self.Battle)
                     embed = lib.Embed.create_embed_end_battle(self.Battle, timeout)
                     if self.Battle.loots != {}:
                         view = lib.LootRecapView(self.Battle)
@@ -93,3 +93,11 @@ class BattleView(lib.discord.ui.View):
     async def on_timeout(self) -> None:
         await self.updateBattle(True)
         self.stop()
+
+    def get_content_looters(self):
+        content = ""
+        for id in self.Battle.loots:
+            if "items" in self.Battle.loots[id]:
+                if self.Battle.loots[id]["items"] != []:
+                    content += f"<@{id}> "
+        return content

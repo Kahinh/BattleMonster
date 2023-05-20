@@ -48,7 +48,7 @@ class Feed_Button(lib.discord.ui.Button):
 
 class EnhancementMythicsView(lib.discord.ui.View):
     def __init__(self, bot, Slayer, interaction):
-        super().__init__(timeout=10)
+        super().__init__(timeout=60)
         self.bot = bot
         self.Slayer = Slayer
         self.interaction = interaction

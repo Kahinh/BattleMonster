@@ -1,52 +1,94 @@
-import os, sys, inspect
 
 from dataclasses import dataclass
 import random
+from datetime import datetime
 
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir) 
-
-import lib
+from Classes.DamageDone import DamageDone
 
 @dataclass
-class Monster:
+class Opponent:
   name: str
   description: str
   element: str
   rarity: str
   base_hp: int
 
-  def __init__(
-    self, 
-    i,
-    Battle,
-    hp_scaling
-    ):
-    self.name = Battle.Opponents[i]["name"]
-    self.description = Battle.Opponents[i]["description"]
-    self.element = Battle.Opponents[i]["element"]
-    self.base_hp = int(Battle.Opponents[i]["base_hp"] * int(max(1,hp_scaling/2)) * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.total_hp = int(Battle.Opponents[i]["base_hp"] * int(max(1,hp_scaling/2)) * Battle.scaling["hp"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.rarity = Battle.Opponents[i]["rarity"]
-    self.parry = {
-      "parry_chance_l" : float(Battle.Opponents[i]["parry_chance_l"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
-      "parry_chance_h" : float(Battle.Opponents[i]["parry_chance_h"]) * float(Battle.scaling["parry"]) * float((1 + i * Battle.bot.rBaseBonuses["mult_battle"])),
-      "parry_chance_s" : 0
-    }
-    self.damage = int(Battle.Opponents[i]["damage"] * Battle.scaling["damage"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.letality = int(Battle.Opponents[i]["letality"] * Battle.scaling["letality"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.letality_per = min(Battle.Opponents[i]["letality_per"] * max(int(Battle.scaling["letality"]/3),1) * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]),1)
-    self.armor = int(Battle.Opponents[i]["armor"] * Battle.scaling["armor"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.armor_cap = int(Battle.Opponents[i]["armor"])
-    self.protect_crit = int(Battle.Opponents[i]["protect_crit"] * Battle.scaling["protect_crit"] * (1 + i * Battle.bot.rBaseBonuses["mult_battle"]))
-    self.img_url_normal = Battle.Opponents[i]["img_url_normal"]
-    self.img_url_enraged = Battle.Opponents[i]["img_url_enraged"]
-    self.bg_url = Battle.Opponents[i]["bg_url"]
-    self.roll_dices = random.randint(Battle.min_dice, Battle.max_dice)
+  def __init__(self, gamemode, element, rarity, type):
 
+    self.bot = gamemode.bot
+    self.gamemode = gamemode
+
+    self.element = element
+    self.rarity = rarity
+    self.type = type
+
+    self.img_url_normal = ""
+    self.img_url_enraged = ""
+    self.bg_url = ""
+    self.roll_dices = random.randint(gamemode.min_dice, gamemode.max_dice)
+
+    #Storage
     self.last_hits = []
     self.slayers_hits = {}
+    self.loot_table = []
+
+    #Vie
+    self.base_hp = 0
+    self.total_hp = 0
+
+    #Défensif
+    self.armor = 0
+    self.armor_cap = 0
+    self.protect_crit = 0
+    self.parry = {
+      "parry_chance_l" : 0,
+      "parry_chance_h" : 0,
+      "parry_chance_s" : 0
+    }
+
+    #Offensif
+    self.damage = 0
+    self.letality = 0
+    self.letality_per = 0
+
+  def __getattr__(self, *args, **kwargs):
+      def printf(*args, **kwargs):
+          #print(args, kwargs)
+          pass
+      return printf
+
+  async def handler_Build(self):
+    OpponentData = await pullOpponentData()
+    compileOpponentData(OpponentData)
+    self.loot_table = await pullOpponentLootTable()
+
+    async def pullOpponentData(self):
+      return await self.bot.dB.pull_OpponentData(self.rarity, self.element, self.type)
+
+    async def pullOpponentLootTable(self):
+      return await self.bot.dB.pull_OpponentLootTable(self.name, self.gamemode.lootslot)
+
+    def compileOpponentData(self, OpponentData):
+      self.name = OpponentData["name"]
+      self.description = OpponentData["description"]
+      self.element = OpponentData["element"]
+      self.base_hp = int(OpponentData["base_hp"] * int(max(1,len(self.bot.ActiveList.active_slayers)+1/2)) * self.gamemode.scaling["hp"])
+      self.total_hp = int(OpponentData["base_hp"] * int(max(1,len(self.bot.ActiveList.active_slayers)+1/2)) * self.gamemode.scaling["hp"])
+      self.rarity = OpponentData["rarity"]
+      self.parry = {
+        "parry_chance_l" : float(OpponentData["parry_chance_l"]) * float(self.gamemode.scaling["parry"]),
+        "parry_chance_h" : float(OpponentData["parry_chance_h"]) * float(self.gamemode.scaling["parry"]),
+        "parry_chance_s" : 0
+      }
+      self.damage = int(OpponentData["damage"] * self.gamemode.scaling["damage"])
+      self.letality = int(OpponentData["letality"] * self.gamemode.scaling["letality"])
+      self.letality_per = min(OpponentData["letality_per"] * max(int(self.gamemode.scaling["letality"]/3),1),1)
+      self.armor = int(OpponentData["armor"] * self.gamemode.scaling["armor"])
+      self.armor_cap = int(OpponentData["armor"])
+      self.protect_crit = int(OpponentData["protect_crit"] * self.gamemode.scaling["protect_crit"])
+      self.img_url_normal = OpponentData["img_url_normal"]
+      self.img_url_enraged = OpponentData["img_url_enraged"]
+      self.bg_url = OpponentData["bg_url"]
 
   def dealDamage(self, Slayer):
     armor = int(self.reduceArmor(Slayer.cSlayer.stats["total_armor"]))
@@ -61,7 +103,8 @@ class Monster:
       armor = max((int(armor*(1-float(self.letality_per)))-int(self.letality)), 0)
       return int(armor)
 
-  def storeLastHits(self, damage, Spe):
+  def storeLastHits(self, damage, Spe, hit):
+    #TODO NERF CDG : Les S ne comptent plus
     if Spe.id != 4 and damage != 0:
       self.last_hits.append(damage)
       if len(self.last_hits) > 5:
@@ -88,7 +131,7 @@ class Monster:
       if self.slayers_hits[cSlayer.id].canAttack():
         return True, ""
       else:
-        return False, f"\n> Pas si vite ! Prends ton temps ! Prochaine attaque disponible dans **{int(self.slayers_hits[cSlayer.id].timestamp_next_hit - lib.datetime.datetime.timestamp(lib.datetime.datetime.now()))}s**"
+        return False, f"\n> Pas si vite ! Prends ton temps ! Prochaine attaque disponible dans **{int(self.slayers_hits[cSlayer.id].timestamp_next_hit - datetime.timestamp(datetime.now()))}s**"
     else:
       return True, ""
 
@@ -96,6 +139,48 @@ class Monster:
     if cSlayer.id in self.slayers_hits:
       self.slayers_hits[cSlayer.id].updateClass(damage, None if hit == "s" else cSlayer.stats["total_cooldown"], cSlayer.stats["total_luck"])
     else:
-      self.slayers_hits[cSlayer.id] = lib.DamageDone(0 if hit == "s" else cSlayer.stats["total_cooldown"], damage if damage > 0 else 0, True if damage > 0 else False, cSlayer.stats["total_luck"])
+      self.slayers_hits[cSlayer.id] = DamageDone(0 if hit == "s" else cSlayer.stats["total_cooldown"], damage if damage > 0 else 0, True if damage > 0 else False, cSlayer.stats["total_luck"])
     content = self.slayers_hits[cSlayer.id].checkStatus(damage, self.base_hp)
     return content
+
+@dataclass
+class Monster(Opponent):
+  def __init__(self, gamemode, element, rarity, type):
+    super().__init__(gamemode, element, rarity, type)
+  
+class Banner(Opponent):
+  def __init__(self, gamemode, element, rarity, type):
+    super().__init__(gamemode, element, rarity, type)
+  
+  async def handler_Build(self):
+    pass
+
+class Mythique1(Opponent):
+  def __init__(self, gamemode, element, rarity, type):
+    super().__init__(gamemode, element, "mythic", type)
+    pass
+
+class Mythique2(Opponent):
+  def __init__(self, gamemode, element, rarity, type):
+    super().__init__(gamemode, element, "mythic", type)
+    pass
+
+class Mythique3(Opponent):
+  def __init__(self, gamemode, element, rarity, type):
+    super().__init__(gamemode, element, "mythic", type)
+    pass
+
+class Mythique4(Opponent):
+  def __init__(self, gamemode, element, rarity, type):
+    super().__init__(gamemode, element, "mythic", type)
+    pass
+
+class Mythique5(Opponent):
+  def __init__(self, gamemode, element, rarity, type):
+    super().__init__(gamemode, element, "mythic", type)
+    pass
+
+class Mythique6(Opponent):
+  def __init__(self, gamemode, element, rarity, type):
+    super().__init__(gamemode, element, "mythic", type)
+    pass

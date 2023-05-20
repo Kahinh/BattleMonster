@@ -45,8 +45,6 @@ class BattleMonster(lib.commands.Bot):
         async with self.db_pool.acquire() as conn:
             async with conn.transaction():
                 self.rGamemodes = await conn.fetch(lib.qGameModes.SELECT_ALL)    
-                rGameModesLootSlot = await conn.fetch(lib.qGameModesLootSlot.SELECT_ALL) 
-                rGameModesSpawnRate = await conn.fetch(lib.qGameModesSpawnRate.SELECT_ALL)
                 #TODO rBaseBonuses -> Class
                 self.rBaseBonuses = await conn.fetchrow(lib.qBaseBonuses.SELECT_ALL)   
                 rChannels = await conn.fetch(lib.qChannels.SELECT_ALL, lib.tokens.TestProd)  
@@ -59,9 +57,6 @@ class BattleMonster(lib.commands.Bot):
                 rGatherablesSpawn = await conn.fetch(lib.qGatherables_Spawn.SELECT_ALL)
                 rPetFood = await conn.fetch("SELECT * FROM pet_food")
 
-        #TODO rGameModesLootSlot & rGameModesSpawnRate dans la class Gamemodes
-        self.rGameModesLootSlot = lib.Toolbox.transformGamemodesLootSlot(rGameModesLootSlot)
-        self.rGameModesSpawnRate = lib.Toolbox.transformGamemodesSpawnRate(rGameModesSpawnRate)
         self.rSlots = lib.Toolbox.transformSlots(rSlots) 
         self.rChannels = lib.Toolbox.transformChannels(rChannels)
 

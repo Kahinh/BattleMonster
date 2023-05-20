@@ -46,7 +46,7 @@ class dB:
             await conn.execute(f'UPDATE "slayers_inventory_items" SET equipped = False WHERE slayer_id = {cSlayer.id} AND item_id = {cItem2.id}')
             await conn.execute(f'UPDATE "slayers" SET damage_taken = {cSlayer.damage_taken} WHERE id = {cSlayer.id}')
   
-  async def pull_loottable(self, monster, lootslot):
+  async def pull_OpponentLootTable(self, monster, lootslot):
     async with self.bot.db_pool.acquire() as conn:
       loottable = await conn.fetch('SELECT * FROM "items" WHERE monster = $1 AND slot = ANY($2::text[])', monster, lootslot)
     return loottable
@@ -62,15 +62,21 @@ class dB:
       async with conn.transaction():   
         await conn.execute('UPDATE "slayers_achievements" SET biggest_hit = + $1 WHERE id = $2', cSlayer.achievements["biggest_hit"], cSlayer.id)
 
-  async def push_loots_money(self, data_loots, data_money):
-    async with self.bot.db_pool.acquire() as conn:
-      async with conn.transaction():
-        if data_loots != []:
-          await conn.executemany('INSERT INTO "slayers_inventory_items" (slayer_id, item_id, level, equipped) VALUES ($1, $2, $3, $4)', data_loots)
-        if data_money != []:
-          await conn.executemany('UPDATE "slayers" SET money = money + $1 WHERE id = $2', data_money)
+  async def push_loots(self, data_loots):
+    if data_loots != []:
+      async with self.bot.db_pool.acquire() as conn:
+        async with conn.transaction():
+            await conn.executemany('INSERT INTO "slayers_inventory_items" (slayer_id, item_id, level, equipped) VALUES ($1, $2, $3, $4)', data_loots) 
 
-    logging.info(f"PUSH LOOTS_MONEY : {data_loots} {data_money}")
+    logging.info(f"PUSH LOOTS : {data_loots}")
+
+  async def push_money(self, data_money):
+    if data_money != []:
+      async with self.bot.db_pool.acquire() as conn:
+        async with conn.transaction():
+            await conn.executemany('UPDATE "slayers" SET money = money + $1 WHERE id = $2', data_money)
+
+    logging.info(f"PUSH MONEY : {data_money}")
   
   async def push_slayer_data(self, cSlayer):
     async with self.bot.db_pool.acquire() as conn:
@@ -142,4 +148,19 @@ class dB:
           ' SET amount = $3 + slayers_inventory_gatherables.amount', data_mythic_stones)
   
     logging.info(f"PUSH - MYTHIC STONES : {data_mythic_stones}")
+
+  async def pull_OpponentData(self, rarity, element, type):
+    async with self.bot.db_pool.acquire() as conn:
+      OpponentData = await conn.fetchrow('SELECT * FROM "monsters" WHERE rarity = $1 AND element =$2 AND type =$3 ORDER BY random() LIMIT 1', rarity, element, type) 
+    return OpponentData
+  
+  async def pull_GamemodeLootSlot(self, gamemode_name):
+    async with self.bot.db_pool.acquire() as conn:
+      GamemodeLootSlot = await conn.fetch('SELECT * FROM "gamemodes_loot_slot" WHERE gamemode = $1', gamemode_name)
+    return GamemodeLootSlot
+  
+  async def pullGamemodeSpawnRate(self, gamemode_name):
+    async with self.bot.db_pool.acquire() as conn:
+      GamemodeSpawnRate = await conn.fetch('SELECT * FROM "gamemodes_spawn_rates" WHERE gamemode = $1', gamemode_name)
+    return GamemodeSpawnRate
 

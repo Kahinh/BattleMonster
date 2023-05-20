@@ -14,7 +14,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 
 from Classes.Specialization import Spe
-from Classes.Items import Item
+from Classes.Objects import Item, Pet, Mythic
 from Functions.Messages.Embed import create_embed_new_pet
 
 class MSlayer:
@@ -55,7 +55,13 @@ class MSlayer:
 
         #Transforme liste inventaire en liste Class Items dans l'inventaire
         for row in Slayer_Inventory_Items:
-            self.cSlayer.inventory_items.update({row["id"]: Item(row, self.bot)})
+            if row["slot"] == "pet":
+                self.cSlayer.inventory_items.update({row["id"]: Pet(self.bot, row)})
+            else:
+                if row["rarity"] == "mythic":
+                    self.cSlayer.inventory_items.update({row["id"]: Mythic(self.bot, row)})
+                else:
+                    self.cSlayer.inventory_items.update({row["id"]: Item(self.bot, row)})
         #On corrige la liste des specializations en liste d'int
         self.cSlayer.inventory_specializations = [eval(str(i)) for i in self.cSlayer.inventory_specializations]
 
@@ -228,7 +234,7 @@ class MSlayer:
             pet_id = random.choice(pets)
             if not self.isinInventory(pet_id):
                 rPet = await self.bot.dB.get_rPet(pet_id)
-                cPet = Item(rPet, self.bot)
+                cPet = Pet(self.bot, rPet)
 
                 #On ajoute au stuff
                 self.addtoInventory(cPet)
@@ -359,9 +365,6 @@ class Slayer:
         for id in self.inventory_items:
             if self.inventory_items[id].equipped:
                 for bonus in self.inventory_items[id].bonuses:
-                    if self.Spe.id == 2 and self.inventory_items[id].slot == "weapon" and (bonus == "parry_l" or bonus == "parry_h"): #Escrime Double
-                        bonuses[bonus] += self.inventory_items[id].bonuses[bonus] / 2
-                    else:
                         bonuses[bonus] += self.inventory_items[id].bonuses[bonus]
         self.bonuses = bonuses
 

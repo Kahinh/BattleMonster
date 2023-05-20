@@ -103,7 +103,13 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
           if Slayer.isinInventory(item_row["id"]):
             await interaction.followup.send(content=f"{user} possède déjà {item_name}", ephemeral=True)
           else:
-            cItem = lib.Item(item_row, self.bot)
+            if item_row["slot"] == "pet":
+                cItem = lib.Pet(self.bot, item_row)
+            else:
+                if item_row["rarity"] == "mythic":
+                    cItem = lib.Mythic(self.bot, item_row)
+                else:
+                    cItem = lib.Item(self.bot, item_row)
             Slayer.addtoInventory(cItem)
             await self.bot.dB.add_item(Slayer.cSlayer, cItem)
             await self.bot.ActiveList.update_interface(Slayer.cSlayer.id, "inventaire")

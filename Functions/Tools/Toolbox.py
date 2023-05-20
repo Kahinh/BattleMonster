@@ -16,30 +16,6 @@ def transformChannels(fetch):
         dict_record[row["name"]] = row["channel_id"]
     return dict_record
 
-def transformGamemodesLootSlot(fetch):
-    dict_record = {}
-    for row in fetch:
-        if row["gamemode"] not in dict_record:
-            dict_record[row["gamemode"]] = []
-        dict_record[row["gamemode"]].append(row["slot"])
-    return dict_record
-
-def transformGamemodesSpawnRate(fetch):
-    dict_record = {}
-    for row in fetch:
-        if row["gamemode_name"] not in dict_record:
-            dict_record[row["gamemode_name"]] = {}
-        dict_record[row["gamemode_name"]][row["rarities"]] = float(row["spawn_rate"])
-    return dict_record
-
-def transformRaritiesLootRate(fetch):
-    dict_record = {}
-    for row in fetch:
-        if row["rarities_name"] not in dict_record:
-            dict_record[row["rarities_name"]] = {}
-        dict_record[row["rarities_name"]][row["rarities"]] = float(row["loot_rate"])
-    return dict_record
-
 def filter_items_list(items_list, slot=None, element=None, rarity=None):
     filtered_list = []
     for id in items_list:
@@ -51,14 +27,6 @@ def get_spe_row_by_id(rSpe, spe_id):
     for row in rSpe:
         if int(row["id"]) == int(spe_id):
             return lib.Spe(row)
-
-def get_content_looters(Battle):
-    content = ""
-    for id in Battle.loots:
-        if "items" in Battle.loots[id]:
-            if Battle.loots[id]["items"] != []:
-                content += f"<@{id}> "
-    return content
 
 def disable_enable_LootReviewView(children, Slayer, id):
     for item in children:

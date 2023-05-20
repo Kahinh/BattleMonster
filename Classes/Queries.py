@@ -10,9 +10,6 @@ class qGameModes:
     SELECT_RARITY_POPULATION = 'SELECT rarities FROM "gamemodes_spawn_rates WHERE gamemode_name = $1'
     SELECT_RARITY_WEIGHT = 'SELECT spawn_rate FROM "gamemodes_spawn_rates WHERE gamemode_name = $1'
 
-class qGameModesLootSlot:
-    SELECT_ALL = 'SELECT * FROM "gamemodes_loot_slot"'
-
 class qGameModesSpawnRate:
     SELECT_ALL = 'SELECT * FROM "gamemodes_spawn_rates"'
 
