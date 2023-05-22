@@ -2,7 +2,7 @@ import lib
 
 def create_embed_battle(self):
 
-    embed=lib.discord.Embed(title=f"{self.Opponents[self.count].name} ({'{:,}'.format(int(self.Opponents[self.count].base_hp)).replace(',', ' ')}/{'{:,}'.format(int(self.Opponents[self.count].total_hp)).replace(',', ' ')} ❤️) {'💩💩' if len(self.LootTable[self.count]) == 0 else ''}",
+    embed=lib.discord.Embed(title=f"{self.Opponents[self.count].name} ({'{:,}'.format(int(self.Opponents[self.count].base_hp)).replace(',', ' ')}/{'{:,}'.format(int(self.Opponents[self.count].total_hp)).replace(',', ' ')} ❤️) {'💩💩' if len(self.Opponents[self.count].loot_table) == 0 else ''}",
     description= \
         f"**Monstre {self.bot.Rarities[self.Opponents[self.count].rarity].display_text.capitalize()}**\n" \
         f"⚔️ Puissance : **{int(self.Opponents[self.count].damage)}** {self.bot.Elements[self.Opponents[self.count].element].display_emote}\n" \
@@ -16,7 +16,7 @@ def create_embed_battle(self):
             f"✊ Chance de blocage - Attaque Légère: **{int(self.Opponents[self.count].parry['parry_chance_l'] * 100)}%**\n" \
             f"✊ Chance de blocage - Attaque Lourde: **{int(self.Opponents[self.count].parry['parry_chance_h'] * 100)}%**\n" \
             f"🗡️ Létalité : **({int(self.Opponents[self.count].letality)}, {int(self.Opponents[self.count].letality_per *100)}%)**\n" \
-            f"💠 Résistance Critique : **{self.Opponents[self.count].protect_crit}**\n", \
+            f"🧿 Résistance Critique : **{self.Opponents[self.count].protect_crit}**\n", \
         inline=False)
     if self.Opponents[self.count].img_url_normal is not None:
         embed.set_thumbnail(url=f"{self.Opponents[self.count].img_url_normal}")
@@ -34,11 +34,11 @@ def create_embed_end_battle(Battle, timeout):
         title = f"**{Battle.name.capitalize()} achevé : 🐉 Vous avez échoué et les monstres se sont enfuis.**"
     
     description = "**Bilan du combat :**"
-    for i in Battle.Opponents:
-        if int(Battle.Opponents[i].base_hp) == 0:
-            description += f"\n- {i + 1} {Battle.bot.Elements[Battle.Opponents[i].element].display_emote} {Battle.Opponents[i].name} ({int(Battle.Opponents[i].base_hp)}/{int(Battle.Opponents[i].total_hp)} 💀)"
+    for cOpponent in Battle.Opponents:
+        if int(cOpponent.base_hp) == 0:
+            description += f"\n- {Battle.bot.Elements[cOpponent.element].display_emote} {cOpponent.name} ({int(cOpponent.base_hp)}/{int(cOpponent.total_hp)} 💀)"
         else:
-            description += f"\n- {i + 1} {Battle.bot.Elements[Battle.Opponents[i].element].display_emote} {Battle.Opponents[i].name} ({int(Battle.Opponents[i].base_hp)}/{int(Battle.Opponents[i].total_hp)} ❤️)"
+            description += f"\n- {Battle.bot.Elements[cOpponent.element].display_emote} {cOpponent.name} ({int(cOpponent.base_hp)}/{int(cOpponent.total_hp)} ❤️)"
     
     description += f"\n\n⚔️ Attaques reçues : {Battle.stats['attacks_received']}"
     description += f"\n🩸 Dégâts infligés : {Battle.stats['attacks_done']}"
@@ -46,7 +46,7 @@ def create_embed_end_battle(Battle, timeout):
     description += f"\n🎁 Butins récupérés : {Battle.stats['loots']}"
     description += f"\n🪙 Or distribué : {Battle.stats['money']}"
     if Battle.stats["mythic_stones"] != 0:
-       description += f"\n💠 Pierres Mythiques : {Battle.stats['mythic_stones']}" 
+        description += f"\n💠 Pierres Mythiques : {Battle.stats['mythic_stones']}" 
     embed=lib.discord.Embed(title=title, description=description, color=0xe74c3c if timeout else 0x2ecc71)
     embed.set_thumbnail(url='https://images-ext-2.discordapp.net/external/K5FrBGB9d-8IbCg_bnZyheglS9Q61aXohV4hJSMiImA/%3Fcb%3D20200801054948/https/static.wikia.nocookie.net/dauntless_gamepedia_en/images/1/13/Hunt_Icon.png/revision/latest')
     return embed
@@ -138,6 +138,7 @@ def create_embed_profil(Slayer, avatar):
     f"\n🪙 Coin : **{int(Slayer.cSlayer.money)}**" \
     "\n\n**__Statistiques__**" \
     f"\n{'💀' if Slayer.cSlayer.dead else '❤️'} Vie : **{int(Slayer.cSlayer.stats['total_max_health'] - Slayer.cSlayer.damage_taken)}/{Slayer.cSlayer.stats['total_max_health']}**" \
+    f"\n🔰 Score : **{Slayer.cSlayer.gearscore}**" \
     f"\n🛡️ Armure : **{Slayer.cSlayer.stats['total_armor']}**" \
     f"\n🌪️ Vivacité : **{Slayer.cSlayer.stats['total_cooldown']}**s" \
     f"\n☄️ Charge : **{Slayer.cSlayer.special_stacks}/{Slayer.cSlayer.stats['total_stacks']}**" \
@@ -161,8 +162,9 @@ def create_embed_profil(Slayer, avatar):
             f"\n☄️ Gains Charge : **{Slayer.cSlayer.stats['total_special_charge_' + i]}**" \
             f"\n✨ Chance Critique : **{int(Slayer.cSlayer.stats['total_crit_chance_' + i]*100)}**%" \
             f"\n💢 Dégâts Critiques : **{int(Slayer.cSlayer.stats['total_crit_damage_' + i]*100)}**%" \
-            f"\n🗡️ Létalité : **{Slayer.cSlayer.stats['total_letality_' + i]}**,  **{int(Slayer.cSlayer.stats['total_letality_per_' + i]*100)}**%" \
-            f"\n✊ Blocage : **{int(Slayer.cSlayer.stats['total_parry_' + i]*100)}**%"
+            f"\n🗡️ Létalité : **{Slayer.cSlayer.stats['total_letality_' + i]}**,  **{int(Slayer.cSlayer.stats['total_letality_per_' + i]*100)}**%"
+            if int(Slayer.cSlayer.stats['total_parry_' + i]*100) != 0:
+                description += f"\n✊ Blocage : **{int(Slayer.cSlayer.stats['total_parry_' + i]*100)}**%"
             embed.add_field(name=name, value=description, inline=False)
 
     embed.set_thumbnail(url=avatar)
@@ -210,10 +212,10 @@ def create_embed_equipment(bot, Slayer, avatar):
 def create_embed_spe(Slayer, cSpe):
     embed=lib.discord.Embed(title=f"{cSpe.emote} {cSpe.name}",
     description= \
-        f"{cSpe.description}" \
-        f"\n\n⚔️ Dégâts : {cSpe.damage}" \
-        f"\n☄️ Charges : {cSpe.stacks}" \
-        f"\n\n**Actuellement équipé :**" \
+        f"{cSpe.description}\n" \
+        f"```ansi\n⚔️Dégâts: {cSpe.damage}```" \
+        f"```ansi\n☄️Charges: {cSpe.stacks}```" \
+        f"\n**Actuellement équipé :**" \
         f"\n{Slayer.cSlayer.Spe.emote} {Slayer.cSlayer.Spe.name}" \
         f"\n\n__Statistiques :__"
         f"{cSpe.getDisplayStats()}",

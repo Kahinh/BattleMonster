@@ -96,7 +96,7 @@ class ActiveList:
 
   async def clear_all_battles(self):
     for message_id in self.active_battles:
-      await self.active_battles[message_id].updateBattle(timeout=True, poweroff=True)
+      await self.active_battles[message_id].updateBattle(poweroff=True)
       await asyncio.sleep(2)
     self.active_battles = {}
 

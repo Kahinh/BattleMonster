@@ -22,6 +22,8 @@ class Opponent:
     self.rarity = rarity
     self.type = type
 
+    self.name = ""
+    self.description = ""
     self.img_url_normal = ""
     self.img_url_enraged = ""
     self.bg_url = ""
@@ -51,24 +53,21 @@ class Opponent:
     self.letality = 0
     self.letality_per = 0
 
-  def __getattr__(self, *args, **kwargs):
-      def printf(*args, **kwargs):
-          #print(args, kwargs)
-          pass
-      return printf
+  # def __getattr__(self, *args, **kwargs):
+  #     def printf(*args, **kwargs):
+  #         #print(args, kwargs)
+  #         pass
+  #     return printf
 
   async def handler_Build(self):
-    OpponentData = await pullOpponentData()
-    compileOpponentData(OpponentData)
-    self.loot_table = await pullOpponentLootTable()
 
-    async def pullOpponentData(self):
+    async def pullOpponentData():
       return await self.bot.dB.pull_OpponentData(self.rarity, self.element, self.type)
 
-    async def pullOpponentLootTable(self):
+    async def pullOpponentLootTable():
       return await self.bot.dB.pull_OpponentLootTable(self.name, self.gamemode.lootslot)
 
-    def compileOpponentData(self, OpponentData):
+    def compileOpponentData(OpponentData):
       self.name = OpponentData["name"]
       self.description = OpponentData["description"]
       self.element = OpponentData["element"]
@@ -89,6 +88,10 @@ class Opponent:
       self.img_url_normal = OpponentData["img_url_normal"]
       self.img_url_enraged = OpponentData["img_url_enraged"]
       self.bg_url = OpponentData["bg_url"]
+    
+    OpponentData = await pullOpponentData()
+    compileOpponentData(OpponentData)
+    self.loot_table = await pullOpponentLootTable()
 
   def dealDamage(self, Slayer):
     armor = int(self.reduceArmor(Slayer.cSlayer.stats["total_armor"]))
@@ -104,14 +107,13 @@ class Opponent:
       return int(armor)
 
   def storeLastHits(self, damage, Spe, hit):
-    #TODO NERF CDG : Les S ne comptent plus
     if Spe.id != 4 and damage != 0:
-      self.last_hits.append(damage)
-      if len(self.last_hits) > 5:
+      self.last_hits.append(int(damage*self.bot.Variables["cdg_malus_attack_in_stack"]))
+      if len(self.last_hits) > self.bot.Variables["cdg_nbr_hit_stack"]:
         self.last_hits.pop(0)
 
   def isParry(self, hit, Slayer):
-    if self.parry["parry_chance_L"] >= 1 and self.parry["parry_chance_H"] >= 1:
+    if (self.parry["parry_chance_l"] + Slayer.cSlayer.stats[f"total_parry_l"]) >= 1 and (self.parry["parry_chance_h"] + Slayer.cSlayer.stats[f"total_parry_h"]) >= 1:
       return True
     else:
       ParryChance = min(max(self.parry[f"parry_chance_{hit}"] + Slayer.cSlayer.stats[f"total_parry_{hit}"], 0), 1)
@@ -142,6 +144,16 @@ class Opponent:
       self.slayers_hits[cSlayer.id] = DamageDone(0 if hit == "s" else cSlayer.stats["total_cooldown"], damage if damage > 0 else 0, True if damage > 0 else False, cSlayer.stats["total_luck"])
     content = self.slayers_hits[cSlayer.id].checkStatus(damage, self.base_hp)
     return content
+  
+  def slayer_loses_eligibility(self, cSlayer):
+    if cSlayer.id not in self.slayers_hits:
+      return ""
+    else:
+      if not self.slayers_hits[cSlayer.id].eligible:
+        return ""
+      else:
+        self.slayers_hits[cSlayer.id].eligible = False
+        return " Tu n'es plus éligible au butin !"
 
 @dataclass
 class Monster(Opponent):

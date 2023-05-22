@@ -13,8 +13,20 @@ class Gamemode_Dropdown(lib.discord.ui.Select):
             if int(row["id"]) == int(self.values[0]):
                 gamemode = row
         await interaction.response.send_message(content="L'event va apparaître !", ephemeral=True)
-        Battle = lib.Battle(self.view.bot, gamemode, interaction)
-        await Battle.constructGamemode()
+        if gamemode["type"] == "hunt":
+            Gamemode = lib.Hunt(self.view.bot, gamemode)
+            await Gamemode.handler_Build()
+            await Gamemode.handler_Spawn()
+            await lib.asyncio.sleep(10)
+        elif gamemode["type"] == "factionwar":
+            Gamemode = lib.FactionWar(self.view.bot, gamemode)
+            await Gamemode.handler_Build()
+            await Gamemode.handler_Spawn()
+            await lib.asyncio.sleep(10)
+
+        channel = self.view.bot.get_channel(self.view.bot.rChannels["logs"])
+        await channel.send(content=f"<@{interaction.user.id}> a fait apparaître un {gamemode['name']}!")
+
         await self.view.close_view()
 
 class CmdEvent(lib.discord.ui.View):

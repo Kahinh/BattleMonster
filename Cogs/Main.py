@@ -22,12 +22,14 @@ class Main(lib.commands.Cog):
                 #random si ça doit spawn
                 if lib.random.choices(population=[True, False], weights=[float(gamemode["invoke_rate"]), 1-float(gamemode["invoke_rate"])], k=1)[0]:
                     if gamemode["type"] == "hunt":
-                        Gamemode = await lib.Hunt(self.bot, gamemode).handler_Build()
-                        Gamemode.handler_Spawn()
+                        Gamemode = lib.Hunt(self.bot, gamemode)
+                        await Gamemode.handler_Build()
+                        await Gamemode.handler_Spawn()
                         await lib.asyncio.sleep(10)
                     elif gamemode["type"] == "factionwar":
-                        Gamemode = await lib.FactionWar(self.bot, gamemode).handler_Build()
-                        Gamemode.handler_Spawn()
+                        Gamemode = lib.FactionWar(self.bot, gamemode)
+                        await Gamemode.handler_Build()
+                        await Gamemode.handler_Spawn()
                         await lib.asyncio.sleep(10)
                     else:
                         pass

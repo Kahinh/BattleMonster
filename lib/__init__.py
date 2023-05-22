@@ -45,11 +45,11 @@ from Classes.DamageDone import DamageDone
 from Classes.dBManager import dB
 from Classes.ActiveList import ActiveList
 from Classes.MainSlayers import MSlayer, Slayer
-from Classes.Attributes import Rarities, Elements
+from Classes.Properties import Rarities, Elements
 from Classes.Handler_Gatherables import Gather, GatherablesSpawn, Gatherables
 from Classes.Opponents import Opponent, Monster, Banner, Mythique1, Mythique2, Mythique3, Mythique4, Mythique5, Mythique6
 from Classes.Gamemodes import Gamemode, Hunt, FactionWar, Donjon
-from Classes.Specialization import Spe
+from Classes.Attributes import Spe, Faction
 from Classes.Objects import Item, Mythic, Pet
 
 #TODO TODELETE
@@ -58,6 +58,7 @@ from Classes.Queries import qGameModes, qOpponents, qChannels, qBaseBonuses, qRa
 #FUNCTIONS
 import Functions.Messages.Embed as Embed
 import Functions.Tools.Toolbox as Toolbox
+from Functions.Tools.DisplayStats import get_display_stats
 
 #Localisation
 

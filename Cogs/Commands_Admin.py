@@ -57,7 +57,7 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
       view = lib.CmdEvent(self.bot, self.bot.rGamemodes, interaction)
       await interaction.followup.send(content="Quel event faire apparaître ?", view=view, ephemeral=True)
     else:
-      await interaction.followup.send(content="Le bot est en attente de redémarrage ou en cours d'update. Veuillez patienter.")
+      await interaction.followup.send(content="Le bot est en attente de redémarrage ou en cours d'update. Veuillez patienter.", ephemeral=True)
 
   @lib.app_commands.describe(
       user='ID User to revive',
@@ -82,7 +82,7 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
       else:
         await interaction.followup.send(content=f"{user} n'existe pas", ephemeral=True)
     else:
-      await interaction.followup.send(content="Le bot est en attente de redémarrage ou en cours d'update. Veuillez patienter.")
+      await interaction.followup.send(content="Le bot est en attente de redémarrage ou en cours d'update. Veuillez patienter.", ephemeral=True)
 
   @lib.app_commands.describe(
       user='ID User',
@@ -121,8 +121,47 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
       else:
         await interaction.followup.send(content=f"{user} n'existe pas", ephemeral=True)
     else:
-      await interaction.followup.send(content="Le bot est en attente de redémarrage ou en cours d'update. Veuillez patienter.")
-      
+      await interaction.followup.send(content="Le bot est en attente de redémarrage ou en cours d'update. Veuillez patienter.", ephemeral=True)
+
+  @lib.app_commands.describe(
+      user_id='ID User',
+      faction_id='ID Faction'
+  )
+  @lib.app_commands.command(name="faction")
+  async def faction(self, interaction: lib.discord.Interaction, user_id: str, faction_id: str) -> None:
+    """ Attribue une faction à un Slayer """
+    await interaction.response.defer(ephemeral=True)
+    if self.bot.power:
+        Slayer = self.bot.ActiveList.get_active_Slayer(int(user_id))
+        if Slayer is not None and int(faction_id) in self.bot.Factions:
+          guild = self.bot.get_guild(interaction.guild_id)
+          role = guild.get_role(int(faction_id))
+          member = guild.get_member(int(user_id))
+          await member.add_roles(role)
+
+          #On remove les autres roles au cas où
+          for faction in self.bot.Factions:
+            if int(faction) != int(faction_id):
+              role = guild.get_role(int(faction))
+              try:
+                  await member.remove_roles(role)
+              except lib.discord.HTTPException:
+                  pass
+          
+          #On met à jour le cSlayer
+          Slayer.cSlayer.faction = faction
+          await self.bot.dB.push_slayer_data(Slayer.cSlayer)
+
+          #On poste le message
+          channel = self.bot.get_channel(self.bot.rChannels["logs"])
+          await channel.send(content=f"<@{Slayer.cSlayer.id}> a rejoint la Faction <@&{faction_id}> !")
+          await interaction.followup.send(content="C'est fait.", ephemeral=True)
+
+        else:
+          await interaction.followup.send(content=f"La faction {faction_id} ou le slayer {user_id} n'existent pas", ephemeral=True)
+    else:
+      await interaction.followup.send(content="Le bot est en attente de redémarrage ou en cours d'update. Veuillez patienter.", ephemeral=True)
+
 async def setup(bot: lib.commands.Bot) -> None:
   await bot.add_cog(Commands_Admin(bot))
   lib.logging.warning("Commands_Admin : OK")

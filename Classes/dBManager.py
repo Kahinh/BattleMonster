@@ -83,7 +83,7 @@ class dB:
       await conn.execute('INSERT INTO "slayers" (id, xp, money, damage_taken, special_stacks, faction, specialization, creation_date, name, dead, gearscore)' \
             f" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 0)" \
             ' ON CONFLICT (id) DO ' \
-            f"UPDATE SET xp=$2, money=$3, damage_taken=$4, special_stacks=$5, faction=$6, specialization=$7, dead=$10, gearscore=$11", cSlayer.id, cSlayer.xp, cSlayer.money, cSlayer.damage_taken, cSlayer.special_stacks, cSlayer.faction, cSlayer.specialization, cSlayer.creation_date, cSlayer.name, cSlayer.dead, cSlayer.gearscore)
+            f"UPDATE SET xp=$2, money=$3, damage_taken=$4, special_stacks=$5, faction=$6, specialization=$7, dead=$10, gearscore=$11", cSlayer.id, cSlayer.xp, cSlayer.money, cSlayer.damage_taken, cSlayer.special_stacks, int(cSlayer.faction), cSlayer.specialization, cSlayer.creation_date, cSlayer.name, cSlayer.dead, cSlayer.gearscore)
 
     logging.info(f"PUSH SLAYER_DATA : {cSlayer}")
 

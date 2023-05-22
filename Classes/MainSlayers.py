@@ -13,7 +13,7 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 
-from Classes.Specialization import Spe
+from Classes.Attributes import Spe
 from Classes.Objects import Item, Pet, Mythic
 from Functions.Messages.Embed import create_embed_new_pet
 
@@ -198,15 +198,9 @@ class MSlayer:
 
     def GetGearScore(self):
         gearscore = 0
-        #TODO A refaire plus propre avec une sous fonction pour reprendre le gearscore +=
         for item in self.cSlayer.inventory_items:
             if self.cSlayer.inventory_items[item].equipped:
-                if (self.cSlayer.Spe.id == 2 and self.cSlayer.inventory_items[item].slot == "weapon"): #Escrime Double
-                    gearscore += (self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore + self.cSlayer.inventory_items[item].level) / 2
-                elif (self.cSlayer.Spe.id == 3 and (self.cSlayer.inventory_items[item].slot == "shield" or self.cSlayer.inventory_items[item].slot == "weapon")): #Templier
-                    gearscore += (self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore + self.cSlayer.inventory_items[item].level) / 2
-                else:
-                    gearscore += self.bot.Rarities[self.cSlayer.inventory_items[item].rarity].gearscore + self.cSlayer.inventory_items[item].level
+                gearscore += self.cSlayer.inventory_items[item].gearscore
         self.cSlayer.gearscore = gearscore
 
     def equippedonSlot(self, slot):
@@ -288,6 +282,8 @@ class Slayer:
         biggest_hit = 0
 
         ):
+        self.bot = bot
+
         self.id = id
         self.name = name
         self.creation_date = creation_date
@@ -306,7 +302,6 @@ class Slayer:
         self.slots = slots
         self.stats = stats
         self.slots_count = slots_count
-        self.bot = bot
 
         #regen
         self.lastregen = datetime.datetime.timestamp(datetime.datetime.now()) - 1200
@@ -348,12 +343,12 @@ class Slayer:
             "letality_per_l" : float(self.Spe.bonuses["letality_per_l"]),
             "letality_per_h" : float(self.Spe.bonuses["letality_per_h"]),
             "letality_per_s" : float(self.Spe.bonuses["letality_per_s"]),
-            "crit_chance_l" : float(rBaseBonuses["crit_chance_l"]) + float(self.Spe.bonuses["crit_chance_l"]) + (1.0 if self.berserker_mode > 0 else 0),
-            "crit_chance_h" : float(rBaseBonuses["crit_chance_h"]) + float(self.Spe.bonuses["crit_chance_h"]) + (1.0 if self.berserker_mode > 0 else 0),
-            "crit_chance_s" : float(rBaseBonuses["crit_chance_s"]) + float(self.Spe.bonuses["crit_chance_s"]) + (1.0 if self.berserker_mode > 0 else 0),
-            "crit_damage_l" : float(rBaseBonuses["crit_damage_l"]) + float(self.Spe.bonuses["crit_damage_l"]) + (2.0 if self.berserker_mode > 0 else 0),
-            "crit_damage_h" : float(rBaseBonuses["crit_damage_h"]) + float(self.Spe.bonuses["crit_damage_h"]) + (2.0 if self.berserker_mode > 0 else 0),
-            "crit_damage_s" : float(rBaseBonuses["crit_damage_s"]) + float(self.Spe.bonuses["crit_damage_s"]) + (2.0 if self.berserker_mode > 0 else 0),
+            "crit_chance_l" : float(rBaseBonuses["crit_chance_l"]) + float(self.Spe.bonuses["crit_chance_l"]) + (float(self.bot.Variables["assassin_crit_chance_bonus"]) if self.berserker_mode > 0 else 0),
+            "crit_chance_h" : float(rBaseBonuses["crit_chance_h"]) + float(self.Spe.bonuses["crit_chance_h"]) + (float(self.bot.Variables["assassin_crit_chance_bonus"]) if self.berserker_mode > 0 else 0),
+            "crit_chance_s" : float(rBaseBonuses["crit_chance_s"]) + float(self.Spe.bonuses["crit_chance_s"]) + (float(self.bot.Variables["assassin_crit_chance_bonus"]) if self.berserker_mode > 0 else 0),
+            "crit_damage_l" : float(rBaseBonuses["crit_damage_l"]) + float(self.Spe.bonuses["crit_damage_l"]) + (float(self.bot.Variables["assassin_crit_damage_bonus"]) if self.berserker_mode > 0 else 0),
+            "crit_damage_h" : float(rBaseBonuses["crit_damage_h"]) + float(self.Spe.bonuses["crit_damage_h"]) + (float(self.bot.Variables["assassin_crit_damage_bonus"]) if self.berserker_mode > 0 else 0),
+            "crit_damage_s" : float(rBaseBonuses["crit_damage_s"]) + float(self.Spe.bonuses["crit_damage_s"]) + (float(self.bot.Variables["assassin_crit_damage_bonus"]) if self.berserker_mode > 0 else 0),
             "special_charge_l" : rBaseBonuses["special_charge_l"] + self.Spe.bonuses["special_charge_l"],
             "special_charge_h" : rBaseBonuses["special_charge_h"] + self.Spe.bonuses["special_charge_h"],
             "special_charge_s" : self.Spe.bonuses["special_charge_s"],
@@ -365,7 +360,13 @@ class Slayer:
         for id in self.inventory_items:
             if self.inventory_items[id].equipped:
                 for bonus in self.inventory_items[id].bonuses:
-                        bonuses[bonus] += self.inventory_items[id].bonuses[bonus]
+                        if isinstance(bonuses[bonus], int):
+                            bonuses[bonus] += int(self.inventory_items[id].bonuses[bonus])
+                        elif isinstance(bonuses[bonus], float):
+                            bonuses[bonus] += float(round(self.inventory_items[id].bonuses[bonus],2))
+                        else:
+                            #print(bonuses)
+                            bonuses[bonus] += self.inventory_items[id].bonuses[bonus]
         self.bonuses = bonuses
 
     def calculateStats(self, rBaseBonuses):
@@ -381,9 +382,9 @@ class Slayer:
             "total_damage_l" : int((bonuses["damage_l"] + bonuses["damage_weapon"])*(1+bonuses["damage_per_l"])),
             "total_damage_h" : int((bonuses["damage_h"] + bonuses["damage_weapon"])*(1+bonuses["damage_per_h"])),
             "total_damage_s" : int((bonuses["damage_s"] + bonuses["damage_weapon"])*(1+bonuses["damage_per_s"])),
-            "total_final_damage_l" : float(bonuses["final_damage_l"]),
-            "total_final_damage_h" : float(bonuses["final_damage_h"]),
-            "total_final_damage_s" : float(bonuses["final_damage_s"]),
+            "total_final_damage_l" : float(max(bonuses["final_damage_l"],0)),
+            "total_final_damage_h" : float(max(bonuses["final_damage_h"],0)),
+            "total_final_damage_s" : float(max(bonuses["final_damage_s"],0)),
             "total_crit_chance_l" : float(min(bonuses["crit_chance_l"],1)),
             "total_crit_chance_h" : float(min(bonuses["crit_chance_h"],1)),
             "total_crit_chance_s" : float(min(bonuses["crit_chance_s"],1)),

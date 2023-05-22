@@ -20,6 +20,8 @@ class BattleMonster(lib.commands.Bot):
         self.Rarities = {}
         self.Elements = {}
         self.PetFood = {}
+        self.Variables = {}
+        self.Factions = {}
 
         super().__init__(
             command_prefix='$',
@@ -56,6 +58,8 @@ class BattleMonster(lib.commands.Bot):
                 rGatherables = await conn.fetch(lib.qGatherables.SELECT_ALL)
                 rGatherablesSpawn = await conn.fetch(lib.qGatherables_Spawn.SELECT_ALL)
                 rPetFood = await conn.fetch("SELECT * FROM pet_food")
+                rVariables = await conn.fetch("SELECT * FROM variables")
+                rFactions = await conn.fetch("SELECT * FROM factions")
 
         self.rSlots = lib.Toolbox.transformSlots(rSlots) 
         self.rChannels = lib.Toolbox.transformChannels(rChannels)
@@ -70,6 +74,10 @@ class BattleMonster(lib.commands.Bot):
         for row in rGatherablesSpawn: self.GatherablesSpawn.update({row["id"]: lib.GatherablesSpawn(row, self.Gatherables)})
         #PetGood
         for row in rPetFood: self.PetFood.update({row["pet_id"]: self.Gatherables[row["food_id"]]})
+        #Variables
+        for row in rVariables: self.Variables.update({row["name"]: row["value"]})
+        #Factions
+        for row in rFactions: self.Factions.update({row["id"]: lib.Faction(row)})
 
     async def on_ready(self):
         print(">>>>>>>>>> BOT LIVE <<<<<<<<<<")

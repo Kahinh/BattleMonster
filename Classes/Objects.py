@@ -1,3 +1,10 @@
+import os, sys, inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir) 
+
+import lib
+
 class Object:
   def __init__(self, bot, rItem):
     self.bot = bot
@@ -57,136 +64,8 @@ class Object:
       #TODO Mettre un self.bot.db 
       self.equipped = False
   
-  def getDisplayStats(self, cItem=None):
-    desc_stat = ""
-    #Bonuses Items 2
-    if cItem is not None:
-      bonuses_item2 = cItem.bonuses
-    else:
-      bonuses_item2 = {}
-
-    #Armor
-    desc_stat += create_desc_stat_1_line(bonuses_item2, "armor", "Armure", "🛡️")
-    
-    #Armor_Per
-    desc_stat += create_desc_stat_1_line(bonuses_item2, "armor_per", "Bonus Armure", "🛡️")
-    
-    #Health
-    desc_stat += create_desc_stat_1_line(bonuses_item2, "health", "Vie", "❤️")
-    
-    #Health_Per
-    desc_stat += create_desc_stat_1_line(bonuses_item2, "health_per", "Bonus Vie", "💖")
-    
-    #Parry
-    desc_stat += create_desc_stat_2_lines(bonuses_item2, "parry", "Parade", "↪️", 0)
-
-    #Damage_Weapon
-    desc_stat += create_desc_stat_1_line(bonuses_item2, "damage_weapon", "Puissance Arme", "⚔️")
-    
-    #Damage
-    desc_stat += create_desc_stat_3_lines(bonuses_item2, "damage", "Puissance", "🔥")
-    
-    #Damage_Per
-    desc_stat += create_desc_stat_3_lines(bonuses_item2, "damage_per", "Bonus Puissance", "🔥")
-    
-    #Final_Damage
-    desc_stat += create_desc_stat_3_lines(bonuses_item2, "final_damage", "Dégâts Finaux", "💯")
-    
-    #Letality
-    desc_stat += create_desc_stat_3_lines(bonuses_item2, "letality", "Pénétration", "🗡️")
-    
-    #Letality_Per
-    desc_stat += create_desc_stat_3_lines(bonuses_item2, "letality_per", "Bonus Pénétration", "🗡️")
-    
-    #Crit_Chance
-    desc_stat += create_desc_stat_3_lines(bonuses_item2, "crit_chance", "Chance Critique", "✨")
-    
-    #Crit_Damage
-    desc_stat += create_desc_stat_3_lines(bonuses_item2, "crit_damage", "Dégâts Critiques", "💢")
-    
-    #Special Charge 
-    desc_stat += create_desc_stat_3_lines(bonuses_item2, "special_charge", "Gain Charge", "⏫")
-    
-    #Stacks Reduction
-    desc_stat += create_desc_stat_1_line(bonuses_item2, "stacks_reduction", "Réduction Charge", "☄️")
-    
-    #Luck
-    desc_stat += create_desc_stat_1_line(bonuses_item2, "luck", "Prospérité", "🍀")
-
-    #Vivacity   
-    desc_stat += create_desc_stat_1_line(bonuses_item2, "vivacity", "Vivacité", "🌪️")
-
-    def create_desc_stat_1_line(self, bonuses_item2, stat, name, emote):
-      desc_stat = ""
-      if self.bonuses[stat] != 0 or bonuses_item2.get(stat, 0) != 0:
-        desc_stat += f"```ansi\n{emote}{name}: {ffin(self.bonuses[stat])} {sa(self.bonuses[stat], bonuses_item2.get(stat, 0)) + '[' + str(ffin(bonuses_item2.get(stat, 0))) + ']' if bonuses_item2 != {} else ''}```"    
-      return desc_stat
-
-    def create_desc_stat_2_lines(self, bonuses_item2, stat, name, emote, order=1):
-      desc_stat = ""
-      if (int(self.bonuses[f"{stat}_l"]) != 0 or int(self.bonuses[f"{stat}_h"]) != 0 or int(bonuses_item2.get(f"{stat}_l", 0)) != 0 or int(bonuses_item2.get(f"{stat}_h", 0)) != 0):
-        #Le cas où l'un ou l'autre est différent
-        if ((self.bonuses[f"{stat}_l"] != self.bonuses[f"{stat}_h"]) or (bonuses_item2.get(f"{stat}_l", 0) != bonuses_item2.get(f"{stat}_h", 0))):
-          desc_stat += f"```ansi\n{emote}{name}:"
-          #Parry L
-          desc_stat += f"\n\u001b[0;0m  Légère: {ffin(self.bonuses[f'{stat}_l'])} {sa(self.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0), order) + '[' + str(ffin(bonuses_item2.get(f'{stat}_l', 0))) + ']' if bonuses_item2 != {} else ''}"
-          #Parry H
-          desc_stat += f"\n\u001b[0;0m  Lourde: {ffin(self.bonuses[f'{stat}_h'])} {sa(self.bonuses[f'{stat}_h'], bonuses_item2.get(f'{stat}_h', 0), order) + '[' + str(ffin(bonuses_item2.get(f'{stat}_h', 0))) + ']' if bonuses_item2 != {} else ''}```"
-        #Le cas où les deux sont semblables
-        else:
-          if self.bonuses[f"{stat}_l"] != 0 or bonuses_item2.get(f"{stat}_l", 0) != 0:
-            desc_stat += f"```ansi\n{emote}{name}: {ffin(self.bonuses[f'{stat}_l'])} {sa(self.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0), order) + '[' + str(ffin(bonuses_item2.get(f'{stat}_l', 0))) + ']' if bonuses_item2 != {} else ''}```" 
-      return desc_stat  
-
-    def create_desc_stat_3_lines(self, bonuses_item2, stat, name, emote, order=1):
-      desc_stat = ""
-      if (int(self.bonuses[f"{stat}_l"]) != 0 or int(self.bonuses[f"{stat}_h"]) != 0 or int(self.bonuses[f"{stat}_s"]) != 0 or int(bonuses_item2.get(f"{stat}_l", 0)) != 0 or int(bonuses_item2.get(f"{stat}_h", 0)) != 0 or int(bonuses_item2.get(f"{stat}_s", 0)) != 0):
-        #Le cas où l'un ou l'autre est différent
-        if ((self.bonuses[f"{stat}_l"] != self.bonuses[f"{stat}_h"] != self.bonuses[f"{stat}_s"]) or (bonuses_item2.get(f"{stat}_l", 0) != bonuses_item2.get(f"{stat}_h", 0) != bonuses_item2.get(f"{stat}_s", 0))):
-          desc_stat += f"```ansi\n{emote}{name}:"
-          #Damage L
-          desc_stat += f"\n\u001b[0;0m  Légère: {ffin(self.bonuses[f'{stat}_l'])} {sa(self.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0), order) + '[' + str(ffin(bonuses_item2.get(f'{stat}_l', 0))) + ']' if bonuses_item2 != {} else ''}"
-          #Damage H
-          desc_stat += f"\n\u001b[0;0m  Lourde: {ffin(self.bonuses[f'{stat}_h'])} {sa(self.bonuses[f'{stat}_h'], bonuses_item2.get(f'{stat}_h', 0), order) + '[' + str(ffin(bonuses_item2.get(f'{stat}_h', 0))) + ']' if bonuses_item2 != {} else ''}"
-          #Damage s
-          desc_stat += f"\n\u001b[0;0m  Spécial: {ffin(self.bonuses[f'{stat}_s'])} {sa(self.bonuses[f'{stat}_s'], bonuses_item2.get(f'{stat}_s', 0), order) + '[' + str(ffin(bonuses_item2.get(f'{stat}_s', 0))) + ']' if bonuses_item2 != {} else ''}"
-
-          #on referme le ```
-          desc_stat += "```"
-        #Le cas où les deux sont semblables
-        else:
-          if self.bonuses[f"{stat}_l"] != 0 or bonuses_item2.get(f"{stat}_l", 0) != 0:
-            desc_stat += f"```ansi\n{emote}{name}: {ffin(self.bonuses[f'{stat}_l'])} {sa(self.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0)) + '[' + str(ffin(bonuses_item2.get(f'{stat}_l', 0))) + ']' if bonuses_item2 != {} else ''}```"
-      return desc_stat
-    
-    def ffin(number):
-    #format float int numbers
-      if isinstance(number, float):
-        return f"{int(round(number*100,0))}%"
-      else:
-        return f"{number}"
-    
-    def sa(equippednumber, secondnumber, order=1):
-    #select ANSI
-      #Basique : \u001b[0;0m
-      #Rouge : \u001b[1;31m
-      #Vert : \u001b[1;32m
-      #Jaune : \u001b[1;33m
-      if equippednumber == secondnumber:
-        return "\u001b[1;33m"
-      else:
-        if order == 0:
-          if equippednumber > secondnumber:
-            return "\u001b[1;31m"
-          else:
-            return "\u001b[1;32m"
-        else:
-          if equippednumber > secondnumber:
-            return "\u001b[1;32m"
-          else:
-            return "\u001b[1;31m"
-
-    return desc_stat
+  def getDisplayStats(self, cItem2=None):
+    return lib.get_display_stats(self, cItem2)
 
   def setGearscore(self):
     return self.bot.Rarities[self.rarity].gearscore
@@ -200,7 +79,7 @@ class Improvable_Object(Object):
     super().__init__(bot, rItem)
     self.level = 1 if "level" not in rItem else rItem["level"]
     self.gearscore = self.setGearscore()
-    self.bases_bonuses = {
+    self.base_bonuses = {
       "armor" : rItem["armor"],
       "armor_per" : float(rItem["armor_per"]),
       "health" : rItem["health"],
@@ -288,9 +167,9 @@ class Pet(Improvable_Object):
   def __init__(self, bot, rItem):
     super().__init__(bot, rItem)
 
-  def update_item_level(self, level_upgrade, cSlayer):
-    super().update_item_level(level_upgrade, cSlayer)
-    self.setGearscore()
+  async def update_item_level(self, level_upgrade, cSlayer):
+    await super().update_item_level(level_upgrade, cSlayer)
+    self.gearscore = self.setGearscore()
 
   def setGearscore(self):
     return int((self.bot.Rarities[self.rarity].gearscore/100) * self.level)
@@ -299,9 +178,9 @@ class Mythic(Improvable_Object):
   def __init__(self, bot, rItem):
     super().__init__(bot, rItem)
 
-  def update_item_level(self, level_upgrade, cSlayer):
-    super().update_item_level(level_upgrade, cSlayer)
-    self.setGearscore()
+  async def update_item_level(self, level_upgrade, cSlayer):
+    await super().update_item_level(level_upgrade, cSlayer)
+    self.gearscore = self.setGearscore()
 
   def setGearscore(self):
     return self.bot.Rarities[self.rarity].gearscore + self.level
