@@ -110,17 +110,12 @@ class ActiveList:
           cOpponent.slayers_hits[cSlayer.id].eligible = False
 
   async def timeout_timable_battle(self):
-    print(self.active_battles)
-    print("Je suis là")
-    print(self.active_battles.keys())
     for message_id, BattleView in list(self.active_battles.items()):
-      print(message_id, BattleView)
       if BattleView.Battle.timer_start is not None:
         if int(BattleView.Battle.timer_start) + int(self.bot.Variables["factionwar_timing_before_end_seconds"]) <= int(datetime.datetime.timestamp(datetime.datetime.now())):
           BattleView.Battle.end = True
           await BattleView.updateBattle(auto_remove_battle=False)
           self.active_battles.pop(message_id)
-          print(self.active_battles)
 
   ##########ACTIVE GATHER
   def add_gather(self, message_id, Gather):
