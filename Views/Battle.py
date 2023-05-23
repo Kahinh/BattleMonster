@@ -10,7 +10,10 @@ class Light_Button(lib.discord.ui.Button):
         content, damage, monster_killed = await self.view.Battle.handler_Attack(Slayer, "l")
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
-        if damage != []:
+
+        if self.view.Battle.stats["kills"] >= self.view.bot.Variables["battle_kills_before_escape"]:
+            await self.view.updateBattle(timeout=True)
+        elif damage != []:
             await self.view.updateBattle(monster_killed=monster_killed)
 
 class Heavy_Button(lib.discord.ui.Button):
@@ -23,7 +26,9 @@ class Heavy_Button(lib.discord.ui.Button):
         content, damage, monster_killed = await self.view.Battle.handler_Attack(Slayer, "h")
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
-        if damage != []:
+        if self.view.Battle.stats["kills"] >= self.view.bot.Variables["battle_kills_before_escape"]:
+            await self.view.updateBattle(timeout=True)
+        elif damage != []:
             await self.view.updateBattle(monster_killed=monster_killed)
 
 class Special_Button(lib.discord.ui.Button):
@@ -36,7 +41,9 @@ class Special_Button(lib.discord.ui.Button):
         content, damage, monster_killed = await self.view.Battle.handler_Attack(Slayer, "s")
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
-        if damage != []:
+        if self.view.Battle.stats["kills"] >= self.view.bot.Variables["battle_kills_before_escape"]:
+            await self.view.updateBattle(timeout=True)
+        elif damage != []:
             await self.view.updateBattle(monster_killed=monster_killed)
         
 
@@ -51,17 +58,17 @@ class BattleView(lib.discord.ui.View):
         self.add_item(Heavy_Button())
         self.add_item(Special_Button())
 
-    async def updateBattle(self, timeout=False, poweroff=False, monster_killed=False):
+    async def updateBattle(self, timeout=False, poweroff=False, monster_killed=False, auto_remove_battle=True):
         if self.Battle.endnotbeingpublished: #On contrôle qu'un joueur clic pas pendant qu'on calcule la mort du battle
             if hasattr(self, "message"): message = self.message
             #if hasattr(self, "interaction"): message = await self.interaction.original_response()
             if any([timeout, poweroff, self.Battle.end]):
                 self.Battle.endnotbeingpublished = False #Si c'est fini alors on modifie direct le endnotbeingpublished
                 if self.Battle.end or timeout:
-                    self.Battle.bot.ActiveList.remove_battle(message.id)
-                    if self.Battle.end: #On fait le loot que si le combat est vraiment fini, pas timeout
+                    if auto_remove_battle: self.Battle.bot.ActiveList.remove_battle(message.id)
+                    if self.Battle.end and self.Battle.stats["attacks_received"] > 0: #On fait le loot que si le combat est vraiment fini, pas timeout
                         await self.Battle.handler_Loot()
-                    await self.send_embed_end_battle(timeout)
+                        await self.send_embed_end_battle(timeout)
                 await self.clear_battle(message) #Whatever on clear
             else: #Si ce n'est pas fin, on update juste le embed
                 await self.update_embed(message)
@@ -71,8 +78,12 @@ class BattleView(lib.discord.ui.View):
         self.stop()
 
     async def send_embed_end_battle(self, timeout):
-        embed = lib.Embed.create_embed_end_battle(self.Battle, timeout)
+        if self.Battle.type == "factionwar":
+            embed = lib.Embed.create_embed_end_factionwar(self.Battle)
+        else:
+            embed = lib.Embed.create_embed_end_battle(self.Battle, timeout)
         if self.is_loot(): #Si on a du loot
+            #Pas eu de loot
             view = lib.LootRecapView(self.Battle)
             content = self.get_content_looters()
         else:
@@ -95,7 +106,13 @@ class BattleView(lib.discord.ui.View):
         for items in [self.Battle.storage_loots[x]["items"] for x in self.Battle.storage_loots]:
             if items:
                 return True
-            return False
+        for money in [self.Battle.storage_loots[x]["money"] for x in self.Battle.storage_loots]:
+            if money:
+                return True
+        for mythic_stones in [self.Battle.storage_loots[x]["mythic_stones"] for x in self.Battle.storage_loots]:
+            if mythic_stones:
+                return True
+        return False
 
     def get_content_looters(self):
         content = ""

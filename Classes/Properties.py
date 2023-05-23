@@ -23,6 +23,7 @@ class Rarities:
         self.display_emote = rRarities["display_emote"]
         self.gatherables_spawn = rRarities["gatherables_spawn"]
         self.tracker_role_id = rRarities["tracker_role_id"]
+        self.tracker_role_id_banner = rRarities["tracker_role_id_banner"]
 
 @dataclass
 class Elements:

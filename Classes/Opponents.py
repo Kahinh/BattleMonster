@@ -42,6 +42,7 @@ class Opponent:
     self.armor = 0
     self.armor_cap = 0
     self.protect_crit = 0
+    self.gearscore = 0
     self.parry = {
       "parry_chance_l" : 0,
       "parry_chance_h" : 0,
@@ -71,9 +72,10 @@ class Opponent:
       self.name = OpponentData["name"]
       self.description = OpponentData["description"]
       self.element = OpponentData["element"]
-      self.base_hp = int(OpponentData["base_hp"] * int(max(1,len(self.bot.ActiveList.active_slayers)+1/2)) * self.gamemode.scaling["hp"])
-      self.total_hp = int(OpponentData["base_hp"] * int(max(1,len(self.bot.ActiveList.active_slayers)+1/2)) * self.gamemode.scaling["hp"])
+      self.base_hp = int(OpponentData["base_hp"] * self.gamemode.scaling["hp"] * (1 + (self.bot.ActiveList.get_active_slayer_nbr() * self.bot.Variables["mult_active_slayers_hp"])))
+      self.total_hp = int(OpponentData["base_hp"] * self.gamemode.scaling["hp"] * (1 + (self.bot.ActiveList.get_active_slayer_nbr() * self.bot.Variables["mult_active_slayers_hp"])))
       self.rarity = OpponentData["rarity"]
+      self.gearscore = OpponentData["gearscore"]
       self.parry = {
         "parry_chance_l" : float(OpponentData["parry_chance_l"]) * float(self.gamemode.scaling["parry"]),
         "parry_chance_h" : float(OpponentData["parry_chance_h"]) * float(self.gamemode.scaling["parry"]),
@@ -83,7 +85,7 @@ class Opponent:
       self.letality = int(OpponentData["letality"] * self.gamemode.scaling["letality"])
       self.letality_per = min(OpponentData["letality_per"] * max(int(self.gamemode.scaling["letality"]/3),1),1)
       self.armor = int(OpponentData["armor"] * self.gamemode.scaling["armor"])
-      self.armor_cap = int(OpponentData["armor"])
+      self.armor_cap = int(OpponentData["armor"] * (1 + (self.bot.ActiveList.get_active_slayer_nbr() * self.bot.Variables["mult_active_slayers_armor"])))
       self.protect_crit = int(OpponentData["protect_crit"] * self.gamemode.scaling["protect_crit"])
       self.img_url_normal = OpponentData["img_url_normal"]
       self.img_url_enraged = OpponentData["img_url_enraged"]
@@ -100,17 +102,24 @@ class Opponent:
     damage = int(max(damage * 1000/(1000+armor), 0))
     #Max HP
     damage = int(min(damage, Slayer.cSlayer.stats["total_max_health"] - Slayer.cSlayer.damage_taken))
-    return damage, f"\n> - Attaque contrée : Le monstre t'a infligé {int(damage)} dégâts"
+    return damage, f"\n> ↪️ Parade: **-{int(damage)}** vie"
 
   def reduceArmor(self, armor):
       armor = max((int(armor*(1-float(self.letality_per)))-int(self.letality)), 0)
       return int(armor)
 
-  def storeLastHits(self, damage, Spe, hit):
-    if Spe.id != 4 and damage != 0:
-      self.last_hits.append(int(damage*self.bot.Variables["cdg_malus_attack_in_stack"]))
-      if len(self.last_hits) > self.bot.Variables["cdg_nbr_hit_stack"]:
-        self.last_hits.pop(0)
+  def storeLastHits(self, damage, cSlayer, gamemode_type):
+    if cSlayer.Spe.id != 4 and damage != 0:
+
+      #On check quelle liste il faut prendre
+      if gamemode_type == "factionwar":
+        list_lasthits = self.last_hits[cSlayer.faction]
+      else:
+        list_lasthits = self.last_hits
+
+      list_lasthits.append(int(damage*self.bot.Variables["cdg_malus_attack_in_stack"]))
+      if len(list_lasthits) > self.bot.Variables["cdg_nbr_hit_stack"]:
+        list_lasthits.pop(0)
 
   def isParry(self, hit, Slayer):
     if (self.parry["parry_chance_l"] + Slayer.cSlayer.stats[f"total_parry_l"]) >= 1 and (self.parry["parry_chance_h"] + Slayer.cSlayer.stats[f"total_parry_h"]) >= 1:
@@ -142,7 +151,7 @@ class Opponent:
       self.slayers_hits[cSlayer.id].updateClass(damage, None if hit == "s" else cSlayer.stats["total_cooldown"], cSlayer.stats["total_luck"])
     else:
       self.slayers_hits[cSlayer.id] = DamageDone(0 if hit == "s" else cSlayer.stats["total_cooldown"], damage if damage > 0 else 0, True if damage > 0 else False, cSlayer.stats["total_luck"])
-    content = self.slayers_hits[cSlayer.id].checkStatus(damage, self.base_hp)
+    content = self.slayers_hits[cSlayer.id].checkStatus(damage, self)
     return content
   
   def slayer_loses_eligibility(self, cSlayer):
@@ -155,6 +164,24 @@ class Opponent:
         self.slayers_hits[cSlayer.id].eligible = False
         return " Tu n'es plus éligible au butin !"
 
+  def isAlive(self):
+    if self.base_hp is None:
+      return True
+    else:
+      if self.base_hp > 0:
+        return True
+      else:
+        return False
+
+  def maybeDead(self):
+    if self.base_hp is None:
+      return True
+    else:
+      if self.base_hp == 0:
+        return True
+      else:
+        return False
+
 @dataclass
 class Monster(Opponent):
   def __init__(self, gamemode, element, rarity, type):
@@ -163,9 +190,48 @@ class Monster(Opponent):
 class Banner(Opponent):
   def __init__(self, gamemode, element, rarity, type):
     super().__init__(gamemode, element, rarity, type)
+    self.bot = gamemode.bot
+    self.roll_dices = gamemode.max_dice
   
   async def handler_Build(self):
-    pass
+    await super().handler_Build()
+    self.base_hp = None
+    self.total_hp = None
+
+    #last hits
+    self.last_hits = {}
+    self.split_by_faction_last_hits()
+
+    #factions_total_damage
+    self.faction_total_damage = {}
+    self.split_by_faction_total_damage()
+
+    #factions_best_damage
+    self.faction_best_damage = {}
+    self.split_by_faction_best_damage()
+  
+  def split_by_faction_last_hits(self):
+    for faction_id in self.bot.Factions:
+      self.last_hits.update({faction_id: []})
+
+  def split_by_faction_total_damage(self):
+    for faction_id in self.bot.Factions:
+      self.faction_total_damage.update({faction_id: []})
+
+  def split_by_faction_best_damage(self):
+    for faction_id in self.bot.Factions:
+      self.faction_best_damage.update({faction_id: 0})
+
+  def recapDamageTaken(self, damage, cSlayer):  
+    self.faction_total_damage[cSlayer.faction].append(damage)
+    if len(self.faction_total_damage[cSlayer.faction]) > self.bot.Variables["factionwar_nbr_hit_stack"]:
+      self.faction_total_damage[cSlayer.faction].pop(0)
+    
+    if sum(self.faction_total_damage[cSlayer.faction]) > self.faction_best_damage[cSlayer.faction]:
+      self.faction_best_damage[cSlayer.faction] = sum(self.faction_total_damage[cSlayer.faction])
+      return f"\n> Cette attaque permet à ta faction d'atteindre un nouveau record de **{self.faction_best_damage[cSlayer.faction]}** dégâts"
+    else:
+      return ""
 
 class Mythique1(Opponent):
   def __init__(self, gamemode, element, rarity, type):

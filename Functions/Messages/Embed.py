@@ -2,21 +2,37 @@ import lib
 
 def create_embed_battle(self):
 
-    embed=lib.discord.Embed(title=f"{self.Opponents[self.count].name} ({'{:,}'.format(int(self.Opponents[self.count].base_hp)).replace(',', ' ')}/{'{:,}'.format(int(self.Opponents[self.count].total_hp)).replace(',', ' ')} ❤️) {'💩💩' if len(self.Opponents[self.count].loot_table) == 0 else ''}",
-    description= \
-        f"**Monstre {self.bot.Rarities[self.Opponents[self.count].rarity].display_text.capitalize()}**\n" \
-        f"⚔️ Puissance : **{int(self.Opponents[self.count].damage)}** {self.bot.Elements[self.Opponents[self.count].element].display_emote}\n" \
-        f"🛡️ Armure : **{int(self.Opponents[self.count].armor)}** *({int(self.Opponents[self.count].armor_cap)} min.)*\n" \
-        f"🎲 Butin Disponible : **{self.Opponents[self.count].roll_dices}**\n\n" \
-        f"{self.Opponents[self.count].description}", \
+    bot = self.bot
+
+    description=f"*Score conseillé : {self.Opponents[self.count].gearscore}*"
+    description += f"\n**Monstre {self.bot.Rarities[self.Opponents[self.count].rarity].display_text.capitalize()}**"
+    if self.Opponents[self.count].type != "banner":
+        description += f"\n⚔️ Puissance : **{int(self.Opponents[self.count].damage)}** {self.bot.Elements[self.Opponents[self.count].element].display_emote}"
+    description += f"\n🛡️ Armure : **{int(self.Opponents[self.count].armor)}** *({int(self.Opponents[self.count].armor_cap)} min.)*"
+    description += f"\n🎲 Butin Disponible : **{self.Opponents[self.count].roll_dices}**"
+    description += f"\n\n{self.Opponents[self.count].description}"
+    
+    embed=lib.discord.Embed(
+    title=
+        f"{self.Opponents[self.count].name} ({'{:,}'.format(int(self.Opponents[self.count].base_hp)).replace(',', ' ')}/{'{:,}'.format(int(self.Opponents[self.count].total_hp)).replace(',', ' ')} ❤️) {'💩💩' if len(self.Opponents[self.count].loot_table) == 0 else ''}"
+        if self.Opponents[self.count].type != "banner"
+        else
+        f"{self.Opponents[self.count].name} {'💩💩' if len(self.Opponents[self.count].loot_table) == 0 else ''}",
+    description=description,
     color=int(self.bot.Rarities[self.Opponents[self.count].rarity].display_color, 16)
     )
+    value = ""
+    #Parry
+    if self.Opponents[self.count].type != "banner":
+        value += f"✊ Chance de blocage - Attaque Légère: **{int(self.Opponents[self.count].parry['parry_chance_l'] * 100)}%**\n" \
+                f"✊ Chance de blocage - Attaque Lourde: **{int(self.Opponents[self.count].parry['parry_chance_h'] * 100)}%**\n" \
+                f"🗡️ Létalité : **({int(self.Opponents[self.count].letality)}, {int(self.Opponents[self.count].letality_per *100)}%)**\n"
+    #Létalité & Résistance Critique
+    value += f"🧿 Résistance Critique : **{self.Opponents[self.count].protect_crit}**\n"
+
+    #Statistiques avancées
     embed.add_field(name="Statistiques Avancées", \
-        value= \
-            f"✊ Chance de blocage - Attaque Légère: **{int(self.Opponents[self.count].parry['parry_chance_l'] * 100)}%**\n" \
-            f"✊ Chance de blocage - Attaque Lourde: **{int(self.Opponents[self.count].parry['parry_chance_h'] * 100)}%**\n" \
-            f"🗡️ Létalité : **({int(self.Opponents[self.count].letality)}, {int(self.Opponents[self.count].letality_per *100)}%)**\n" \
-            f"🧿 Résistance Critique : **{self.Opponents[self.count].protect_crit}**\n", \
+        value= value,
         inline=False)
     if self.Opponents[self.count].img_url_normal is not None:
         embed.set_thumbnail(url=f"{self.Opponents[self.count].img_url_normal}")
@@ -24,6 +40,18 @@ def create_embed_battle(self):
         embed.set_image(url=f"{self.Opponents[self.count].bg_url}")
     if self.spawns_count > 1:   
         embed.set_footer(text=f"Monstre : {self.count+1}/{self.spawns_count}")
+    
+    #Banner
+    if self.Opponents[self.count].type == "banner":
+        listed_factions = sorted(self.Opponents[self.count].faction_best_damage.items(), key=lambda x:x[1], reverse=True)
+        value = ""
+        i = 0
+        award_list = ["🥇","🥈","🥉","🏅"]
+        for faction_best_damage_list in listed_factions:
+            value += f"\n{award_list[i]} - {bot.Factions[faction_best_damage_list[0]].emote} {bot.Factions[faction_best_damage_list[0]].name}: **{faction_best_damage_list[1]}**"
+            i += 1
+        embed.add_field(name="Classement Factions", value=value, inline=False)
+
     return embed
 
 def create_embed_end_battle(Battle, timeout):
@@ -31,7 +59,10 @@ def create_embed_end_battle(Battle, timeout):
     if timeout == False:
         title = f"**{Battle.name.capitalize()} achevé ✨ Tous les monstres ont été vaincus !**"
     else: 
-        title = f"**{Battle.name.capitalize()} achevé : 🐉 Vous avez échoué et les monstres se sont enfuis.**"
+        if Battle.stats["kills"] >= Battle.bot.Variables["battle_kills_before_escape"]:
+            title = f"**{Battle.name.capitalize()} achevé : 🐉 Vous avez échoué, trop de Slayers sont morts.**"
+        else:
+            title = f"**{Battle.name.capitalize()} achevé : 🐉 Vous avez échoué et les monstres se sont enfuis.**"
     
     description = "**Bilan du combat :**"
     for cOpponent in Battle.Opponents:
@@ -48,6 +79,35 @@ def create_embed_end_battle(Battle, timeout):
     if Battle.stats["mythic_stones"] != 0:
         description += f"\n💠 Pierres Mythiques : {Battle.stats['mythic_stones']}" 
     embed=lib.discord.Embed(title=title, description=description, color=0xe74c3c if timeout else 0x2ecc71)
+    embed.set_thumbnail(url='https://images-ext-2.discordapp.net/external/K5FrBGB9d-8IbCg_bnZyheglS9Q61aXohV4hJSMiImA/%3Fcb%3D20200801054948/https/static.wikia.nocookie.net/dauntless_gamepedia_en/images/1/13/Hunt_Icon.png/revision/latest')
+    return embed
+
+def create_embed_end_factionwar(Battle):
+    #TITLE
+    bot = Battle.bot
+
+    title = f"**{Battle.name.capitalize()} achevé : ✨ Félicitations Factions !**"
+    
+    description = "**Bilan du combat :**"
+    description += f"\n\n⚔️ Attaques reçues : {Battle.stats['attacks_received']}"
+    description += f"\n🎁 Butins récupérés : {Battle.stats['loots']}"
+    description += f"\n🪙 Or distribué : {Battle.stats['money']}"
+    if Battle.stats["mythic_stones"] != 0:
+        description += f"\n💠 Pierres Mythiques : {Battle.stats['mythic_stones']}" 
+
+    embed=lib.discord.Embed(title=title, description=description, color=0x2ecc71)
+
+    #Banner
+    if Battle.Opponents[0].type == "banner":
+        listed_factions = sorted(Battle.Opponents[0].faction_best_damage.items(), key=lambda x:x[1], reverse=True)
+        value = ""
+        i = 0
+        award_list = ["🥇","🥈","🥉","🏅"]
+        for faction_best_damage_list in listed_factions:
+            value += f"\n{award_list[i]} - {bot.Factions[faction_best_damage_list[0]].emote} {bot.Factions[faction_best_damage_list[0]].name}: **{faction_best_damage_list[1]}**"
+            i += 1
+        embed.add_field(name="Classement Factions", value=value, inline=False)
+
     embed.set_thumbnail(url='https://images-ext-2.discordapp.net/external/K5FrBGB9d-8IbCg_bnZyheglS9Q61aXohV4hJSMiImA/%3Fcb%3D20200801054948/https/static.wikia.nocookie.net/dauntless_gamepedia_en/images/1/13/Hunt_Icon.png/revision/latest')
     return embed
 
@@ -168,7 +228,7 @@ def create_embed_profil(Slayer, avatar):
             embed.add_field(name=name, value=description, inline=False)
 
     embed.set_thumbnail(url=avatar)
-    embed.set_footer(text=f'Chasse depuis le {Slayer.cSlayer.creation_date}')
+    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(Slayer.cSlayer.creation_date).strftime("%d/%m/%Y")}')
     return embed
 
 def create_embed_achievement(Slayer, avatar):
@@ -182,7 +242,7 @@ def create_embed_achievement(Slayer, avatar):
     color=0x1abc9c)   
 
     embed.set_thumbnail(url=avatar)
-    embed.set_footer(text=f'Chasse depuis le {Slayer.cSlayer.creation_date}')
+    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(Slayer.cSlayer.creation_date).strftime("%d/%m/%Y")}')
     return embed
 
 def create_embed_equipment(bot, Slayer, avatar):
@@ -206,7 +266,7 @@ def create_embed_equipment(bot, Slayer, avatar):
     color=0x1abc9c)   
 
     embed.set_thumbnail(url=avatar)
-    embed.set_footer(text=f'Chasse depuis le {Slayer.cSlayer.creation_date}')
+    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(Slayer.cSlayer.creation_date).strftime("%d/%m/%Y")}')
     return embed
 
 def create_embed_spe(Slayer, cSpe):
@@ -215,10 +275,10 @@ def create_embed_spe(Slayer, cSpe):
         f"{cSpe.description}\n" \
         f"```ansi\n⚔️Dégâts: {cSpe.damage}```" \
         f"```ansi\n☄️Charges: {cSpe.stacks}```" \
-        f"\n**Actuellement équipé :**" \
-        f"\n{Slayer.cSlayer.Spe.emote} {Slayer.cSlayer.Spe.name}" \
         f"\n\n__Statistiques :__"
-        f"{cSpe.getDisplayStats()}",
+        f"{cSpe.getDisplayStats()}" \
+        f"\n**Actuellement équipé :**" \
+        f"\n{Slayer.cSlayer.Spe.emote} {Slayer.cSlayer.Spe.name}",
     color=0xe74c3c
     )        
     embed.set_thumbnail(url="https://media.discordapp.net/attachments/1000070083915304991/1033518782544613417/unknown.png")
@@ -305,7 +365,7 @@ def create_embed_gatherables_profil(Slayer, avatar, bot):
     color=0x1abc9c)   
 
     embed.set_thumbnail(url=avatar)
-    embed.set_footer(text=f'Chasse depuis le {Slayer.cSlayer.creation_date}')
+    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(Slayer.cSlayer.creation_date).strftime("%d/%m/%Y")}')
     return embed
 
 def create_embed_enhancement_pet(Slayer, pet_list, index, bot):

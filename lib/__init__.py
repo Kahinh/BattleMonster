@@ -62,10 +62,6 @@ from Functions.Tools.DisplayStats import get_display_stats
 
 #Localisation
 
-#DECORATORS
-from Decorators import get_time
-from Decorators import get_args
-
 #LOGGING
 import logging
 logging.basicConfig(filename='logs.log', 

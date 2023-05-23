@@ -14,6 +14,7 @@ class Main(lib.commands.Cog):
             await self.BattleSpawn()
             await self.InactiveSlayers()
             await self.GatherablesSpawn()
+            await self.timeout_timable_battle()
     
     async def BattleSpawn(self):
         #Create gamemodes
@@ -24,12 +25,12 @@ class Main(lib.commands.Cog):
                     if gamemode["type"] == "hunt":
                         Gamemode = lib.Hunt(self.bot, gamemode)
                         await Gamemode.handler_Build()
-                        await Gamemode.handler_Spawn()
+                        if Gamemode.isReady() : await Gamemode.handler_Spawn()
                         await lib.asyncio.sleep(10)
                     elif gamemode["type"] == "factionwar":
                         Gamemode = lib.FactionWar(self.bot, gamemode)
                         await Gamemode.handler_Build()
-                        await Gamemode.handler_Spawn()
+                        if Gamemode.isReady() : await Gamemode.handler_Spawn()
                         await lib.asyncio.sleep(10)
                     else:
                         pass
@@ -51,6 +52,8 @@ class Main(lib.commands.Cog):
                 await Gather.spawnGather()
                 await lib.asyncio.sleep(10)
 
+    async def timeout_timable_battle(self):
+        await self.bot.ActiveList.timeout_timable_battle()
 
     @battle_monster.before_loop
     async def before_battle_monster(self):

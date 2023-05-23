@@ -14,7 +14,7 @@ class DamageDone:
     self.eligible = eligible
     self.luck = luck
 
-  def checkStatus(self, damage, monster_base_hp):
+  def checkStatus(self, damage, cOpponent):
     content = ""
     if self.total_damage > damage and self.total_damage > 0:
         content += f"\n> 🔱 Dégâts infligés totaux : {int(self.total_damage)}"
@@ -29,7 +29,7 @@ class DamageDone:
     if self.timestamp_next_hit - datetime.datetime.timestamp(datetime.datetime.now()) <= 1:
         content += f"\n\n> Tu peux **attaquer avec une Attaque Légère ou une Attaque Lourde !**"
     else:
-        if monster_base_hp > 0:
+        if cOpponent.isAlive():
             content += f"\n\n> Grâce à ta vivacité, tu pourras attaquer, ce monstre, de nouveau dans **{int(self.timestamp_next_hit - datetime.datetime.timestamp(datetime.datetime.now()))}s**."
     return content
 

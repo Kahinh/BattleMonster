@@ -56,6 +56,7 @@ class Gamemode:
     #Fin
     self.end = False
     self.endnotbeingpublished = True
+    self.timer_start = None
   
   def isReady(self):
     if self.lootslot == []:
@@ -67,6 +68,9 @@ class Gamemode:
     if self.Opponents == []:
       logging.warning(f"NO OPPONENTS FOR GAMEMODE {self.name}")
       return False
+    if self.name not in self.bot.rChannels:
+      logging.warning(f"NO CHANNELS FOR GAMEMODE")
+      return False
     return True
 
   def role_tracker_content(self):
@@ -77,7 +81,7 @@ class Gamemode:
 
   async def handler_Spawn(self):
     embed = lib.Embed.create_embed_battle(self)
-    view = lib.BattleView(self) if self.Opponents[self.count].base_hp != 0 else None
+    view = lib.BattleView(self)
     channel = self.bot.get_channel(self.bot.rChannels[self.name])
     view.message = await channel.send(content=self.role_tracker_content(), embed=embed, view=view)
     self.bot.ActiveList.add_battle(view.message.id, view)
@@ -214,7 +218,7 @@ class Gamemode:
 
     #On check les monstres 1 par 1
     for cOpponent in self.Opponents:
-      if cOpponent.base_hp == 0 and cOpponent.loot_table != []:
+      if cOpponent.maybeDead and cOpponent.loot_table != []:
         #On fait le tour de tous les slayers ayant attaqué
         for id in cOpponent.slayers_hits:
             #On ne considère que les éligibles
@@ -246,28 +250,43 @@ class Gamemode:
       content = message
       self.stats['attacks_done'] += total_damage_taken
       if isDead:
-        content =+ cOpponent.slayer_loses_eligibility(cSlayer)
+        self.bot.ActiveList.remove_eligibility(cSlayer)
+        content =+ "Tu perds l'éligibilité aux butins sur tous les combats en cours."
         self.stats['kills'] += 1
       return content
 
     def Opponent_Receive_Damage():
-      content = cOpponent.recapDamageTaken(total_damage_dealt)
-      cOpponent.storeLastHits(total_damage_dealt, cSlayer.Spe, hit)
+      content = ""
+      content += cOpponent.recapDamageTaken(total_damage_dealt)
+      cOpponent.storeLastHits(total_damage_dealt, cSlayer, self.type)
+      self.stats['attacks_received'] += 1
+      content += cOpponent.slayer_storeAttack(cSlayer, total_damage_dealt, hit)
+      return content
+
+    def Banner_Receive_Damage():
+      content = ""
+      content += cOpponent.recapDamageTaken(total_damage_dealt, cSlayer)
+      cOpponent.storeLastHits(total_damage_dealt, cSlayer, self.type)
       self.stats['attacks_received'] += 1
       content += cOpponent.slayer_storeAttack(cSlayer, total_damage_dealt, hit)
       return content
 
     def handler_Hit(Slayer, hit):
 
-      def isSuccess_Fail():
-        if True:
-          return True
+      #Initiation du content
+      hit_content = ""
+      is_Crit = False
+      damage_dealt = 0
+      damage_taken = 0
+
+      def isFail():
+        precision_score = min((max(cOpponent.gearscore-cSlayer.gearscore, 0)/100),1)
+        if random.choices(population=[True, False], weights=[precision_score, 1-precision_score], k=1)[0]:
+          return True, f"\n> Raté !"
         else:
-          #TODO Probleme sur le hit_content ici qui est referenced before assignment
-          hit_content = f"\n> Raté !"
-          return False
+          return False, ""
         
-      def isSuccess_Parry():
+      def isParry():
         if cOpponent.isParry(hit, Slayer):
           return True
         else:
@@ -301,16 +320,13 @@ class Gamemode:
         stacks_earned = cSlayer.getStacks(hit)
         return f"[+{stacks_earned}☄️]"
 
-      #Initiation du content
-      hit_content = ""
-      is_Crit = False
-      damage_dealt = 0
-      damage_taken = 0
-
       if cSlayer.isAlive()[0]:
-        if cOpponent.base_hp > 0:
-          if isSuccess_Fail():
-            if isSuccess_Parry():
+        if cOpponent.isAlive():
+          is_Fail, content = isFail()
+          if is_Fail:
+            return 0, 0, content, False
+          else:
+            if not isParry():
               is_Crit = isCrit()
               damage_dealt, hit_content = cSlayer.dealDamage(hit, cOpponent, is_Crit, CritMult(is_Crit), ProtectCrit(is_Crit), ArmorMult(Armor()))
               hit_content += getStacks()
@@ -326,15 +342,18 @@ class Gamemode:
 
     #On check si on est vivant ou mort.
     if (isAlive := cSlayer.isAlive()) and not isAlive[0]:
-      return isAlive[1], 0
+      return isAlive[1], 0, False
     
     #On peut special
     if (canSpecial := cSlayer.canSpecial()) and not canSpecial[0] and hit == "S":
-      return canSpecial[1], 0
+      return canSpecial[1], 0, False
       
     #On peut attaquer selon le timing
     if (canAttack := cOpponent.slayer_canAttack(cSlayer)) and not canAttack[0] and hit != "S":
-      return canAttack[1], 0
+      return canAttack[1], 0, False
+    
+    if (cSlayer.faction not in self.bot.Factions and self.type == "factionwar"):
+      return "Tu dois faire parti d'une faction pour combattre ici", 0, False
     
     #Spe Berserker
     if hit == "s" and cSlayer.Spe.id == 8:
@@ -354,7 +373,7 @@ class Gamemode:
       content += hit_content
 
       #Le monstre prend des dégâts
-      if damage_dealt > 0:
+      if damage_dealt > 0 and cOpponent.type != "banner":
         cOpponent.getDamage(damage_dealt)
       #Le joueur prend des dégâts.
       if damage_taken > 0:
@@ -362,7 +381,11 @@ class Gamemode:
 
     #On récap ce qui a été fait à l'adversaire
     if total_damage_dealt > 0:
-      content += Opponent_Receive_Damage()
+      if cOpponent.type != "banner":
+        content += Opponent_Receive_Damage()
+      else:
+        content += Banner_Receive_Damage()
+
 
     #On utilise les stacks
     if hit == "s":
@@ -418,6 +441,8 @@ class Hunt(Gamemode):
 class FactionWar(Gamemode):
   def __init__(self, bot, gamemodedata):
       super().__init__(bot, gamemodedata)
+      self.timer_start = lib.datetime.datetime.timestamp(lib.datetime.datetime.now())
+      self.spawns_count = 1
 
   def role_tracker_content(self):
     if self.role_tracker_activated and self.bot.Rarities[self.Opponents[self.count].rarity].tracker_role_id_banner != 0:

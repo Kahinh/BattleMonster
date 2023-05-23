@@ -444,9 +444,10 @@ class Slayer:
         if damage == 0:
             return 0, f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} - L'adversaire possédait trop de défense !"
         #Vie du monstre
-        damage = int(min(damage, cOpponent.base_hp))
-        if damage == 0:
-            return 0, f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} - Le monstre est déjà mort !"
+        if cOpponent.base_hp is not None:
+            damage = int(min(damage, cOpponent.base_hp))
+            if damage == 0:
+                return 0, f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} - Le monstre est déjà mort !"
 
         content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} {'‼️' if isCrit else ''} {'[🔥+' + str(mult_damage) + ']' if mult_damage > 0 else ''} {additionnal_ability if additionnal_ability != '' else ''} {'[🪓' + str(self.berserker_mode -1) + 'restants]' if self.berserker_mode > 0 else ''}"
             

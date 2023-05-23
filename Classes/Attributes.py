@@ -81,7 +81,12 @@ class Spe:
     if self.id == 3: #Templier
       return int(cSlayer.stats["total_armor"]), ""
     elif self.id == 4: #Chef de Guerre
-      return sum(cOpponent.last_hits), ""
+      #On check quelle liste il faut prendre
+      if cOpponent.type == "banner":
+        list_lasthits = self.last_hits[cSlayer.faction]
+      else:
+        list_lasthits = self.last_hits
+      return sum(cOpponent.list_lasthits), ""
     elif self.id == 5: #Forgeron
       for id in cOpponent.slayers_hits:
         cOpponent.slayers_hits[id].timestamp_next_hit = datetime.datetime.timestamp(datetime.datetime.now())

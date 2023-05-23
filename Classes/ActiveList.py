@@ -86,6 +86,9 @@ class ActiveList:
   def reset_slayers_activelist(self):
     self.active_slayers = {}
   
+  def get_active_slayer_nbr(self):
+    return int(len(self.active_slayers))
+  
   ##########ACTIVE BATTLES
   def add_battle(self, message_id, Battle):
     self.active_battles[message_id] = Battle
@@ -95,10 +98,29 @@ class ActiveList:
       self.active_battles.pop(message_id)
 
   async def clear_all_battles(self):
-    for message_id in self.active_battles:
-      await self.active_battles[message_id].updateBattle(poweroff=True)
+    for message_id, BattleView in list(self.active_battles.items()):
+      await BattleView.updateBattle(poweroff=True, auto_remove_battle=False)
       await asyncio.sleep(2)
     self.active_battles = {}
+  
+  async def remove_eligibility(self, cSlayer):
+    for message_id in self.active_battles:
+      for cOpponent in self.active_battles[message_id].Battle.Opponents:
+        if cSlayer in cOpponent.slayers_hits:
+          cOpponent.slayers_hits[cSlayer.id].eligible = False
+
+  async def timeout_timable_battle(self):
+    print(self.active_battles)
+    print("Je suis là")
+    print(self.active_battles.keys())
+    for message_id, BattleView in list(self.active_battles.items()):
+      print(message_id, BattleView)
+      if BattleView.Battle.timer_start is not None:
+        if int(BattleView.Battle.timer_start) + int(self.bot.Variables["factionwar_timing_before_end_seconds"]) <= int(datetime.datetime.timestamp(datetime.datetime.now())):
+          BattleView.Battle.end = True
+          await BattleView.updateBattle(auto_remove_battle=False)
+          self.active_battles.pop(message_id)
+          print(self.active_battles)
 
   ##########ACTIVE GATHER
   def add_gather(self, message_id, Gather):
