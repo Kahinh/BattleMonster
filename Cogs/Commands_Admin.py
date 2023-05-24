@@ -88,8 +88,8 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
       user='ID User',
       item_name='Item name to be given'
   )
-  @lib.app_commands.command(name="give")
-  async def give(self, interaction: lib.discord.Interaction, user: str, item_name: str) -> None:
+  @lib.app_commands.command(name="give_item")
+  async def give_item(self, interaction: lib.discord.Interaction, user: str, item_name: str) -> None:
     """ Offre un objet dans l'inventaire d'un joueur """
     await interaction.response.defer(ephemeral=True)
     if self.bot.power:
@@ -159,6 +159,30 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
 
         else:
           await interaction.followup.send(content=f"La faction {faction_id} ou le slayer {user_id} n'existent pas", ephemeral=True)
+    else:
+      await interaction.followup.send(content="Le bot est en attente de redémarrage ou en cours d'update. Veuillez patienter.", ephemeral=True)
+
+  @lib.app_commands.describe(
+      user='ID User',
+      money='Money to be given'
+  )
+  @lib.app_commands.command(name="give_money")
+  async def give_money(self, interaction: lib.discord.Interaction, user: str, money: int) -> None:
+    """ Offre des coins dans l'inventaire du joueur """
+    await interaction.response.defer(ephemeral=True)
+    if self.bot.power:
+      Slayer = self.bot.ActiveList.get_active_Slayer(int(user))
+      if Slayer is not None and isinstance(money, int):
+        Slayer.addMoney(money)
+        await self.bot.dB.push_money_only_slayer(Slayer.cSlayer, money)
+        
+        #On poste le message
+        channel = self.bot.get_channel(self.bot.rChannels["logs"])
+        await channel.send(content=f"<@{Slayer.cSlayer.id}> a reçu {money}🪙 de la part de <@{interaction.user.id}>!")
+        await interaction.followup.send(content="C'est fait.", ephemeral=True)
+
+      else:
+        await interaction.followup.send(content=f"{user} n'existe pas ou le montant de coin n'est pas un nombre entier", ephemeral=True)
     else:
       await interaction.followup.send(content="Le bot est en attente de redémarrage ou en cours d'update. Veuillez patienter.", ephemeral=True)
 

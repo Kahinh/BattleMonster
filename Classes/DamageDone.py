@@ -21,7 +21,7 @@ class DamageDone:
     #If Battle.eligible == False, on rajoute que le mec est pas éligible ! Sinon on affiche qu'il est éligible !
     if self.eligible:
         #En ayant infligé des dégâts au Monstre, tu es éligible !
-        content += f"\n\n> ✨ **En ayant infligé des dégâts au Monstre, tu es éligible à l'obtention de butin !**"
+        content += f"\n\n> ✨ **En ayant infligé des dégâts au {cOpponent.group_name}, tu es éligible à l'obtention de butin !**"
     else:
         content += f"\n\n> 🛑 **Tu n'es, pour l'instant, pas éligible à l'obtention de butin !**"
 
@@ -30,7 +30,7 @@ class DamageDone:
         content += f"\n\n> Tu peux **attaquer avec une Attaque Légère ou une Attaque Lourde !**"
     else:
         if cOpponent.isAlive():
-            content += f"\n\n> Grâce à ta vivacité, tu pourras attaquer, ce monstre, de nouveau dans **{int(self.timestamp_next_hit - datetime.datetime.timestamp(datetime.datetime.now()))}s**."
+            content += f"\n\n> Grâce à ta vivacité, tu pourras attaquer, ce {cOpponent.group_name}, de nouveau dans **{int(self.timestamp_next_hit - datetime.datetime.timestamp(datetime.datetime.now()))}s**."
     return content
 
   def updateClass(self, Damage, Cooldown=None, luck=0):

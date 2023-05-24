@@ -79,10 +79,12 @@ class Gamemode:
     else:
       return ""
 
-  async def handler_Spawn(self):
+  async def handler_Spawn(self, channel_id=None):
     embed = lib.Embed.create_embed_battle(self)
     view = lib.BattleView(self)
-    channel = self.bot.get_channel(self.bot.rChannels[self.name])
+    if channel_id is None :
+      channel_id = self.bot.rChannels[self.name]
+    channel = self.bot.get_channel(channel_id)
     view.message = await channel.send(content=self.role_tracker_content(), embed=embed, view=view)
     self.bot.ActiveList.add_battle(view.message.id, view)
 
@@ -183,8 +185,12 @@ class Gamemode:
       self.stats["loots"] += 1
 
     def award_loots(Slayer, cOpponent):
+
+      #On calcule le nombre de roll_dices
+      roll_dices = cOpponent.get_roll_dices(Slayer)
+
       #On prend en compte le roll_dice
-      for j in range(cOpponent.roll_dices):
+      for j in range(roll_dices):
         #On calcule le loot obtenu
         if random.choices(population=[True, False], weights=[cOpponent.slayers_hits[Slayer.cSlayer.id].luck, 1-cOpponent.slayers_hits[Slayer.cSlayer.id].luck], k=1)[0]:
           
@@ -271,6 +277,14 @@ class Gamemode:
       content += cOpponent.slayer_storeAttack(cSlayer, total_damage_dealt, hit)
       return content
 
+    def isFail():
+      #precision_score = min((max(cOpponent.gearscore-cSlayer.gearscore, 0)/100),1)
+      #if random.choices(population=[True, False], weights=[precision_score, 1-precision_score], k=1)[0]:
+      if cOpponent.gearscore > cSlayer.gearscore:
+        return True
+      else:
+        return False
+
     def handler_Hit(Slayer, hit):
 
       #Initiation du content
@@ -278,13 +292,6 @@ class Gamemode:
       is_Crit = False
       damage_dealt = 0
       damage_taken = 0
-
-      def isFail():
-        precision_score = min((max(cOpponent.gearscore-cSlayer.gearscore, 0)/100),1)
-        if random.choices(population=[True, False], weights=[precision_score, 1-precision_score], k=1)[0]:
-          return True, f"\n> Raté !"
-        else:
-          return False, ""
         
       def isParry():
         if cOpponent.isParry(hit, Slayer):
@@ -322,10 +329,6 @@ class Gamemode:
 
       if cSlayer.isAlive()[0]:
         if cOpponent.isAlive():
-          is_Fail, content = isFail()
-          if is_Fail:
-            return 0, 0, content, False
-          else:
             if not isParry():
               is_Crit = isCrit()
               damage_dealt, hit_content = cSlayer.dealDamage(hit, cOpponent, is_Crit, CritMult(is_Crit), ProtectCrit(is_Crit), ArmorMult(Armor()))
@@ -355,6 +358,9 @@ class Gamemode:
     if (cSlayer.faction not in self.bot.Factions and self.type == "factionwar"):
       return "Tu dois faire parti d'une faction pour combattre ici", 0, False
     
+    if isFail():
+      return f"\n> **Raté !** Score insuffisant", 0, False
+    
     #Spe Berserker
     if hit == "s" and cSlayer.Spe.id == 8:
       cSlayer.berserker_mode = 5
@@ -373,7 +379,7 @@ class Gamemode:
       content += hit_content
 
       #Le monstre prend des dégâts
-      if damage_dealt > 0 and cOpponent.type != "banner":
+      if damage_dealt > 0:
         cOpponent.getDamage(damage_dealt)
       #Le joueur prend des dégâts.
       if damage_taken > 0:

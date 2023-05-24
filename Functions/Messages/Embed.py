@@ -4,8 +4,8 @@ def create_embed_battle(self):
 
     bot = self.bot
 
-    description=f"*Score conseillé : {self.Opponents[self.count].gearscore}*"
-    description += f"\n**Monstre {self.bot.Rarities[self.Opponents[self.count].rarity].display_text.capitalize()}**"
+    description=f"🔰*Score requis* : **{self.Opponents[self.count].gearscore}**\n"
+    description += f"\n**{self.Opponents[self.count].group_name} {self.bot.Rarities[self.Opponents[self.count].rarity].display_text.capitalize()}**"
     if self.Opponents[self.count].type != "banner":
         description += f"\n⚔️ Puissance : **{int(self.Opponents[self.count].damage)}** {self.bot.Elements[self.Opponents[self.count].element].display_emote}"
     description += f"\n🛡️ Armure : **{int(self.Opponents[self.count].armor)}** *({int(self.Opponents[self.count].armor_cap)} min.)*"
@@ -39,7 +39,7 @@ def create_embed_battle(self):
     if self.Opponents[self.count].bg_url is not None:
         embed.set_image(url=f"{self.Opponents[self.count].bg_url}")
     if self.spawns_count > 1:   
-        embed.set_footer(text=f"Monstre : {self.count+1}/{self.spawns_count}")
+        embed.set_footer(text=f"{self.Opponents[self.count].group_name} : {self.count+1}/{self.spawns_count}")
     
     #Banner
     if self.Opponents[self.count].type == "banner":
@@ -50,7 +50,7 @@ def create_embed_battle(self):
         for faction_best_damage_list in listed_factions:
             value += f"\n{award_list[i]} - {bot.Factions[faction_best_damage_list[0]].emote} {bot.Factions[faction_best_damage_list[0]].name}: **{faction_best_damage_list[1]}**"
             i += 1
-        embed.add_field(name="Classement Factions", value=value, inline=False)
+        embed.add_field(name=f"Classement {bot.Variables['factionwar_nbr_hit_stack']} meilleures attaques :", value=value, inline=False)
 
     return embed
 
@@ -106,7 +106,7 @@ def create_embed_end_factionwar(Battle):
         for faction_best_damage_list in listed_factions:
             value += f"\n{award_list[i]} - {bot.Factions[faction_best_damage_list[0]].emote} {bot.Factions[faction_best_damage_list[0]].name}: **{faction_best_damage_list[1]}**"
             i += 1
-        embed.add_field(name="Classement Factions", value=value, inline=False)
+        embed.add_field(name=f"Classement {bot.Variables['factionwar_nbr_hit_stack']} meilleures attaques :", value=value, inline=False)
 
     embed.set_thumbnail(url='https://images-ext-2.discordapp.net/external/K5FrBGB9d-8IbCg_bnZyheglS9Q61aXohV4hJSMiImA/%3Fcb%3D20200801054948/https/static.wikia.nocookie.net/dauntless_gamepedia_en/images/1/13/Hunt_Icon.png/revision/latest')
     return embed

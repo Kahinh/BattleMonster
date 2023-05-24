@@ -90,7 +90,10 @@ class BattleView(lib.discord.ui.View):
             view = None
             content = ""
         channel = self.Battle.bot.get_channel(self.Battle.bot.rChannels["loots"])
-        view.message = await channel.send(content=content, embed=embed, view=view)
+        if view is None:
+            await channel.send(content=content, embed=embed, view=view)
+        else:
+            view.message = await channel.send(content=content, embed=embed, view=view)
         if view is not None:self.Battle.bot.ActiveList.add_recap(view.message.id, view)
 
     async def update_embed(self, message):

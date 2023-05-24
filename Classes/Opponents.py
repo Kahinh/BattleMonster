@@ -23,6 +23,7 @@ class Opponent:
     self.type = type
 
     self.name = ""
+    self.group_name = "Monstre"
     self.description = ""
     self.img_url_normal = ""
     self.img_url_enraged = ""
@@ -112,14 +113,14 @@ class Opponent:
     if cSlayer.Spe.id != 4 and damage != 0:
 
       #On check quelle liste il faut prendre
-      if gamemode_type == "factionwar":
-        list_lasthits = self.last_hits[cSlayer.faction]
-      else:
-        list_lasthits = self.last_hits
+      list_lasthits = self.identify_lasthits_list(cSlayer)
 
       list_lasthits.append(int(damage*self.bot.Variables["cdg_malus_attack_in_stack"]))
       if len(list_lasthits) > self.bot.Variables["cdg_nbr_hit_stack"]:
         list_lasthits.pop(0)
+
+  def identify_lasthits_list(self, cSlayer):
+    return self.last_hits
 
   def isParry(self, hit, Slayer):
     if (self.parry["parry_chance_l"] + Slayer.cSlayer.stats[f"total_parry_l"]) >= 1 and (self.parry["parry_chance_h"] + Slayer.cSlayer.stats[f"total_parry_h"]) >= 1:
@@ -133,9 +134,9 @@ class Opponent:
 
   def recapDamageTaken(self, damage):  
     if self.base_hp == 0:
-      return f"\n\n> Le monstre est mort ! 💀"
+      return f"\n\n> Le {self.group_name} est mort ! 💀"
     else:
-      return f"\n\n> Le monstre possède désormais {int(self.base_hp)}/{int(self.total_hp)} ❤️"
+      return f"\n\n> Le {self.group_name} possède désormais {int(self.base_hp)}/{int(self.total_hp)} ❤️"
 
   def slayer_canAttack(self, cSlayer):
     if cSlayer.id in self.slayers_hits:
@@ -182,6 +183,9 @@ class Opponent:
       else:
         return False
 
+  def get_roll_dices(self, Slayer):
+    return self.roll_dices
+
 @dataclass
 class Monster(Opponent):
   def __init__(self, gamemode, element, rarity, type):
@@ -192,6 +196,7 @@ class Banner(Opponent):
     super().__init__(gamemode, element, rarity, type)
     self.bot = gamemode.bot
     self.roll_dices = gamemode.max_dice
+    self.group_name = "Pilier"
   
   async def handler_Build(self):
     await super().handler_Build()
@@ -232,6 +237,19 @@ class Banner(Opponent):
       return f"\n> Cette attaque permet à ta faction d'atteindre un nouveau record de **{self.faction_best_damage[cSlayer.faction]}** dégâts"
     else:
       return ""
+    
+  def identify_lasthits_list(self, cSlayer):
+    return self.last_hits[cSlayer.faction]
+
+  def getDamage(self, damage):
+    pass
+
+  def get_roll_dices(self, Slayer):
+    listed_factions = dict(sorted(self.faction_best_damage.items(), key=lambda x:x[1], reverse=True))
+    slayer_faction_positionning = list(listed_factions.keys()).index(Slayer.cSlayer.faction)
+
+    roll_dices = max(self.roll_dices - (slayer_faction_positionning * self.bot.Variables["factionwar_roll_dices_malus_by_positionning"]), 0)
+    return roll_dices
 
 class Mythique1(Opponent):
   def __init__(self, gamemode, element, rarity, type):

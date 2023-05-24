@@ -41,6 +41,7 @@ class MSlayer:
             damage_taken= 0 if Slayer_Data is None else Slayer_Data["damage_taken"],
             special_stacks= 0 if Slayer_Data is None else Slayer_Data["special_stacks"],
             faction= 0 if Slayer_Data is None else Slayer_Data["faction"],
+            beta_tester= False if Slayer_Data is None else Slayer_Data["beta_tester"],
             specialization= 1 if Slayer_Data is None else Slayer_Data["specialization"],
             Spe = Spe(Spe_Data),
             inventory_items = {}, #Gérer plus bas
@@ -268,6 +269,7 @@ class Slayer:
         damage_taken=0,
         special_stacks=0,
         faction=0,
+        beta_tester=False,
         specialization=1, #TODO Nettoyer pour eviter les deux Specialization & Spe
         Spe=None, #TODO Nettoyer pour eviter les deux Specialization & Spe
         inventory_items={},
@@ -293,6 +295,7 @@ class Slayer:
         self.money = money
         self.special_stacks = special_stacks
         self.faction = faction
+        self.beta_tester = beta_tester
         self.specialization = specialization
         self.Spe = Spe
         self.inventory_items = inventory_items
@@ -447,7 +450,7 @@ class Slayer:
         if cOpponent.base_hp is not None:
             damage = int(min(damage, cOpponent.base_hp))
             if damage == 0:
-                return 0, f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} - Le monstre est déjà mort !"
+                return 0, f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} - Le {cOpponent.group_name} est déjà mort !"
 
         content = f"\n> ⚔️ {self.Spe.ability_name if hit == 'S' else hit} : {int(damage)} {'‼️' if isCrit else ''} {'[🔥+' + str(mult_damage) + ']' if mult_damage > 0 else ''} {additionnal_ability if additionnal_ability != '' else ''} {'[🪓' + str(self.berserker_mode -1) + 'restants]' if self.berserker_mode > 0 else ''}"
             
@@ -516,7 +519,7 @@ class Slayer:
         return content
 
     def recapHealth(self, total_damage_taken):
-        content = f"\n\n> Le monstre t'a infligé {int(total_damage_taken)} dégâts."
+        content = f"\n\n> Le {self.group_name} t'a infligé {int(total_damage_taken)} dégâts."
         if self.dead:
             content += f"\n> Tu es mort !"
             self.lastregen = datetime.datetime.timestamp(datetime.datetime.now())

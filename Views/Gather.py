@@ -17,7 +17,7 @@ class Gather_Button(lib.discord.ui.Button):
                 else:
                     #On enregistre que le joueur a joué pour pas qu'il puisse utiliser à nouveau
                     self.view.Slayer_user.append(interaction.user.id)
-                    nbr = 1
+                    nbr = self.view.bot.Variables["bonus_gatherables_default"]
 
                     #Si le pet équipé se nourrit de la bouffe, on fait +1
                     if int(self.view.bot.PetFood[Slayer.cSlayer.slots["pet"][0]].id) == int(self.view.cGather.gatherable_id):

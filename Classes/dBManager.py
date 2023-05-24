@@ -76,7 +76,12 @@ class dB:
         async with conn.transaction():
             await conn.executemany('UPDATE "slayers" SET money = money + $1 WHERE id = $2', data_money)
 
-    logging.info(f"PUSH MONEY : {data_money}")
+  async def push_money_only_slayer(self, cSlayer, money): 
+    async with self.bot.db_pool.acquire() as conn:
+      async with conn.transaction():
+          await conn.execute('UPDATE "slayers" SET money = money + $1 WHERE id = $2', money, cSlayer.id)
+
+    logging.info(f"PUSH MONEY : {cSlayer.id} {money}")
   
   async def push_slayer_data(self, cSlayer):
     async with self.bot.db_pool.acquire() as conn:

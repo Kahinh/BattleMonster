@@ -16,12 +16,12 @@ class Gamemode_Dropdown(lib.discord.ui.Select):
         if gamemode["type"] == "hunt":
             Gamemode = lib.Hunt(self.view.bot, gamemode)
             await Gamemode.handler_Build()
-            await Gamemode.handler_Spawn()
+            await Gamemode.handler_Spawn(channel_id=interaction.channel_id)
             await lib.asyncio.sleep(10)
         elif gamemode["type"] == "factionwar":
             Gamemode = lib.FactionWar(self.view.bot, gamemode)
             await Gamemode.handler_Build()
-            await Gamemode.handler_Spawn()
+            await Gamemode.handler_Spawn(interaction.channel_id)
             await lib.asyncio.sleep(10)
 
         channel = self.view.bot.get_channel(self.view.bot.rChannels["logs"])
