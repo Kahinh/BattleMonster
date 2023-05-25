@@ -529,7 +529,7 @@ class Slayer:
         return self.dead, content
     
     def regen(self):
-        regen = 0.3 * self.stats["total_max_health"]
+        regen = self.bot.Variables["regen_percentage"] * self.stats["total_max_health"]
         regen = int(min(self.damage_taken, regen))
         self.damage_taken -= regen
         return regen

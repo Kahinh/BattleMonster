@@ -8,7 +8,10 @@ def create_embed_battle(self):
     description += f"\n**{self.Opponents[self.count].group_name} {self.bot.Rarities[self.Opponents[self.count].rarity].display_text.capitalize()}**"
     if self.Opponents[self.count].type != "banner":
         description += f"\n⚔️ Puissance : **{int(self.Opponents[self.count].damage)}** {self.bot.Elements[self.Opponents[self.count].element].display_emote}"
-    description += f"\n🛡️ Armure : **{int(self.Opponents[self.count].armor)}** *({int(self.Opponents[self.count].armor_cap)} min.)*"
+    if int(self.Opponents[self.count].armor) == int(self.Opponents[self.count].armor_cap):
+        description += f"\n🛡️ Armure : **{int(self.Opponents[self.count].armor)}**"
+    else:
+        description += f"\n🛡️ Armure : **{int(self.Opponents[self.count].armor)}** *({int(self.Opponents[self.count].armor_cap)} min.)*"
     description += f"\n🎲 Butin Disponible : **{self.Opponents[self.count].roll_dices}**"
     description += f"\n\n{self.Opponents[self.count].description}"
     
