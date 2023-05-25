@@ -32,7 +32,7 @@ Merci à vous de jouer !
 - [X] Alpha 0.9
 - [X] Beta 0.1
 - [X] Beta 0.2
-- [] Beta 0.3
+- [X] Beta 0.3
 - [] Beta 0.4
 - [] Beta 0.5
 - [] Beta 0.6
