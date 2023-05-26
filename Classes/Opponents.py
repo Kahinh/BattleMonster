@@ -73,8 +73,8 @@ class Opponent:
       self.name = OpponentData["name"]
       self.description = OpponentData["description"]
       self.element = OpponentData["element"]
-      self.base_hp = int(OpponentData["base_hp"] * self.gamemode.scaling["hp"] * (1 + (self.bot.ActiveList.get_active_slayer_nbr() * self.bot.Variables["mult_active_slayers_hp"])))
-      self.total_hp = int(OpponentData["base_hp"] * self.gamemode.scaling["hp"] * (1 + (self.bot.ActiveList.get_active_slayer_nbr() * self.bot.Variables["mult_active_slayers_hp"])))
+      self.base_hp = int(OpponentData["base_hp"] * self.gamemode.scaling["hp"] * (1 + (self.bot.ActiveList.get_active_slayer_nbr() * float(self.bot.Variables["mult_active_slayers_hp"]))))
+      self.total_hp = int(OpponentData["base_hp"] * self.gamemode.scaling["hp"] * (1 + (self.bot.ActiveList.get_active_slayer_nbr() * float(self.bot.Variables["mult_active_slayers_hp"]))))
       self.rarity = OpponentData["rarity"]
       self.gearscore = OpponentData["gearscore"]
       self.parry = {
@@ -86,7 +86,7 @@ class Opponent:
       self.letality = int(OpponentData["letality"] * self.gamemode.scaling["letality"])
       self.letality_per = min(OpponentData["letality_per"] * max(int(self.gamemode.scaling["letality"]/3),1),1)
       self.armor = int(OpponentData["armor"] * self.gamemode.scaling["armor"])
-      self.armor_cap = int(OpponentData["armor"] * (1 + (self.bot.ActiveList.get_active_slayer_nbr() * self.bot.Variables["mult_active_slayers_armor"])))
+      self.armor_cap = int(OpponentData["armor"] * (1 + (self.bot.ActiveList.get_active_slayer_nbr() * float(self.bot.Variables["mult_active_slayers_armor"]))))
       self.protect_crit = int(OpponentData["protect_crit"] * self.gamemode.scaling["protect_crit"])
       self.img_url_normal = OpponentData["img_url_normal"]
       self.img_url_enraged = OpponentData["img_url_enraged"]
@@ -115,8 +115,8 @@ class Opponent:
       #On check quelle liste il faut prendre
       list_lasthits = self.identify_lasthits_list(cSlayer)
 
-      list_lasthits.append(int(damage*self.bot.Variables["cdg_malus_attack_in_stack"]))
-      if len(list_lasthits) > self.bot.Variables["cdg_nbr_hit_stack"]:
+      list_lasthits.append(int(damage*float(self.bot.Variables["cdg_malus_attack_in_stack"])))
+      if len(list_lasthits) > int(self.bot.Variables["cdg_nbr_hit_stack"]):
         list_lasthits.pop(0)
 
   def identify_lasthits_list(self, cSlayer):
@@ -229,7 +229,7 @@ class Banner(Opponent):
 
   def recapDamageTaken(self, damage, cSlayer):  
     self.faction_total_damage[cSlayer.faction].append(damage)
-    if len(self.faction_total_damage[cSlayer.faction]) > self.bot.Variables["factionwar_nbr_hit_stack"]:
+    if len(self.faction_total_damage[cSlayer.faction]) > int(self.bot.Variables["factionwar_nbr_hit_stack"]):
       self.faction_total_damage[cSlayer.faction].pop(0)
     
     if sum(self.faction_total_damage[cSlayer.faction]) > self.faction_best_damage[cSlayer.faction]:
@@ -248,7 +248,7 @@ class Banner(Opponent):
     listed_factions = dict(sorted(self.faction_best_damage.items(), key=lambda x:x[1], reverse=True))
     slayer_faction_positionning = list(listed_factions.keys()).index(Slayer.cSlayer.faction)
 
-    roll_dices = max(self.roll_dices - (slayer_faction_positionning * self.bot.Variables["factionwar_roll_dices_malus_by_positionning"]), 0)
+    roll_dices = max(self.roll_dices - (slayer_faction_positionning * int(self.bot.Variables["factionwar_roll_dices_malus_by_positionning"])), 0)
     return roll_dices
 
 class Mythique1(Opponent):

@@ -17,17 +17,17 @@ class Gather_Button(lib.discord.ui.Button):
                 else:
                     #On enregistre que le joueur a joué pour pas qu'il puisse utiliser à nouveau
                     self.view.Slayer_user.append(interaction.user.id)
-                    nbr = self.view.bot.Variables["bonus_gatherables_default"]
+                    nbr = int(self.view.bot.Variables["bonus_gatherables_default"])
 
                     #Si le pet équipé se nourrit de la bouffe, on fait +1
                     if int(self.view.bot.PetFood[Slayer.cSlayer.slots["pet"][0]].id) == int(self.view.cGather.gatherable_id):
-                        nbr += self.view.bot.Variables["bonus_gatherables_in_pets"]
+                        nbr += int(self.view.bot.Variables["bonus_gatherables_in_pets"])
 
                     #Si on a la faction qui a l'affinité
                     if Slayer.cSlayer.faction != 0:
                         print(self.view.bot.Factions[Slayer.cSlayer.faction].gatherable_affinity, self.view.cGather.type)
                         if self.view.bot.Factions[Slayer.cSlayer.faction].gatherable_affinity == self.view.cGather.type:
-                            nbr += self.view.bot.Variables["bonus_gatherables_in_faction"]
+                            nbr += int(self.view.bot.Variables["bonus_gatherables_in_faction"])
                     
                     #On remove du stock, et on envoie les gatherables dans l'inventaire du slayer. 
                     self.view.stock -= nbr

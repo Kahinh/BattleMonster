@@ -53,7 +53,7 @@ def create_embed_battle(self):
         for faction_best_damage_list in listed_factions:
             value += f"\n{award_list[i]} - {bot.Factions[faction_best_damage_list[0]].emote} {bot.Factions[faction_best_damage_list[0]].name}: **{faction_best_damage_list[1]}**"
             i += 1
-        embed.add_field(name=f"Classement {bot.Variables['factionwar_nbr_hit_stack']} meilleures attaques :", value=value, inline=False)
+        embed.add_field(name=f"Classement {int(bot.Variables['factionwar_nbr_hit_stack'])} meilleures attaques :", value=value, inline=False)
 
     return embed
 
@@ -62,7 +62,7 @@ def create_embed_end_battle(Battle, timeout):
     if timeout == False:
         title = f"**{Battle.name.capitalize()} achevé ✨ Tous les monstres ont été vaincus !**"
     else: 
-        if Battle.stats["kills"] >= Battle.bot.Variables["battle_kills_before_escape"]:
+        if Battle.stats["kills"] >= int(Battle.bot.Variables["battle_kills_before_escape"]):
             title = f"**{Battle.name.capitalize()} achevé : 🐉 Vous avez échoué, trop de Slayers sont morts.**"
         else:
             title = f"**{Battle.name.capitalize()} achevé : 🐉 Vous avez échoué et les monstres se sont enfuis.**"
@@ -109,7 +109,7 @@ def create_embed_end_factionwar(Battle):
         for faction_best_damage_list in listed_factions:
             value += f"\n{award_list[i]} - {bot.Factions[faction_best_damage_list[0]].emote} {bot.Factions[faction_best_damage_list[0]].name}: **{faction_best_damage_list[1]}**"
             i += 1
-        embed.add_field(name=f"Classement {bot.Variables['factionwar_nbr_hit_stack']} meilleures attaques :", value=value, inline=False)
+        embed.add_field(name=f"Classement {int(bot.Variables['factionwar_nbr_hit_stack'])} meilleures attaques :", value=value, inline=False)
 
     embed.set_thumbnail(url='https://images-ext-2.discordapp.net/external/K5FrBGB9d-8IbCg_bnZyheglS9Q61aXohV4hJSMiImA/%3Fcb%3D20200801054948/https/static.wikia.nocookie.net/dauntless_gamepedia_en/images/1/13/Hunt_Icon.png/revision/latest')
     return embed

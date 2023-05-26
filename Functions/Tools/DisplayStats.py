@@ -25,7 +25,11 @@ def get_display_stats(cStatOwner1, cStatOwner2):
                     desc_stat += f"\n\u001b[0;0m   Légère: {ffin(cStatOwner1.bonuses[f'{stat}_l'])} {sa(cStatOwner1.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0), order) + '[' + str(ffin(bonuses_item2.get(f'{stat}_l', 0))) + ']' if bonuses_item2 != {} else ''}"
                 #Parry H
                 if int(cStatOwner1.bonuses[f'{stat}_h']) != 0 or int(bonuses_item2.get(f'{stat}_h', 0)) != 0:
-                    desc_stat += f"\n\u001b[0;0m   Lourde: {ffin(cStatOwner1.bonuses[f'{stat}_h'])} {sa(cStatOwner1.bonuses[f'{stat}_h'], bonuses_item2.get(f'{stat}_h', 0), order) + '[' + str(ffin(bonuses_item2.get(f'{stat}_h', 0))) + ']' if bonuses_item2 != {} else ''}```"
+                    desc_stat += f"\n\u001b[0;0m   Lourde: {ffin(cStatOwner1.bonuses[f'{stat}_h'])} {sa(cStatOwner1.bonuses[f'{stat}_h'], bonuses_item2.get(f'{stat}_h', 0), order) + '[' + str(ffin(bonuses_item2.get(f'{stat}_h', 0))) + ']' if bonuses_item2 != {} else ''}"
+            
+                #on referme le ```
+                desc_stat += "```"            
+
             #Le cas où les deux sont semblables
             else:
                 if cStatOwner1.bonuses[f"{stat}_l"] != 0 or bonuses_item2.get(f"{stat}_l", 0) != 0:

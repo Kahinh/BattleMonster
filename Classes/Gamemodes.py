@@ -322,7 +322,7 @@ class Gamemode:
         if armor >= 0:
             return float((1000/(1000+armor)))
         if armor < 0:
-            return float(1+(((1000+abs(armor))/1000)*bot.Variables["malus_negative_armor_with_leta"]))
+            return float(1+(((1000+abs(armor))/1000)*float(bot.Variables["malus_negative_armor_with_leta"])))
       
       def getStacks():
         stacks_earned = cSlayer.getStacks(hit)

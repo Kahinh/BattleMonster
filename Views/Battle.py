@@ -11,7 +11,7 @@ class Light_Button(lib.discord.ui.Button):
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
 
-        if self.view.Battle.stats["kills"] >= self.view.bot.Variables["battle_kills_before_escape"]:
+        if self.view.Battle.stats["kills"] >= int(self.view.bot.Variables["battle_kills_before_escape"]):
             await self.view.updateBattle(timeout=True)
         elif damage != []:
             await self.view.updateBattle(monster_killed=monster_killed)
@@ -26,7 +26,7 @@ class Heavy_Button(lib.discord.ui.Button):
         content, damage, monster_killed = await self.view.Battle.handler_Attack(Slayer, "h")
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
-        if self.view.Battle.stats["kills"] >= self.view.bot.Variables["battle_kills_before_escape"]:
+        if self.view.Battle.stats["kills"] >= int(self.view.bot.Variables["battle_kills_before_escape"]):
             await self.view.updateBattle(timeout=True)
         elif damage != []:
             await self.view.updateBattle(monster_killed=monster_killed)
@@ -41,7 +41,7 @@ class Special_Button(lib.discord.ui.Button):
         content, damage, monster_killed = await self.view.Battle.handler_Attack(Slayer, "s")
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
-        if self.view.Battle.stats["kills"] >= self.view.bot.Variables["battle_kills_before_escape"]:
+        if self.view.Battle.stats["kills"] >= int(self.view.bot.Variables["battle_kills_before_escape"]):
             await self.view.updateBattle(timeout=True)
         elif damage != []:
             await self.view.updateBattle(monster_killed=monster_killed)
