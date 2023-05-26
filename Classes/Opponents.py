@@ -67,8 +67,8 @@ class Opponent:
       self.name = OpponentData["name"]
       self.description = OpponentData["description"]
       self.element = OpponentData["element"]
-      self.base_hp = int(OpponentData["base_hp"] * self.gamemode.scaling["hp"] * (1 + (float(self.bot.ActiveList.get_active_slayer_nbr()) * int(self.bot.Variables["mult_active_slayers_hp"]))))
-      self.total_hp = int(OpponentData["base_hp"] * self.gamemode.scaling["hp"] * (1 + (float(self.bot.ActiveList.get_active_slayer_nbr()) * int(self.bot.Variables["mult_active_slayers_hp"]))))
+      self.base_hp = int(OpponentData["base_hp"] * float(self.gamemode.scaling["hp"]) * (1 + (float(self.bot.ActiveList.get_active_slayer_nbr()) * int(self.bot.Variables["mult_active_slayers_hp"]))))
+      self.total_hp = int(OpponentData["base_hp"] * float(self.gamemode.scaling["hp"]) * (1 + (float(self.bot.ActiveList.get_active_slayer_nbr()) * int(self.bot.Variables["mult_active_slayers_hp"]))))
       self.rarity = OpponentData["rarity"]
       self.gearscore = OpponentData["gearscore"]
       self.parry = {
