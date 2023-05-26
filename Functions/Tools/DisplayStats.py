@@ -1,9 +1,14 @@
 def get_display_stats(cStatOwner1, cStatOwner2):
     desc_stat = ""
+
     #Bonuses Items 2
     if cStatOwner2 is not None:
-        bonuses_item2 = cStatOwner2.bonuses
-        gearscore2 = cStatOwner2.gearscore
+        if cStatOwner2.name == cStatOwner1.name:
+            bonuses_item2 = {}
+            gearscore2 = 0       
+        else:
+            bonuses_item2 = cStatOwner2.bonuses
+            gearscore2 = cStatOwner2.gearscore
     else:
         bonuses_item2 = {}
         gearscore2 = 0
@@ -16,7 +21,7 @@ def get_display_stats(cStatOwner1, cStatOwner2):
 
     def create_desc_stat_2_lines(bonuses_item2, stat, name, emote, order=1):
         desc_stat = ""
-        if (cn(cStatOwner1.bonuses[f"{stat}_l"]) != 0 or cn(cStatOwner1.bonuses[f"{stat}_h"]) != 0 or cn(bonuses_item2.get(f"{stat}_l", 0)) != 0 or cn(bonuses_item2.get(f"{stat}_h", 0)) != 0):
+        if cn(cStatOwner1.bonuses[f"{stat}_l"]) != 0 or cn(cStatOwner1.bonuses[f"{stat}_h"]) != 0 or cn(bonuses_item2.get(f"{stat}_l", 0)) != 0 or cn(bonuses_item2.get(f"{stat}_h", 0)) != 0:
             #Le cas où l'un ou l'autre est différent
             if ((cn(cStatOwner1.bonuses[f"{stat}_l"]) != cn(cStatOwner1.bonuses[f"{stat}_h"])) or (cn(bonuses_item2.get(f"{stat}_l", 0)) != cn(bonuses_item2.get(f"{stat}_h", 0)))):
                 desc_stat += f"```ansi\n{emote}{name}:"
@@ -38,9 +43,9 @@ def get_display_stats(cStatOwner1, cStatOwner2):
 
     def create_desc_stat_3_lines(bonuses_item2, stat, name, emote, order=1):
         desc_stat = ""
-        if (cn(cStatOwner1.bonuses[f"{stat}_l"]) != 0 or cn(cStatOwner1.bonuses[f"{stat}_h"]) != 0 or cn(cStatOwner1.bonuses[f"{stat}_s"]) != 0 or cn(bonuses_item2.get(f"{stat}_l", 0)) != 0 or cn(bonuses_item2.get(f"{stat}_h", 0)) != 0 or cn(bonuses_item2.get(f"{stat}_s", 0)) != 0):
+        if cn(cStatOwner1.bonuses[f"{stat}_l"]) != 0 or cn(cStatOwner1.bonuses[f"{stat}_h"]) != 0 or cn(cStatOwner1.bonuses[f"{stat}_s"]) != 0 or cn(bonuses_item2.get(f"{stat}_l", 0)) != 0 or cn(bonuses_item2.get(f"{stat}_h", 0)) != 0 or cn(bonuses_item2.get(f"{stat}_s", 0)) != 0:
             #Le cas où l'un ou l'autre est différent
-            if ((cn(cStatOwner1.bonuses[f"{stat}_l"]) != cn(cStatOwner1.bonuses[f"{stat}_h"]) != cn(cStatOwner1.bonuses[f"{stat}_s"])) or (cn(bonuses_item2.get(f"{stat}_l", 0)) != cn(bonuses_item2.get(f"{stat}_h", 0)) != cn(bonuses_item2.get(f"{stat}_s", 0)))):
+            if ((cn(cStatOwner1.bonuses[f"{stat}_l"]) != cn(cStatOwner1.bonuses[f"{stat}_h"]) or cn(cStatOwner1.bonuses[f"{stat}_h"]) != cn(cStatOwner1.bonuses[f"{stat}_s"])) or (cn(bonuses_item2.get(f"{stat}_l", 0)) != cn(bonuses_item2.get(f"{stat}_h", 0)) or cn(bonuses_item2.get(f"{stat}_h", 0)) != cn(bonuses_item2.get(f"{stat}_s", 0)))):
                 desc_stat += f"```ansi\n{emote}{name}:"
                 #Damage L
                 if cn(cStatOwner1.bonuses[f'{stat}_l']) != 0 or cn(bonuses_item2.get(f'{stat}_l', 0)) != 0:
@@ -96,7 +101,7 @@ def get_display_stats(cStatOwner1, cStatOwner2):
 
     #Score
     if hasattr(cStatOwner1, "gearscore"):
-        desc_stat += f"```ansi\n🔰Score: {ffin(cStatOwner1.gearscore)} {sa(cStatOwner1.gearscore, gearscore2) + '[' + str(ffin(gearscore2)) + ']' if cStatOwner2 != None else ''}```" 
+        desc_stat += f"```ansi\n🔰Score: {ffin(cStatOwner1.gearscore)} {sa(cStatOwner1.gearscore, gearscore2) + '[' + str(ffin(gearscore2)) + ']' if bonuses_item2 != {} else ''}```" 
     #Armor
     desc_stat += create_desc_stat_1_line(bonuses_item2, "armor", "Armure", "🛡️")
     #Armor_Per
