@@ -25,7 +25,6 @@ class Gather_Button(lib.discord.ui.Button):
 
                     #Si on a la faction qui a l'affinité
                     if Slayer.cSlayer.faction != 0:
-                        print(self.view.bot.Factions[Slayer.cSlayer.faction].gatherable_affinity, self.view.cGather.type)
                         if self.view.bot.Factions[Slayer.cSlayer.faction].gatherable_affinity == self.view.cGather.type:
                             nbr += int(self.view.bot.Variables["bonus_gatherables_in_faction"])
                     

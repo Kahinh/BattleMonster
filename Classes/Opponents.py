@@ -55,12 +55,6 @@ class Opponent:
     self.letality = 0
     self.letality_per = 0
 
-  # def __getattr__(self, *args, **kwargs):
-  #     def printf(*args, **kwargs):
-  #         #print(args, kwargs)
-  #         pass
-  #     return printf
-
   async def handler_Build(self):
 
     async def pullOpponentData():
@@ -73,8 +67,8 @@ class Opponent:
       self.name = OpponentData["name"]
       self.description = OpponentData["description"]
       self.element = OpponentData["element"]
-      self.base_hp = int(OpponentData["base_hp"] * self.gamemode.scaling["hp"] * (1 + (self.bot.ActiveList.get_active_slayer_nbr() * float(self.bot.Variables["mult_active_slayers_hp"]))))
-      self.total_hp = int(OpponentData["base_hp"] * self.gamemode.scaling["hp"] * (1 + (self.bot.ActiveList.get_active_slayer_nbr() * float(self.bot.Variables["mult_active_slayers_hp"]))))
+      self.base_hp = int(OpponentData["base_hp"] * self.gamemode.scaling["hp"] * (1 + (float(self.bot.ActiveList.get_active_slayer_nbr()) * int(self.bot.Variables["mult_active_slayers_hp"]))))
+      self.total_hp = int(OpponentData["base_hp"] * self.gamemode.scaling["hp"] * (1 + (float(self.bot.ActiveList.get_active_slayer_nbr()) * int(self.bot.Variables["mult_active_slayers_hp"]))))
       self.rarity = OpponentData["rarity"]
       self.gearscore = OpponentData["gearscore"]
       self.parry = {
@@ -86,7 +80,7 @@ class Opponent:
       self.letality = int(OpponentData["letality"] * self.gamemode.scaling["letality"])
       self.letality_per = min(OpponentData["letality_per"] * max(int(self.gamemode.scaling["letality"]/3),1),1)
       self.armor = int(OpponentData["armor"] * self.gamemode.scaling["armor"])
-      self.armor_cap = int(OpponentData["armor"] * (1 + (self.bot.ActiveList.get_active_slayer_nbr() * float(self.bot.Variables["mult_active_slayers_armor"]))))
+      self.armor_cap = int(OpponentData["armor"] * (1 + (int(self.bot.ActiveList.get_active_slayer_nbr()) * float(self.bot.Variables["mult_active_slayers_armor"]))))
       self.protect_crit = int(OpponentData["protect_crit"] * self.gamemode.scaling["protect_crit"])
       self.img_url_normal = OpponentData["img_url_normal"]
       self.img_url_enraged = OpponentData["img_url_enraged"]
