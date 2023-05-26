@@ -519,7 +519,7 @@ class Slayer:
         return content
 
     def recapHealth(self, total_damage_taken):
-        content = f"\n\n> Le {self.group_name} t'a infligé {int(total_damage_taken)} dégâts."
+        content = f"\n\n> Ton adversaire t'a infligé {int(total_damage_taken)} dégâts."
         if self.dead:
             content += f"\n> Tu es mort !"
             self.lastregen = datetime.datetime.timestamp(datetime.datetime.now())
