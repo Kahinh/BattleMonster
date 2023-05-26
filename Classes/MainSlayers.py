@@ -478,17 +478,6 @@ class Slayer:
         self.special_stacks += stacks_earned
         return stacks_earned
 
-    def useStacks(self, hit):
-        if hit == "s":
-            if self.Spe.id == 7:
-                if random.choices((True, False), (0.5, 0.5), k=1)[0]:
-                    self.mult_damage += 500
-                else:
-                    self.mult_damage = 0
-                    self.special_stacks = self.special_stacks - self.stats['total_stacks']
-            else:
-                self.special_stacks = self.special_stacks - self.stats['total_stacks']
-
     def getDamage(self, damage):
         self.damage_taken += damage
         if self.stats["total_max_health"] == self.damage_taken:
@@ -510,6 +499,17 @@ class Slayer:
             else:
                 content = f"\n> ☄️ Charge consommée : {self.stats['total_stacks']} - Charge total : **{self.special_stacks}/{self.stats['total_stacks']}**"
             return content
+        
+    def useStacks(self, hit):
+        if hit == "s":
+            if self.Spe.id == 7:
+                if random.choices((True, False), (0.5, 0.5), k=1)[0]:
+                    self.mult_damage += 500
+                else:
+                    self.mult_damage = 0
+                    self.special_stacks = self.special_stacks - self.stats['total_stacks']
+            else:
+                self.special_stacks = self.special_stacks - self.stats['total_stacks']
 
     def recapStacks(self):
         if self.stats["total_stacks"] == self.special_stacks:
@@ -529,7 +529,7 @@ class Slayer:
         return self.dead, content
     
     def regen(self):
-        regen = int(self.bot.Variables["regen_percentage"]) * self.stats["total_max_health"]
+        regen = int(float(self.bot.Variables["regen_percentage"]) * self.stats["total_max_health"])
         regen = int(min(self.damage_taken, regen))
         self.damage_taken -= regen
         return regen

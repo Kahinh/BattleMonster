@@ -349,7 +349,7 @@ class Gamemode:
       return isAlive[1], 0, False
     
     #On peut special
-    if (canSpecial := cSlayer.canSpecial()) and not canSpecial[0] and hit == "s":
+    if ((canSpecial := cSlayer.canSpecial()) and not canSpecial[0]) and hit == "s":
       return canSpecial[1], 0, False
       
     #On peut attaquer selon le timing
@@ -398,6 +398,7 @@ class Gamemode:
 
     #On utilise les stacks
     if hit == "s":
+      cSlayer.useStacks(hit)
       content += cSlayer.recap_useStacks(hit)
     else:
       content += cSlayer.recapStacks()
