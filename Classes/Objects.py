@@ -172,7 +172,10 @@ class Pet(Improvable_Object):
     self.gearscore = self.setGearscore()
 
   def setGearscore(self):
-    return int((self.bot.Rarities[self.rarity].gearscore/100) * self.level)
+    if self.rarity == "mythic":
+      return int(((self.bot.Rarities[self.rarity].gearscore+40)/100) * self.level)
+    else:
+      return int((self.bot.Rarities[self.rarity].gearscore/100) * self.level)
 
 class Mythic(Improvable_Object):
   def __init__(self, bot, rItem):

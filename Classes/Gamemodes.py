@@ -357,6 +357,8 @@ class Gamemode:
       return canAttack[1], 0, False
     
     if (cSlayer.faction not in self.bot.Factions and self.type == "factionwar"):
+      print(self.bot.Factions)
+      print(cSlayer.faction)
       return "Tu dois faire parti d'une faction pour combattre ici", 0, False
     
     if isFail():
