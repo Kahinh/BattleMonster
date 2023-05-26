@@ -10,13 +10,13 @@ def get_display_stats(cStatOwner1, cStatOwner2):
 
     def create_desc_stat_1_line(bonuses_item2, stat, name, emote):
         desc_stat = ""
-        if cStatOwner1.bonuses[stat] != 0 or bonuses_item2.get(stat, 0) != 0:
+        if (cStatOwner1.bonuses[stat]*100) != 0 or (bonuses_item2.get(stat, 0)*100) != 0:
             desc_stat += f"```ansi\n{emote}{name}: {ffin(cStatOwner1.bonuses[stat])} {sa(cStatOwner1.bonuses[stat], bonuses_item2.get(stat, 0)) + '[' + str(ffin(bonuses_item2.get(stat, 0))) + ']' if bonuses_item2 != {} else ''}```"    
         return desc_stat
 
     def create_desc_stat_2_lines(bonuses_item2, stat, name, emote, order=1):
         desc_stat = ""
-        if (int(cStatOwner1.bonuses[f"{stat}_l"]) != 0 or int(cStatOwner1.bonuses[f"{stat}_h"]) != 0 or int(bonuses_item2.get(f"{stat}_l", 0)) != 0 or int(bonuses_item2.get(f"{stat}_h", 0)) != 0):
+        if (int(cStatOwner1.bonuses[f"{stat}_l"]*100) != 0 or int(cStatOwner1.bonuses[f"{stat}_h"]*100) != 0 or int(bonuses_item2.get(f"{stat}_l", 0)*100) != 0 or int(bonuses_item2.get(f"{stat}_h", 0)*100) != 0):
             #Le cas où l'un ou l'autre est différent
             if ((cStatOwner1.bonuses[f"{stat}_l"] != cStatOwner1.bonuses[f"{stat}_h"]) or (bonuses_item2.get(f"{stat}_l", 0) != bonuses_item2.get(f"{stat}_h", 0))):
                 desc_stat += f"```ansi\n{emote}{name}:"
@@ -34,7 +34,7 @@ def get_display_stats(cStatOwner1, cStatOwner2):
 
     def create_desc_stat_3_lines(bonuses_item2, stat, name, emote, order=1):
         desc_stat = ""
-        if (int(cStatOwner1.bonuses[f"{stat}_l"]) != 0 or int(cStatOwner1.bonuses[f"{stat}_h"]) != 0 or int(cStatOwner1.bonuses[f"{stat}_s"]) != 0 or int(bonuses_item2.get(f"{stat}_l", 0)) != 0 or int(bonuses_item2.get(f"{stat}_h", 0)) != 0 or int(bonuses_item2.get(f"{stat}_s", 0)) != 0):
+        if (int(cStatOwner1.bonuses[f"{stat}_l"]*100) != 0 or int(cStatOwner1.bonuses[f"{stat}_h"]*100) != 0 or int(cStatOwner1.bonuses[f"{stat}_s"]*100) != 0 or int(bonuses_item2.get(f"{stat}_l", 0)*100) != 0 or int(bonuses_item2.get(f"{stat}_h", 0)*100) != 0 or int(bonuses_item2.get(f"{stat}_s", 0)*100) != 0):
             #Le cas où l'un ou l'autre est différent
             if ((cStatOwner1.bonuses[f"{stat}_l"] != cStatOwner1.bonuses[f"{stat}_h"] != cStatOwner1.bonuses[f"{stat}_s"]) or (bonuses_item2.get(f"{stat}_l", 0) != bonuses_item2.get(f"{stat}_h", 0) != bonuses_item2.get(f"{stat}_s", 0))):
                 desc_stat += f"```ansi\n{emote}{name}:"
