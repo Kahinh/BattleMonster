@@ -149,7 +149,7 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
                   pass
           
           #On met à jour le cSlayer
-          Slayer.cSlayer.faction = faction
+          Slayer.cSlayer.faction = faction_id
           await self.bot.dB.push_slayer_data(Slayer.cSlayer)
 
           #On poste le message
