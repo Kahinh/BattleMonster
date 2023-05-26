@@ -225,6 +225,7 @@ class Banner(Opponent):
     self.faction_total_damage[cSlayer.faction].append(damage)
     if len(self.faction_total_damage[cSlayer.faction]) > int(self.bot.Variables["factionwar_nbr_hit_stack"]):
       self.faction_total_damage[cSlayer.faction].pop(0)
+    print(self.faction_total_damage)
     
     if sum(self.faction_total_damage[cSlayer.faction]) > self.faction_best_damage[cSlayer.faction]:
       self.faction_best_damage[cSlayer.faction] = sum(self.faction_total_damage[cSlayer.faction])

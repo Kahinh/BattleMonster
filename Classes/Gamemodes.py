@@ -349,11 +349,11 @@ class Gamemode:
       return isAlive[1], 0, False
     
     #On peut special
-    if (canSpecial := cSlayer.canSpecial()) and not canSpecial[0] and hit == "S":
+    if (canSpecial := cSlayer.canSpecial()) and not canSpecial[0] and hit == "s":
       return canSpecial[1], 0, False
       
     #On peut attaquer selon le timing
-    if (canAttack := cOpponent.slayer_canAttack(cSlayer)) and not canAttack[0] and hit != "S":
+    if (canAttack := cOpponent.slayer_canAttack(cSlayer)) and not canAttack[0] and hit != "s":
       return canAttack[1], 0, False
     
     if (cSlayer.faction not in self.bot.Factions and self.type == "factionwar"):
