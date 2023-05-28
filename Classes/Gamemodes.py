@@ -204,7 +204,7 @@ class Gamemode:
 
     def award_mythics_stones(Slayer):
         #Mythic Stones = gatherable 5
-        stones_earned = random.randint(1,3)
+        stones_earned =cOpponent.award_mythic_stones(Slayer)
         Slayer.cSlayer.inventory_gatherables[5] += stones_earned
         request_mythic_stones.append((Slayer.cSlayer.id, 5, stones_earned))
         self.stats["mythic_stones"] += stones_earned
@@ -257,17 +257,14 @@ class Gamemode:
       content = message
       self.stats['attacks_done'] += total_damage_taken
       if isDead:
-        self.bot.ActiveList.remove_eligibility(cSlayer)
-        content =+ "Tu perds l'éligibilité aux butins sur tous les combats en cours."
         self.stats['kills'] += 1
-      return content
+      return isDead, content
 
     def Opponent_Receive_Damage():
       content = ""
       content += cOpponent.recapDamageTaken(total_damage_dealt)
       cOpponent.storeLastHits(total_damage_dealt, cSlayer, self.type)
       self.stats['attacks_received'] += 1
-      content += cOpponent.slayer_storeAttack(cSlayer, total_damage_dealt, hit)
       return content
 
     def Banner_Receive_Damage():
@@ -275,7 +272,6 @@ class Gamemode:
       content += cOpponent.recapDamageTaken(total_damage_dealt, cSlayer)
       cOpponent.storeLastHits(total_damage_dealt, cSlayer, self.type)
       self.stats['attacks_received'] += 1
-      content += cOpponent.slayer_storeAttack(cSlayer, total_damage_dealt, hit)
       return content
 
     def isFail():
@@ -326,7 +322,10 @@ class Gamemode:
       
       def getStacks():
         stacks_earned = cSlayer.getStacks(hit)
-        return f"[+{stacks_earned}☄️]"
+        if stacks_earned > 0:
+          return f"[+{stacks_earned}☄️]"
+        else:
+          return ""
 
       if cSlayer.isAlive()[0]:
         if cOpponent.isAlive():
@@ -344,6 +343,9 @@ class Gamemode:
     total_damage_dealt = 0
     total_damage_taken = 0
 
+    if not cOpponent.isAlive():
+      return f'Le {cOpponent.group_name} est déjà mort !', 0, False
+
     #On check si on est vivant ou mort.
     if (isAlive := cSlayer.isAlive()) and not isAlive[0]:
       return isAlive[1], 0, False
@@ -356,9 +358,7 @@ class Gamemode:
     if (canAttack := cOpponent.slayer_canAttack(cSlayer)) and not canAttack[0] and hit != "s":
       return canAttack[1], 0, False
     
-    if (cSlayer.faction not in self.bot.Factions and self.type == "factionwar"):
-      print(self.bot.Factions)
-      print(cSlayer.faction)
+    if (int(cSlayer.faction) not in self.bot.Factions and self.type == "factionwar"):
       return "Tu dois faire parti d'une faction pour combattre ici", 0, False
     
     if isFail():
@@ -373,6 +373,9 @@ class Gamemode:
       content += cSlayer.recap_useStacks(hit)
       return content, 0, False
 
+    #On consomme les stacks du S avant
+    if hit == "s":
+      cSlayer.useStacks(hit)
     
     #Nombre de hits que le Slayer peut faire :
     for i in range(cSlayer.getNbrHit()):
@@ -395,39 +398,63 @@ class Gamemode:
       else:
         content += Banner_Receive_Damage()
 
-
     #On utilise les stacks
     if hit == "s":
-      cSlayer.useStacks(hit)
       content += cSlayer.recap_useStacks(hit)
     else:
       content += cSlayer.recapStacks()
 
     #On récap ce qui a été fait au Slayer  
+    isDead = False
     if total_damage_taken > 0:
-      content += Slayer_Receive_Damage()
+      isDead, message = Slayer_Receive_Damage()
+      content += message
+
+    #On store l'attaque
+    content += cOpponent.slayer_storeAttack(cSlayer, total_damage_dealt, hit)
+
+    if isDead:
+      await self.bot.ActiveList.remove_eligibility(cSlayer)
+      content = "Tu es mort ! Tu perds l'éligibilité aux butins sur tous les combats en cours."
 
     #Familier 
       #Critique
     if is_Crit:
-      await Slayer.getPet(rate=0.004, pets=[230])
+      await Slayer.getDrop(rate=0.004, pets=[230])
       #Damage
     if total_damage_dealt > 0:
-      await Slayer.getPet(pets=[194])
+      await Slayer.getDrop(pets=[194])
       #Bworky Final Damage S
     if total_damage_dealt > 150000 and hit == 's':
-      await Slayer.getPet(rate=1, pets=[301])
+      await Slayer.getDrop(rate=1, pets=[301])
       #Tirubima Final Damage H
     if total_damage_dealt > 50000 and hit == 'h':
-      await Slayer.getPet(rate=1, pets=[302])
+      await Slayer.getDrop(rate=1, pets=[302])
       #Blokus Parry %
     if total_damage_taken > 1000:
-      await Slayer.getPet(rate=1, pets=[303])
+      await Slayer.getDrop(rate=1, pets=[303])
       #Armor
     if total_damage_taken > 0:
-      await Slayer.getPet(pets=[193])
+      await Slayer.getDrop(pets=[193])
+      #Leta
+    if Slayer.cSlayer.stats["total_letality_l"] + Slayer.cSlayer.stats["total_letality_h"] + Slayer.cSlayer.stats["total_letality_s"] > 4000:
+      await Slayer.getDrop(rate=1, pets=[409])
+
     #Achievement Biggest_Hit
-      await Slayer.update_biggest_hit(total_damage_dealt)
+    await Slayer.update_biggest_hit(total_damage_dealt)
+      #1000
+    if Slayer.cSlayer.achievements['monsters_killed'] >= 1000:
+      await Slayer.getDrop(rate=1, pets=[411])
+      #2000
+    if Slayer.cSlayer.achievements['monsters_killed'] >= 2000:
+      await Slayer.getDrop(rate=1, pets=[412])
+      #5000
+    if Slayer.cSlayer.achievements['monsters_killed'] >= 5000:
+      await Slayer.getDrop(rate=1, pets=[413])
+      #10000
+    if Slayer.cSlayer.achievements['monsters_killed'] >= 10000:
+      await Slayer.getDrop(rate=1, pets=[414])
+
 
     #On update le Slayer dans la dB
     await self.bot.dB.push_slayer_data(Slayer.cSlayer)

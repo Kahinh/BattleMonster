@@ -100,7 +100,7 @@ class EnhancementMythicsView(lib.discord.ui.View):
                         item.disabled = False
 
     def create_mythic_list(self):
-        return [self.Slayer.cSlayer.inventory_items[item_id] for item_id in self.Slayer.cSlayer.inventory_items if self.Slayer.cSlayer.inventory_items[item_id].rarity == "mythic" and self.Slayer.cSlayer.inventory_items[item_id].level != 40]
+        return [self.Slayer.cSlayer.inventory_items[item_id] for item_id in self.Slayer.cSlayer.inventory_items if self.Slayer.cSlayer.inventory_items[item_id].rarity == "mythic" and self.Slayer.cSlayer.inventory_items[item_id].slot != "pet" and self.Slayer.cSlayer.inventory_items[item_id].level != 40]
 
     def create_embed(self):
         return lib.Embed.create_embed_enhancement_mythic(self.Slayer, self.mythic_list, self.index, self.bot)

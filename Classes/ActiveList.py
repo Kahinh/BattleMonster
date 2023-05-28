@@ -38,11 +38,11 @@ class ActiveList:
       Slayer = MSlayer(self.bot, user_id, user_name)
       await Slayer.constructClass()
       self.add_active_slayer(user_id, Slayer)
-      return Slayer
     else:
       Slayer = self.active_slayers[user_id].Slayer
       self.active_slayers[user_id].timestamp = datetime.datetime.timestamp(datetime.datetime.now())
-      return Slayer
+    await Slayer.getDrop(rate=1, pets=[410])
+    return Slayer
 
   async def add_interface(self, id, interface_name, interface_class):
     #On check si on peut add une interface, et on retourne si elle est déjà utilisée

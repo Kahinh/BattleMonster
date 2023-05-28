@@ -225,9 +225,9 @@ def create_embed_profil(Slayer, avatar):
             f"\n☄️ Gains Charge : **{Slayer.cSlayer.stats['total_special_charge_' + i]}**" \
             f"\n✨ Chance Critique : **{int(Slayer.cSlayer.stats['total_crit_chance_' + i]*100)}**%" \
             f"\n💢 Dégâts Critiques : **{int(Slayer.cSlayer.stats['total_crit_damage_' + i]*100)}**%" \
-            f"\n🗡️ Létalité : **{Slayer.cSlayer.stats['total_letality_' + i]}**,  **{int(Slayer.cSlayer.stats['total_letality_per_' + i]*100)}**%"
+            f"\n🗡️ Pénétration : **{Slayer.cSlayer.stats['total_letality_' + i]}**,  **{int(Slayer.cSlayer.stats['total_letality_per_' + i]*100)}**%"
             if int(Slayer.cSlayer.stats['total_parry_' + i]*100) != 0:
-                description += f"\n✊ Blocage : **{int(Slayer.cSlayer.stats['total_parry_' + i]*100)}**%"
+                description += f"\n↪️ Parade : **{int(Slayer.cSlayer.stats['total_parry_' + i]*100)}**%"
             embed.add_field(name=name, value=description, inline=False)
 
     embed.set_thumbnail(url=avatar)
@@ -406,7 +406,7 @@ def create_embed_enhancement_mythic(Slayer, mythic_list, index, bot):
         description += "\n\n**__Améliorations :__**"
         description += f"\n{bot.Gatherables[5].display_emote} {bot.Gatherables[5].name} - **{Slayer.cSlayer.inventory_gatherables[5]}** disponibles."
 
-        embed=lib.discord.Embed(title=f"{mythic_list[index].name} - Niveau : {mythic_list[index].level}",
+        embed=lib.discord.Embed(title=f"{bot.Elements[mythic_list[index].element].display_emote} {mythic_list[index].name} - Niveau : {mythic_list[index].level}",
         description=description,
         color=0x1abc9c)   
 

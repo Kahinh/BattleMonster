@@ -77,7 +77,7 @@ class BattleMonster(lib.commands.Bot):
         #Variables
         for row in rVariables: self.Variables.update({row["name"]: row["value"]})
         #Factions
-        for row in rFactions: self.Factions.update({row["id"]: lib.Faction(row)})
+        for row in rFactions: self.Factions.update({int(row["id"]): lib.Faction(row)})
 
     async def on_ready(self):
         print(">>>>>>>>>> BOT LIVE <<<<<<<<<<")

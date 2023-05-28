@@ -40,7 +40,7 @@ class MSlayer:
             money= 0 if Slayer_Data is None else Slayer_Data["money"],
             damage_taken= 0 if Slayer_Data is None else Slayer_Data["damage_taken"],
             special_stacks= 0 if Slayer_Data is None else Slayer_Data["special_stacks"],
-            faction= 0 if Slayer_Data is None else Slayer_Data["faction"],
+            faction= 0 if Slayer_Data is None else int(Slayer_Data["faction"]),
             beta_tester= False if Slayer_Data is None else Slayer_Data["beta_tester"],
             specialization= 1 if Slayer_Data is None else Slayer_Data["specialization"],
             Spe = Spe(Spe_Data),
@@ -224,21 +224,27 @@ class MSlayer:
                 items_list.append(self.cSlayer.inventory_items[id])
         return items_list
     
-    async def getPet(self, rate=0.01, pets=[]):
+    async def getDrop(self, rate=0.01, pets=[]):
         if random.choices((True, False), (rate, 1-rate), k=1)[0]:
             pet_id = random.choice(pets)
             if not self.isinInventory(pet_id):
-                rPet = await self.bot.dB.get_rPet(pet_id)
-                cPet = Pet(self.bot, rPet)
+                rDrop = await self.bot.dB.get_rPet(pet_id)
+                if rDrop["slot"] == "pet":
+                    cDrop = Pet(self.bot, rDrop)
+                else:
+                    if rDrop["rarity"] == "mythic":
+                        cDrop = Mythic(self.bot, rDrop)
+                    else:
+                        cDrop = Item(self.bot, rDrop)
 
                 #On ajoute au stuff
-                self.addtoInventory(cPet)
+                self.addtoInventory(cDrop)
 
                 #On ajoute le stuff à la dB
-                await self.bot.dB.add_item(self.cSlayer, cPet)
+                await self.bot.dB.add_item(self.cSlayer, cDrop)
 
                 #On poste le message
-                embed = create_embed_new_pet(self.bot, self, cPet)
+                embed = create_embed_new_pet(self.bot, self, cDrop)
                 channel = self.bot.get_channel(self.bot.rChannels["loots"])
                 await channel.send(content=f"<@{self.cSlayer.id}>",embed=embed)
 
@@ -503,8 +509,8 @@ class Slayer:
     def useStacks(self, hit):
         if hit == "s":
             if self.Spe.id == 7:
-                if random.choices((True, False), (0.5, 0.5), k=1)[0]:
-                    self.mult_damage += 500
+                if random.choices((True, False), (float(self.bot.Variables["demon_chance_proc"]), 1-float(self.bot.Variables["demon_chance_proc"])), k=1)[0]:
+                    self.mult_damage += int(self.bot.Variables["demon_bonus_mult"])
                 else:
                     self.mult_damage = 0
                     self.special_stacks = self.special_stacks - self.stats['total_stacks']

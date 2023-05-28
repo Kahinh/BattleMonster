@@ -184,6 +184,9 @@ class Opponent:
 class Monster(Opponent):
   def __init__(self, gamemode, element, rarity, type):
     super().__init__(gamemode, element, rarity, type)
+
+  def award_mythic_stones(self, Slayer):
+    return 0
   
 class Banner(Opponent):
   def __init__(self, gamemode, element, rarity, type):
@@ -243,34 +246,51 @@ class Banner(Opponent):
     slayer_faction_positionning = list(listed_factions.keys()).index(Slayer.cSlayer.faction)
 
     roll_dices = max(self.roll_dices - (slayer_faction_positionning * int(self.bot.Variables["factionwar_roll_dices_malus_by_positionning"])), 0)
-    return roll_dices
+    return int(roll_dices)
 
-class Mythique1(Opponent):
+  def isParry(self, hit, Slayer):
+    return False
+  
+  def award_mythic_stones(self, Slayer):
+    listed_factions = dict(sorted(self.faction_best_damage.items(), key=lambda x:x[1], reverse=True))
+    slayer_faction_positionning = list(listed_factions.keys()).index(Slayer.cSlayer.faction)
+
+    roll_dices = max(self.roll_dices - (slayer_faction_positionning * int(self.bot.Variables["factionwar_roll_dices_malus_by_positionning"])), 0)
+    return int(roll_dices)
+
+class Mythique(Opponent):
+  def __init__(self, gamemode, element, rarity, type):
+    super().__init__(gamemode, element, "mythic", type)
+
+  def award_mythic_stones(self, Slayer):
+    return random.randint(int(self.bot.Variables["min_mythic_stones"]),int(self.bot.Variables["max_mythic_stones"]))
+
+class Mythique1(Mythique):
   def __init__(self, gamemode, element, rarity, type):
     super().__init__(gamemode, element, "mythic", type)
     pass
 
-class Mythique2(Opponent):
+class Mythique2(Mythique):
   def __init__(self, gamemode, element, rarity, type):
     super().__init__(gamemode, element, "mythic", type)
     pass
 
-class Mythique3(Opponent):
+class Mythique3(Mythique):
   def __init__(self, gamemode, element, rarity, type):
     super().__init__(gamemode, element, "mythic", type)
     pass
 
-class Mythique4(Opponent):
+class Mythique4(Mythique):
   def __init__(self, gamemode, element, rarity, type):
     super().__init__(gamemode, element, "mythic", type)
     pass
 
-class Mythique5(Opponent):
+class Mythique5(Mythique):
   def __init__(self, gamemode, element, rarity, type):
     super().__init__(gamemode, element, "mythic", type)
     pass
 
-class Mythique6(Opponent):
+class Mythique6(Mythique):
   def __init__(self, gamemode, element, rarity, type):
     super().__init__(gamemode, element, "mythic", type)
     pass
