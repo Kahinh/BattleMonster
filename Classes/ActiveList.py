@@ -106,7 +106,7 @@ class ActiveList:
   async def remove_eligibility(self, cSlayer):
     for message_id in self.active_battles:
       for cOpponent in self.active_battles[message_id].Battle.Opponents:
-        if cSlayer in cOpponent.slayers_hits:
+        if cSlayer.id in cOpponent.slayers_hits:
           cOpponent.slayers_hits[cSlayer.id].eligible = False
 
   async def timeout_timable_battle(self):
