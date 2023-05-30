@@ -155,8 +155,8 @@ class Sell_Button(lib.discord.ui.Button):
 class Compare_Dropdown(lib.discord.ui.Select):
     def __init__(self, itemsequipped_list):
         options = []
-        for cItem in itemsequipped_list:
-            options.append(lib.discord.SelectOption(label=cItem.name, value=cItem.id))
+        for cObject in itemsequipped_list:
+            options.append(lib.discord.SelectOption(label=cObject.name, value=cObject.id))
 
         super().__init__(placeholder="Objet à comparer...", min_values=1, max_values=1, options=options)
 
@@ -217,18 +217,18 @@ class InventoryView(lib.discord.ui.View):
             await self.items_compare_view()
             if len(self.itemsequipped_list) > 1:
                 if itemID_Compare == 0:
-                    cItem = self.itemsequipped_list[0]
+                    cObject = self.itemsequipped_list[0]
                 else:
                     for item in self.itemsequipped_list:
                         if int(item.id) == int(itemID_Compare):
-                            cItem = item
+                            cObject = item
                             break
             elif len(self.itemsequipped_list) == 1:
-                cItem = self.itemsequipped_list[0]
+                cObject = self.itemsequipped_list[0]
             else:
-                cItem = None
+                cObject = None
 
-            embed = lib.Embed.create_embed_item(self.bot, None if self.items_list_filtered == [] else self.items_list_filtered[self.index], self.Slayer, cItem)
+            embed = lib.Embed.create_embed_item(self.bot, None if self.items_list_filtered == [] else self.items_list_filtered[self.index], self.Slayer, cObject)
             self.disable_enable_InventoryView()
             view = self  
 

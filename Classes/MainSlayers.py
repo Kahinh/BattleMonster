@@ -14,7 +14,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 
 from Classes.Attributes import Spe
-from Classes.Objects import Item, Pet, Mythic
+from Classes.Objects import Object, Item, Pet, Mythic
 from Functions.Messages.Embed import create_embed_new_pet
 
 class MSlayer:
@@ -43,7 +43,7 @@ class MSlayer:
             faction= 0 if Slayer_Data is None else int(Slayer_Data["faction"]),
             beta_tester= False if Slayer_Data is None else Slayer_Data["beta_tester"],
             specialization= 1 if Slayer_Data is None else Slayer_Data["specialization"],
-            Spe = Spe(Spe_Data),
+            Spe = self.bot.Specializations[1 if Slayer_Data is None else Slayer_Data["specialization"]],
             inventory_items = {}, #Gérer plus bas
             inventory_gatherables = {},
             inventory_specializations= [1] if Slayer_Spe_Inventory is None else Slayer_Spe_Inventory[0].strip('][').split(','),
@@ -92,56 +92,56 @@ class MSlayer:
 
         await self.bot.ActiveList.update_interface(self.cSlayer.id, "profil")
 
-    async def equip_item(self, cItem):
+    async def equip_item(self, cObject):
         hasbeenequipped = False
         alreadyequipped_list = []
         #D'ABORD ON CHECK QUE L'ITEM EST BIEN DANS L'INVENTAIRE
-        if self.isinInventory(cItem.id):
+        if self.isinInventory(cObject.id):
             #SI ON PEUT EQUIPER QU'UNE FOIS UN ITEM, ON S'EN FOUT. ON UPDATE OU INSERT
-            if self.cSlayer.slots_count[cItem.slot]["count"] == 1:
+            if self.cSlayer.slots_count[cObject.slot]["count"] == 1:
                 #ON A DEJA UN ITEM EQUIPER ET IL FAUT SWITCH
-                if cItem.slot in self.cSlayer.slots:
+                if cObject.slot in self.cSlayer.slots:
                     #On sécurise si jamais l'item est déjà équippé
-                    if cItem.id not in self.cSlayer.slots[cItem.slot]:
-                        self.cSlayer.inventory_items[self.cSlayer.slots[cItem.slot][0]].unequip()
-                        cItem.equip()
-                        await self.bot.dB.switch_item(self.cSlayer, cItem, self.cSlayer.inventory_items[self.cSlayer.slots[cItem.slot][0]])
+                    if cObject.id not in self.cSlayer.slots[cObject.slot]:
+                        self.cSlayer.inventory_items[self.cSlayer.slots[cObject.slot][0]].unequip()
+                        cObject.equip()
+                        await self.bot.dB.switch_item(self.cSlayer, cObject, self.cSlayer.inventory_items[self.cSlayer.slots[cObject.slot][0]])
                         hasbeenequipped = True
                 #ON A PAS D'ITEM EQUIPER
                 else:
-                    cItem.equip()
-                    await self.bot.dB.equip_item(self.cSlayer, cItem)
+                    cObject.equip()
+                    await self.bot.dB.equip_item(self.cSlayer, cObject)
                     hasbeenequipped = True
             #SI ON PEUT EQUIPER PLUSIEURS ITEMS SUR LE MEME EMPLACEMENT
-            elif self.cSlayer.slots_count[cItem.slot]["count"] > 1:  
+            elif self.cSlayer.slots_count[cObject.slot]["count"] > 1:  
                 #SOIT ON A PAS ENCORE D'ITEMS
-                if cItem.slot not in self.cSlayer.slots:
-                    cItem.equip()
-                    await self.bot.dB.equip_item(self.cSlayer, cItem)
+                if cObject.slot not in self.cSlayer.slots:
+                    cObject.equip()
+                    await self.bot.dB.equip_item(self.cSlayer, cObject)
                     hasbeenequipped = True    
                 #SOIT ON A ENCORE DE LA PLACE
                 else:
                     #On sécurise si jamais l'item est déjà équippé
-                    if cItem.id not in self.cSlayer.slots[cItem.slot]:
-                        if len(self.cSlayer.slots[cItem.slot]) < self.cSlayer.slots_count[cItem.slot]["count"]:
-                            cItem.equip()
-                            await self.bot.dB.equip_item(self.cSlayer, cItem)
+                    if cObject.id not in self.cSlayer.slots[cObject.slot]:
+                        if len(self.cSlayer.slots[cObject.slot]) < self.cSlayer.slots_count[cObject.slot]["count"]:
+                            cObject.equip()
+                            await self.bot.dB.equip_item(self.cSlayer, cObject)
                             hasbeenequipped = True                   
                         #SOIT ON A PLUS DE PLACE
                         else:
-                            alreadyequipped_list = self.cSlayer.slots[cItem.slot]
+                            alreadyequipped_list = self.cSlayer.slots[cObject.slot]
         if hasbeenequipped:
-            await self.bot.ActiveList.close_interface(self.cSlayer.id, cItem.id)
+            await self.bot.ActiveList.close_interface(self.cSlayer.id, cObject.id)
             await self.updateSlayer()
         return hasbeenequipped, alreadyequipped_list
 
-    async def sell_item(self, cItem):
+    async def sell_item(self, cObject):
         #On update la BDD avec la vente
-        if self.isinInventory(cItem.id):
-            self.removefromInventory(cItem)
-            await self.bot.ActiveList.close_interface(self.cSlayer.id, cItem.id)
+        if self.isinInventory(cObject.id):
+            self.removefromInventory(cObject)
+            await self.bot.ActiveList.close_interface(self.cSlayer.id, cObject.id)
             await self.updateSlayer()
-            await self.bot.dB.sell_item(self.cSlayer, cItem)
+            await self.bot.dB.sell_item(self.cSlayer, cObject)
             return True
         else:
             return False
@@ -185,11 +185,11 @@ class MSlayer:
         else:
             return True
     
-    def addtoInventory(self, cItem):
-        self.cSlayer.inventory_items[cItem.id] = cItem
+    def addtoInventory(self, cObject):
+        self.cSlayer.inventory_items[cObject.id] = cObject
 
-    def removefromInventory(self, cItem):
-        self.cSlayer.inventory_items.pop(cItem.id)
+    def removefromInventory(self, cObject):
+        self.cSlayer.inventory_items.pop(cObject.id)
 
     def addMoney(self, money):
         self.cSlayer.money += money
@@ -207,9 +207,9 @@ class MSlayer:
     def equippedonSlot(self, slot):
         items_list = ""
         for id in self.cSlayer.inventory_items:
-            cItem = self.cSlayer.inventory_items[id]
-            if cItem.equipped and cItem.slot == slot:
-                items_list += f"\n- {self.bot.Elements[cItem.element].display_emote} {cItem.name} - *{self.bot.Rarities[cItem.rarity].display_text}*"
+            cObject = self.cSlayer.inventory_items[id]
+            if cObject.equipped and cObject.slot == slot:
+                items_list += f"\n- {self.bot.Elements[cObject.element].display_emote} {cObject.name} - *{self.bot.Rarities[cObject.rarity].display_text}*"
         
         if items_list != "":
             description = "\n\n__Objet(s) actuellement équipés à cet emplacement :__" + items_list
@@ -229,22 +229,16 @@ class MSlayer:
             pet_id = random.choice(pets)
             if not self.isinInventory(pet_id):
                 rDrop = await self.bot.dB.get_rPet(pet_id)
-                if rDrop["slot"] == "pet":
-                    cDrop = Pet(self.bot, rDrop)
-                else:
-                    if rDrop["rarity"] == "mythic":
-                        cDrop = Mythic(self.bot, rDrop)
-                    else:
-                        cDrop = Item(self.bot, rDrop)
+                cObject = Object.get_Object_Class(self.bot, rDrop)
 
                 #On ajoute au stuff
-                self.addtoInventory(cDrop)
+                self.addtoInventory(cObject)
 
                 #On ajoute le stuff à la dB
-                await self.bot.dB.add_item(self.cSlayer, cDrop)
+                await self.bot.dB.add_item(self.cSlayer, cObject)
 
                 #On poste le message
-                embed = create_embed_new_pet(self.bot, self, cDrop)
+                embed = create_embed_new_pet(self.bot, self, cObject)
                 channel = self.bot.get_channel(self.bot.rChannels["loots"])
                 await channel.send(content=f"<@{self.cSlayer.id}>",embed=embed)
 
@@ -400,12 +394,12 @@ class Slayer:
             "total_crit_damage_l" : float(bonuses["crit_damage_l"] + (max(bonuses["crit_chance_l"] - 1, 0) if self.Spe.id == 8 else 0)),
             "total_crit_damage_h" : float(bonuses["crit_damage_h"] + (max(bonuses["crit_chance_h"] - 1, 0) if self.Spe.id == 8 else 0)),
             "total_crit_damage_s" : float(bonuses["crit_damage_s"] + (max(bonuses["crit_chance_s"] - 1, 0) if self.Spe.id == 8 else 0)),
-            "total_letality_l" : int(bonuses["letality_l"]),
-            "total_letality_h" : int(bonuses["letality_h"]),
-            "total_letality_s" : int(bonuses["letality_s"]),
-            "total_letality_per_l" : float(bonuses["letality_per_l"]),
-            "total_letality_per_h" : float(bonuses["letality_per_h"]),
-            "total_letality_per_s" : float(bonuses["letality_per_s"]),
+            "total_letality_l" : int(max(bonuses["letality_l"], 0)),
+            "total_letality_h" : int(max(bonuses["letality_h"], 0)),
+            "total_letality_s" : int(max(bonuses["letality_s"], 0)),
+            "total_letality_per_l" : float(max(bonuses["letality_per_l"], 0)),
+            "total_letality_per_h" : float(max(bonuses["letality_per_h"], 0)),
+            "total_letality_per_s" : float(max(bonuses["letality_per_s"], 0)),
             "total_special_charge_l" : int(max(bonuses["special_charge_l"], 0)),
             "total_special_charge_h" : int(max(bonuses["special_charge_h"], 0)),
             "total_special_charge_s" : int(max(bonuses["special_charge_s"], 0)),
@@ -435,7 +429,7 @@ class Slayer:
 
     def dealDamage(self, hit, cOpponent, isCrit, CritMult, ProtectCrit, ArmorMult):
         if hit == "s":
-            additionnal_damage, additionnal_ability = self.Spe.get_damage(cOpponent, self)
+            additionnal_damage, additionnal_ability = self.Spe.get_damage(cOpponent, self, hit)
             mult_damage = self.mult_damage
         else:
             additionnal_damage, additionnal_ability = 0, ""
@@ -510,7 +504,7 @@ class Slayer:
         if hit == "s":
             if self.Spe.id == 7:
                 if random.choices((True, False), (float(self.bot.Variables["demon_chance_proc"]), 1-float(self.bot.Variables["demon_chance_proc"])), k=1)[0]:
-                    self.mult_damage += int(self.bot.Variables["demon_bonus_mult"])
+                    self.mult_damage += int(float(self.bot.Variables["demon_bonus_mult"]) * self.stats["total_damage_s"])
                 else:
                     self.mult_damage = 0
                     self.special_stacks = self.special_stacks - self.stats['total_stacks']

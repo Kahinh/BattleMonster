@@ -56,6 +56,16 @@ class Object:
       "vivacity": rItem["vivacity"]
     }
 
+  @staticmethod
+  def get_Object_Class(bot, rItem):
+    if rItem["slot"] == "pet":
+      return Pet(bot, rItem)
+    else:
+      if rItem["rarity"] == "mythic":
+        return Mythic(bot, rItem)
+      else:
+        return Item(bot, rItem)
+
   def equip(self):
       #TODO Mettre un self.bot.db 
       self.equipped = True
@@ -64,8 +74,8 @@ class Object:
       #TODO Mettre un self.bot.db 
       self.equipped = False
   
-  def getDisplayStats(self, cItem2=None):
-    return lib.get_display_stats(self, cItem2)
+  def getDisplayStats(self, cObject2=None):
+    return lib.get_display_stats(self, cObject2)
 
   def setGearscore(self):
     return self.bot.Rarities[self.rarity].gearscore

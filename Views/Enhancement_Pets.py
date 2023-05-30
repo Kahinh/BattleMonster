@@ -23,13 +23,13 @@ class Next_Button(lib.discord.ui.Button):
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Feed_Amount(lib.discord.ui.Modal):
-    def __init__(self, cPet, cFood, max_food, Slayer, bot):
-        self.cPet = cPet
+    def __init__(self, cObject, cFood, max_food, Slayer, bot):
+        self.cObject = cObject
         self.cFood = cFood
         self.max_food = max_food
         self.Slayer = Slayer
         self.bot = bot
-        super().__init__(title=f"Nourrir : {self.cPet.name}")
+        super().__init__(title=f"Nourrir : {self.cObject.name}")
 
         #Item
         self.feed_amount = lib.discord.ui.TextInput(label=f"{self.cFood.display_emote} {self.cFood.name}",default=f"{self.max_food}", style=lib.discord.TextStyle.short, min_length=1, max_length=2)
@@ -46,14 +46,14 @@ class Feed_Amount(lib.discord.ui.Modal):
                 #Je retire de l'inventaire les gatherables utilisées
                 await self.Slayer.update_inventory_gatherables(self.cFood.id, -feed_amount)
                 #Je up le niveau de l'item
-                await self.cPet.update_item_level(feed_amount, self.Slayer.cSlayer)
+                await self.cObject.update_item_level(feed_amount, self.Slayer.cSlayer)
 
                 #Puis on update les stats du joueur si l'item est équipé
-                if self.cPet.equipped:
+                if self.cObject.equipped:
                     await self.Slayer.updateSlayer()
 
                 await self.bot.ActiveList.update_interface(interaction.user.id, "ameliopet")
-                await interaction.response.send_message(f'Vous avez donné {feed_amount} {self.cFood.name} ({self.cFood.display_emote}) à {self.cPet.name}', ephemeral=True)
+                await interaction.response.send_message(f'Vous avez donné {feed_amount} {self.cFood.name} ({self.cFood.display_emote}) à {self.cObject.name}', ephemeral=True)
             else:
                 await interaction.response.send_message(f'Le nombre renseigné est incorrect', ephemeral=True)
         else:
@@ -65,10 +65,10 @@ class Feed_Button(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
-            cPet = self.view.pet_list[self.view.index]
+            cObject = self.view.pet_list[self.view.index]
             cFood = self.view.bot.PetFood[self.view.pet_list[self.view.index].id]
             max_food = int(min(100-int(self.view.pet_list[self.view.index].level), int(self.view.Slayer.cSlayer.inventory_gatherables.get(self.view.bot.PetFood[self.view.pet_list[self.view.index].id].id, 0))))
-            await interaction.response.send_modal(Feed_Amount(cPet, cFood, max_food, self.view.Slayer, self.view.bot))
+            await interaction.response.send_modal(Feed_Amount(cObject, cFood, max_food, self.view.Slayer, self.view.bot))
         else:
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
@@ -134,8 +134,8 @@ class EnhancementPetsView(lib.discord.ui.View):
     async def update_view(self, interaction=None):
         #Si le familier a atteint le niveau 100, on recalcule
         Pet_is100 = False
-        for cPet in self.pet_list:
-            if cPet.level == 100:
+        for cObject in self.pet_list:
+            if cObject.level == 100:
                 Pet_is100 = True
 
         if Pet_is100:

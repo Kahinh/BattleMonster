@@ -1,10 +1,10 @@
 import lib
 
 class Spe_Dropdown(lib.discord.ui.Select):
-    def __init__(self, rSpes):
+    def __init__(self, Specializations):
         options = []
-        for spe in rSpes:
-            options.append(lib.discord.SelectOption(label=spe["name"], value=spe["id"], emoji=spe["display_emote"]))
+        for cSpe in list(Specializations.values()):
+            options.append(lib.discord.SelectOption(label=cSpe.name, value=cSpe.id, emoji=cSpe.emote))
         super().__init__(placeholder="Filtrer la spécialité...", min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: lib.discord.Interaction):
@@ -24,7 +24,7 @@ class Equip_Button(lib.discord.ui.Button):
             self.view.Slayer.cSlayer.mult_damage = 0
             self.view.Slayer.cSlayer.berserker_mode = 0
             self.view.Slayer.cSlayer.specialization = int(self.view.current_spe_id)
-            self.view.Slayer.cSlayer.Spe = lib.Toolbox.get_spe_row_by_id(self.view.bot.rSpe, self.view.current_spe_id)
+            self.view.Slayer.cSlayer.Spe = self.view.bot.Specializations[int(self.view.current_spe_id)]
             await self.view.bot.dB.push_slayer_data(self.view.Slayer.cSlayer)
             await self.view.Slayer.updateSlayer()
 
@@ -63,12 +63,12 @@ class SpeView(lib.discord.ui.View):
         self.current_spe_id = 1
         self.obsolete = False
 
-        self.add_item(Spe_Dropdown(list(self.bot.rSpe)))
+        self.add_item(Spe_Dropdown(self.bot.Specializations))
         if 1 != self.Slayer.cSlayer.specialization:
             self.add_item(Equip_Button())
 
     async def update_view(self, interaction=None):
-        cSpe = lib.Toolbox.get_spe_row_by_id(self.bot.rSpe, self.current_spe_id)
+        cSpe = self.bot.Specializations[self.current_spe_id]
         embed = lib.Embed.create_embed_spe(self.Slayer, cSpe)
         await self.update_buttons(cSpe)
         view = self  
@@ -80,7 +80,7 @@ class SpeView(lib.discord.ui.View):
 
     async def update_buttons(self, cSpe):
         self.clear_items()
-        self.add_item(Spe_Dropdown(list(self.bot.rSpe)))
+        self.add_item(Spe_Dropdown(self.bot.Specializations))
         if int(cSpe.id) not in self.Slayer.cSlayer.inventory_specializations:
             self.add_item(Buy_Button(cSpe.cost))
         else:

@@ -23,11 +23,6 @@ def filter_items_list(items_list, slot=None, element=None, rarity=None):
             filtered_list.append(items_list[id])
     return filtered_list
 
-def get_spe_row_by_id(rSpe, spe_id):
-    for row in rSpe:
-        if int(row["id"]) == int(spe_id):
-            return lib.Spe(row)
-
 def disable_enable_LootReviewView(children, Slayer, id):
     for item in children:
         if hasattr(item, "label"):

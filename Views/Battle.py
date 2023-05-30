@@ -12,6 +12,7 @@ class Light_Button(lib.discord.ui.Button):
         await interaction.followup.send(content=content, ephemeral=True)
 
         if self.view.Battle.stats["kills"] >= int(self.view.bot.Variables["battle_kills_before_escape"]):
+            self.view.Battle.end = True
             await self.view.updateBattle(timeout=True)
         elif damage != []:
             await self.view.updateBattle(monster_killed=monster_killed)
@@ -27,6 +28,7 @@ class Heavy_Button(lib.discord.ui.Button):
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
         if self.view.Battle.stats["kills"] >= int(self.view.bot.Variables["battle_kills_before_escape"]):
+            self.view.Battle.end = True
             await self.view.updateBattle(timeout=True)
         elif damage != []:
             await self.view.updateBattle(monster_killed=monster_killed)
@@ -42,6 +44,7 @@ class Special_Button(lib.discord.ui.Button):
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
         if self.view.Battle.stats["kills"] >= int(self.view.bot.Variables["battle_kills_before_escape"]):
+            self.view.Battle.end = True
             await self.view.updateBattle(timeout=True)
         elif damage != []:
             await self.view.updateBattle(monster_killed=monster_killed)
@@ -60,13 +63,12 @@ class BattleView(lib.discord.ui.View):
 
     async def updateBattle(self, timeout=False, poweroff=False, monster_killed=False, auto_remove_battle=True):
         if self.Battle.endnotbeingpublished: #On contrôle qu'un joueur clic pas pendant qu'on calcule la mort du battle
-            if hasattr(self, "message"): message = self.message
-            #if hasattr(self, "interaction"): message = await self.interaction.original_response()
+            message = self.message
             if any([timeout, poweroff, self.Battle.end]):
                 self.Battle.endnotbeingpublished = False #Si c'est fini alors on modifie direct le endnotbeingpublished
                 if self.Battle.end or timeout:
                     if auto_remove_battle: self.Battle.bot.ActiveList.remove_battle(message.id)
-                    if self.Battle.end and self.Battle.stats["attacks_received"] > 0: #On fait le loot que si le combat est vraiment fini, pas timeout
+                    if self.Battle.end: #and self.Battle.stats["attacks_received"] > 0: #On fait le loot que si le combat est vraiment fini, pas timeout
                         await self.Battle.handler_Loot()
                         await self.send_embed_end_battle(timeout)
                 await self.clear_battle(message) #Whatever on clear

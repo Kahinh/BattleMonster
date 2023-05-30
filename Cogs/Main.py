@@ -18,22 +18,14 @@ class Main(lib.commands.Cog):
     
     async def BattleSpawn(self):
         #Create gamemodes
-        for gamemode in self.bot.rGamemodes:
-            if gamemode["autospawn"]:
+        for gamemodedata in self.bot.rGamemodes:
+            if gamemodedata["autospawn"]:
                 #random si ça doit spawn
-                if lib.random.choices(population=[True, False], weights=[float(gamemode["invoke_rate"]), 1-float(gamemode["invoke_rate"])], k=1)[0]:
-                    if gamemode["type"] == "hunt":
-                        Gamemode = lib.Hunt(self.bot, gamemode)
-                        await Gamemode.handler_Build()
-                        if Gamemode.isReady() : await Gamemode.handler_Spawn()
-                        await lib.asyncio.sleep(10)
-                    elif gamemode["type"] == "factionwar":
-                        Gamemode = lib.FactionWar(self.bot, gamemode)
-                        await Gamemode.handler_Build()
-                        if Gamemode.isReady() : await Gamemode.handler_Spawn()
-                        await lib.asyncio.sleep(10)
-                    else:
-                        pass
+                if lib.random.choices(population=[True, False], weights=[float(gamemodedata["invoke_rate"]), 1-float(gamemodedata["invoke_rate"])], k=1)[0]:
+                    gamemode = lib.Gamemode.get_Gamemode_Class(self.bot, gamemodedata)
+                    await gamemode.handler_Build()
+                    if gamemode.isReady() : await gamemode.handler_Spawn()
+                    await lib.asyncio.sleep(10)
 
     async def InactiveSlayers(self):
         #Remove inactive players

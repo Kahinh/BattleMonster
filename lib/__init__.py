@@ -5,7 +5,6 @@
 #TODO Remove la lib et faire un truc import dans chaque page.
 
 #librairies
-import os
 import ssl
 import discord
 from discord.ext import commands as commands
@@ -50,7 +49,7 @@ from Classes.Handler_Gatherables import Gather, GatherablesSpawn, Gatherables
 from Classes.Opponents import Opponent, Monster, Banner, Mythique1, Mythique2, Mythique3, Mythique4, Mythique5, Mythique6
 from Classes.Gamemodes import Gamemode, Hunt, FactionWar, Donjon
 from Classes.Attributes import Spe, Faction
-from Classes.Objects import Item, Mythic, Pet
+from Classes.Objects import Object, Item, Mythic, Pet
 
 #TODO TODELETE
 from Classes.Queries import qGameModes, qOpponents, qChannels, qBaseBonuses, qRaritiesLootRates, qItems, qElements, qRarities, qGameModesSpawnRate, qSlots, qSpe, qGatherables, qGatherables_Spawn

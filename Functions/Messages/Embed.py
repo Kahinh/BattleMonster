@@ -53,7 +53,7 @@ def create_embed_battle(self):
         for faction_best_damage_list in listed_factions:
             value += f"\n{award_list[i]} - {bot.Factions[faction_best_damage_list[0]].emote} {bot.Factions[faction_best_damage_list[0]].name}: **{faction_best_damage_list[1]}**"
             i += 1
-        embed.add_field(name=f"Classement {int(bot.Variables['factionwar_nbr_hit_stack'])} meilleures attaques :", value=value, inline=False)
+        embed.add_field(name=f"Classement meilleur combo de {int(bot.Variables['factionwar_nbr_hit_stack'])} coups:", value=value, inline=False)
 
     return embed
 
@@ -109,18 +109,18 @@ def create_embed_end_factionwar(Battle):
         for faction_best_damage_list in listed_factions:
             value += f"\n{award_list[i]} - {bot.Factions[faction_best_damage_list[0]].emote} {bot.Factions[faction_best_damage_list[0]].name}: **{faction_best_damage_list[1]}**"
             i += 1
-        embed.add_field(name=f"Classement {int(bot.Variables['factionwar_nbr_hit_stack'])} meilleures attaques :", value=value, inline=False)
+        embed.add_field(name=f"Classement meilleur combo de {int(bot.Variables['factionwar_nbr_hit_stack'])} coups:", value=value, inline=False)
 
     embed.set_thumbnail(url='https://images-ext-2.discordapp.net/external/K5FrBGB9d-8IbCg_bnZyheglS9Q61aXohV4hJSMiImA/%3Fcb%3D20200801054948/https/static.wikia.nocookie.net/dauntless_gamepedia_en/images/1/13/Hunt_Icon.png/revision/latest')
     return embed
 
-def create_embed_new_loot(bot, Slayer, cItem):
+def create_embed_new_loot(bot, Slayer, cObject):
 
-    content = Slayer.equippedonSlot(cItem.slot)
+    content = Slayer.equippedonSlot(cObject.slot)
     #Setup Description
     description = \
-        f"*{bot.Elements[cItem.element].display_emote} {bot.rSlots[cItem.slot]['display_text']} {bot.Rarities[cItem.rarity].display_text}*" \
-        f"\n\n{cItem.description}"
+        f"*{bot.Elements[cObject.element].display_emote} {bot.rSlots[cObject.slot]['display_text']} {bot.Rarities[cObject.rarity].display_text}*" \
+        f"\n\n{cObject.description}"
 
     if content != "":
         description += content
@@ -128,70 +128,70 @@ def create_embed_new_loot(bot, Slayer, cItem):
     description += \
         f"\n\n📑 Détails - Afficher les statistiques de l'équipement" \
         f"\n👚 Equiper - Equiper l'objet." \
-        f"\n🪙 Vendre - Vendre l'objet pour obtenir **{bot.Rarities[cItem.rarity].price} 🪙**"
+        f"\n🪙 Vendre - Vendre l'objet pour obtenir **{bot.Rarities[cObject.rarity].price} 🪙**"
 
-    embed=lib.discord.Embed(title=f"{cItem.name}",
+    embed=lib.discord.Embed(title=f"{cObject.name}",
     description= \
         f"{description}",
-    color=int(bot.Rarities[cItem.rarity].display_color, 16)
+    color=int(bot.Rarities[cObject.rarity].display_color, 16)
     )
 
-    embed.set_thumbnail(url=cItem.img_url)
+    embed.set_thumbnail(url=cObject.img_url)
 
     return embed
 
-def create_embed_money_loot(bot, Slayer, cItem):
+def create_embed_money_loot(bot, Slayer, cObject):
 
-    content = Slayer.equippedonSlot(cItem.slot)
+    content = Slayer.equippedonSlot(cObject.slot)
 
     #Setup Description
     description = \
-        f"*{bot.Elements[cItem.element].display_emote} {bot.rSlots[cItem.slot]['display_text']} {bot.Rarities[cItem.rarity].display_text}*" \
-        f"\n\n{cItem.description}"
+        f"*{bot.Elements[cObject.element].display_emote} {bot.rSlots[cObject.slot]['display_text']} {bot.Rarities[cObject.rarity].display_text}*" \
+        f"\n\n{cObject.description}"
 
     if content != "":
         description += content
 
     description += \
-        f"\n\nVous possédez déjà ce {bot.rSlots[cItem.slot]['display_text']} ! Il a dont été vendu pour **{bot.Rarities[cItem.rarity].price} 🪙**" \
+        f"\n\nVous possédez déjà ce {bot.rSlots[cObject.slot]['display_text']} ! Il a dont été vendu pour **{bot.Rarities[cObject.rarity].price} 🪙**" \
         f"\n\n📑 Détails - Afficher les statistiques de l'équipement"
 
-    embed=lib.discord.Embed(title=f"{cItem.name}",
+    embed=lib.discord.Embed(title=f"{cObject.name}",
     description=description,
-    color=int(bot.Rarities[cItem.rarity].display_color, 16)
+    color=int(bot.Rarities[cObject.rarity].display_color, 16)
     )
 
-    embed.set_thumbnail(url=cItem.img_url)
+    embed.set_thumbnail(url=cObject.img_url)
 
     return embed
 
-def create_embed_item(bot, cItem1, Slayer, cItem2=None):
-    #cItem1 = Celui qu'on regarde
-    #cItem2 = Celui qu'on possède
-    if cItem1 == None:
+def create_embed_item(bot, cObject1, Slayer, cObject2=None):
+    #cObject1 = Celui qu'on regarde
+    #cObject2 = Celui qu'on possède
+    if cObject1 == None:
         embed=lib.discord.Embed(title=f"No Item",
         description= \
             f"Aucun item ne correspond à la sélection.",
         color=0xe74c3c
         )        
     else:
-        desc_stat = cItem1.getDisplayStats(cItem2)
-        content = Slayer.equippedonSlot(cItem1.slot)
+        desc_stat = cObject1.getDisplayStats(cObject2)
+        content = Slayer.equippedonSlot(cObject1.slot)
 
-        description = f"__Description :__\n{cItem1.description}"
+        description = f"__Description :__\n{cObject1.description}"
 
         if content != "":
             description += content
 
         description += f"\n\n__Statistiques :__{desc_stat}"
         
-        embed=lib.discord.Embed(title=f"{bot.Elements[cItem1.element].display_emote} {'[' + str(cItem1.level) + ']' if cItem1.level > 0 else ''} {cItem1.name} ({cItem1.slot} / {bot.Rarities[cItem1.rarity].display_text})",
+        embed=lib.discord.Embed(title=f"{bot.Elements[cObject1.element].display_emote} {'[' + str(cObject1.level) + ']' if cObject1.level > 0 else ''} {cObject1.name} ({cObject1.slot} / {bot.Rarities[cObject1.rarity].display_text})",
         description= \
             f"{description}",
-        color=int(bot.Rarities[cItem1.rarity].display_color, 16)
+        color=int(bot.Rarities[cObject1.rarity].display_color, 16)
         )
 
-        embed.set_thumbnail(url=f"{cItem1.img_url}")
+        embed.set_thumbnail(url=f"{cObject1.img_url}")
     return embed
 
 def create_embed_profil(Slayer, avatar):
@@ -258,11 +258,11 @@ def create_embed_equipment(bot, Slayer, avatar):
                 description += f"\n**{Slayer.cSlayer.slots_count[slot]['display_emote']} {Slayer.cSlayer.slots_count[slot]['display_text']}** - ({nbr}/{Slayer.cSlayer.slots_count[slot]['count']})"
                 if slot in Slayer.cSlayer.slots:
                     for item in Slayer.cSlayer.slots[slot]:
-                        cItem = Slayer.cSlayer.inventory_items[item]
-                        if cItem.level > 1:
-                            description += f"\n- {bot.Elements[cItem.element].display_emote} [{cItem.level}] {cItem.name} - *{bot.Rarities[cItem.rarity].display_text}*"
+                        cObject = Slayer.cSlayer.inventory_items[item]
+                        if cObject.level > 1:
+                            description += f"\n- {bot.Elements[cObject.element].display_emote} [{cObject.level}] {cObject.name} - *{bot.Rarities[cObject.rarity].display_text}*"
                         else:
-                            description += f"\n- {bot.Elements[cItem.element].display_emote} {cItem.name} - *{bot.Rarities[cItem.rarity].display_text}*"
+                            description += f"\n- {bot.Elements[cObject.element].display_emote} {cObject.name} - *{bot.Rarities[cObject.rarity].display_text}*"
 
     embed=lib.discord.Embed(title=f"Équipement de {Slayer.cSlayer.name}",
     description=description,
@@ -296,8 +296,8 @@ def create_embed_recap_loot(bot, recap_loot):
         description = f"💠 récupérées : {recap_loot['mythic_stones']}"
     if recap_loot.get('items', []) != []:
         description += f"\n\n__Item(s) récupéré(s) :__"
-        for cItem in recap_loot['items']:
-            description += f"\n- {bot.Elements[cItem.element].display_emote} {cItem.name} (*{bot.rSlots[cItem.slot]['display_text']} {bot.Rarities[cItem.rarity].display_text}*)"
+        for cObject in recap_loot['items']:
+            description += f"\n- {bot.Elements[cObject.element].display_emote} {cObject.name} (*{bot.rSlots[cObject.slot]['display_text']} {bot.Rarities[cObject.rarity].display_text}*)"
 
     embed=lib.discord.Embed(title=f"Récapitulatif Butin :",
     description=description,
@@ -306,22 +306,22 @@ def create_embed_recap_loot(bot, recap_loot):
     embed.set_thumbnail(url="https://media.discordapp.net/attachments/1000070083915304991/1034553474999922848/unknown.png?width=1022&height=1022")
     return embed        
 
-def create_embed_new_pet(bot, Slayer, cPet):
+def create_embed_new_pet(bot, Slayer, cObject):
     #Setup Description
     description = \
-        f"*{bot.Elements[cPet.element].display_emote} {bot.rSlots[cPet.slot]['display_text']} {bot.Rarities[cPet.rarity].display_text}*" \
-        f"\n\n{cPet.description}"
+        f"*{bot.Elements[cObject.element].display_emote} {bot.rSlots[cObject.slot]['display_text']} {bot.Rarities[cObject.rarity].display_text}*" \
+        f"\n\n{cObject.description}"
 
     description += \
         f"\n\nOH OH ! Que voilà ?"
 
-    embed=lib.discord.Embed(title=f"{cPet.name}",
+    embed=lib.discord.Embed(title=f"{cObject.name}",
     description= \
         f"{description}",
-    color=int(bot.Rarities[cPet.rarity].display_color, 16)
+    color=int(bot.Rarities[cObject.rarity].display_color, 16)
     )
 
-    embed.set_thumbnail(url=cPet.img_url)
+    embed.set_thumbnail(url=cObject.img_url)
 
     return embed
 

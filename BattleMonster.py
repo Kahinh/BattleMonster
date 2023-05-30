@@ -22,6 +22,7 @@ class BattleMonster(lib.commands.Bot):
         self.PetFood = {}
         self.Variables = {}
         self.Factions = {}
+        self.Specializations = {}
 
         super().__init__(
             command_prefix='$',
@@ -47,14 +48,14 @@ class BattleMonster(lib.commands.Bot):
         async with self.db_pool.acquire() as conn:
             async with conn.transaction():
                 self.rGamemodes = await conn.fetch(lib.qGameModes.SELECT_ALL)    
-                #TODO rBaseBonuses -> Class
+                #TODO rBaseBonuses -> Variables -> A supprimer
                 self.rBaseBonuses = await conn.fetchrow(lib.qBaseBonuses.SELECT_ALL)   
                 rChannels = await conn.fetch(lib.qChannels.SELECT_ALL, lib.tokens.TestProd)  
                 rElements = await conn.fetch(lib.qElements.SELECT_ALL)
                 rRarities = await conn.fetch(lib.qRarities.SELECT_ALL)
                 #TODO rSlots -> Class
                 rSlots = await conn.fetch(lib.qSlots.SELECT_ALL)
-                self.rSpe = await conn.fetch(lib.qSpe.SELECT_ALL)
+                rSpe = await conn.fetch("SELECT * FROM specializations")
                 rGatherables = await conn.fetch(lib.qGatherables.SELECT_ALL)
                 rGatherablesSpawn = await conn.fetch(lib.qGatherables_Spawn.SELECT_ALL)
                 rPetFood = await conn.fetch("SELECT * FROM pet_food")
@@ -78,6 +79,8 @@ class BattleMonster(lib.commands.Bot):
         for row in rVariables: self.Variables.update({row["name"]: row["value"]})
         #Factions
         for row in rFactions: self.Factions.update({int(row["id"]): lib.Faction(row)})
+        #Spe
+        for row in rSpe: self.Specializations.update({int(row["id"]): lib.Spe.get_Spe_Class(self, row)})
 
     async def on_ready(self):
         print(">>>>>>>>>> BOT LIVE <<<<<<<<<<")

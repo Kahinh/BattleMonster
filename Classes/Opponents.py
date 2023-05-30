@@ -55,6 +55,22 @@ class Opponent:
     self.letality = 0
     self.letality_per = 0
 
+  @staticmethod
+  def get_Opponent_Class(gamemode, element, rarity, type):
+    if type == "banner":
+      return Banner(gamemode, element, rarity, type)
+    else:
+      if rarity == "mythic":
+        return random.choice([ \
+              Mythique1(gamemode, element, rarity, type), \
+              Mythique2(gamemode, element, rarity, type), \
+              Mythique3(gamemode, element, rarity, type), \
+              Mythique4(gamemode, element, rarity, type), \
+              Mythique5(gamemode, element, rarity, type), \
+              Mythique6(gamemode, element, rarity, type)])
+      else: 
+        return Monster(gamemode, element, rarity, type)
+
   async def handler_Build(self):
 
     async def pullOpponentData():

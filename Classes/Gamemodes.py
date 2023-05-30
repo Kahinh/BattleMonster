@@ -1,6 +1,7 @@
 import random
 from Classes.Objects import Item, Mythic
-from Classes.Opponents import Monster, Banner, Mythique1, Mythique2, Mythique3, Mythique4, Mythique5, Mythique6
+from Classes.Opponents import Opponent, Monster, Banner, Mythique1, Mythique2, Mythique3, Mythique4, Mythique5, Mythique6
+from math import sqrt
 
 import logging
 logging.basicConfig(filename='logs.log', 
@@ -57,7 +58,16 @@ class Gamemode:
     self.end = False
     self.endnotbeingpublished = True
     self.timer_start = None
-  
+
+  @staticmethod
+  def get_Gamemode_Class(bot, gamemodedata):
+    if gamemodedata["type"] == "hunt":
+      return Hunt(bot, gamemodedata)
+    elif gamemodedata["type"] == "factionwar":
+      return FactionWar(bot, gamemodedata)
+    else:
+      return None
+
   def isReady(self):
     if self.lootslot == []:
       logging.warning(f"NO LOOTSLOT FOR GAMEMODE {self.name}")
@@ -102,32 +112,9 @@ class Gamemode:
 
     async def createOpponents():
       for i in range(self.spawns_count):
-        if self.type == "factionwar":
-          rarity = random.choices(list(self.spawnrate.keys()), list(self.spawnrate.values()), k=1)[0]
-          #Création de l'opponent
-          banner = Banner(self, "neutral", rarity, "banner")
-          await banner.handler_Build()
-          self.Opponents.append(banner)
-        else:
-          rarity = random.choices(list(self.spawnrate.keys()), list(self.spawnrate.values()), k=1)[0]
-          element = random.choice(list(self.bot.Elements.keys()))
-          type = "monster"
-          if rarity == "mythic":
-            #Création de l'opponent
-            mythic = random.choice([ \
-              Mythique1(self, element, rarity, type), \
-              Mythique2(self, element, rarity, type), \
-              Mythique3(self, element, rarity, type), \
-              Mythique4(self, element, rarity, type), \
-              Mythique5(self, element, rarity, type), \
-              Mythique6(self, element, rarity, type)])
-            await mythic.handler_Build()
-            self.Opponents.append(mythic)
-          else:
-            #Création de l'opponent
-            monster = Monster(self, element, rarity, type)
-            await monster.handler_Build()
-            self.Opponents.append(monster)
+        opponent = Opponent.get_Opponent_Class(self, self.get_Opponent_Element(), self.get_Opponent_Rarity(), self.get_Opponent_Type())
+        await opponent.handler_Build()
+        self.Opponents.append(opponent)
 
     await pullGamemodeLootSlot()
     await pullGamemodeSpawnRate()
@@ -152,35 +139,32 @@ class Gamemode:
         storage_loot_handler(Slayer)
         for row in self.storage_loots[Slayer.cSlayer.id]["loots"]:
           
-          if row["rarity"] == "mythic":
-            cItem = Mythic(self.bot, row)
-          else:
-            cItem = Item(self.bot, row)
+          cObject = lib.Object.get_Object_Class(self.bot, row)
 
           #ON VEND AUTOMATIQUEMENT L'ITEM
-          if Slayer.isinInventory(cItem.id):
-            auto_sellItem(Slayer, cItem)
+          if Slayer.isinInventory(cObject.id):
+            auto_sellItem(Slayer, cObject)
           #ON AJOUTE DANS LA DB INVENTAIRE
           else:
-            auto_addtoinventoryItem(Slayer, cItem)
+            auto_addtoinventoryItem(Slayer, cObject)
 
-    def auto_sellItem(Slayer, cItem):
+    def auto_sellItem(Slayer, cObject):
       #On rajoute la monnaie dans la Class Slayer
-      Slayer.addMoney(self.bot.Rarities[cItem.rarity].price)
+      Slayer.addMoney(self.bot.Rarities[cObject.rarity].price)
 
       #On store le give money
-      self.storage_loots[Slayer.cSlayer.id]["money"] += self.bot.Rarities[cItem.rarity].price
-      request_money.append((self.bot.Rarities[cItem.rarity].price, Slayer.cSlayer.id))
+      self.storage_loots[Slayer.cSlayer.id]["money"] += self.bot.Rarities[cObject.rarity].price
+      request_money.append((self.bot.Rarities[cObject.rarity].price, Slayer.cSlayer.id))
 
       #Puis on ajoute la monnaie gagnée au Battle
-      self.stats["money"] += self.bot.Rarities[cItem.rarity].price
+      self.stats["money"] += self.bot.Rarities[cObject.rarity].price
 
-    def auto_addtoinventoryItem(Slayer, cItem):
+    def auto_addtoinventoryItem(Slayer, cObject):
       #On rajoute l'item dans la Class Slayer
-      Slayer.addtoInventory(cItem)
+      Slayer.addtoInventory(cObject)
       #On store le give item
-      request_items.append((Slayer.cSlayer.id, cItem.id, 1, False))
-      self.storage_loots[Slayer.cSlayer.id]["items"].append(cItem)
+      request_items.append((Slayer.cSlayer.id, cObject.id, 1, False))
+      self.storage_loots[Slayer.cSlayer.id]["items"].append(cObject)
       #Puis on ajoute l'item gagné au Battle
       self.stats["loots"] += 1
 
@@ -316,9 +300,9 @@ class Gamemode:
       
       def ArmorMult(armor):
         if armor >= 0:
-            return float((1000/(1000+armor)))
+            return float(sqrt((1000/(1000+armor))))
         if armor < 0:
-            return float(1+(((1000+abs(armor))/1000)*float(bot.Variables["bonus_negative_armor_with_leta"])))
+            return float(sqrt(1+(((1000+abs(armor))/1000)*float(bot.Variables["malus_negative_armor_with_leta"]))))
       
       def getStacks():
         stacks_earned = cSlayer.getStacks(hit)
@@ -356,7 +340,7 @@ class Gamemode:
       
     #On peut attaquer selon le timing
     if (canAttack := cOpponent.slayer_canAttack(cSlayer)) and not canAttack[0] and hit != "s":
-      return canAttack[1], 0, False
+      return f"{cOpponent.slayers_hits[cSlayer.id].checkStatus(0, cOpponent)}", 0, False
     
     if (int(cSlayer.faction) not in self.bot.Factions and self.type == "factionwar"):
       return "Tu dois faire parti d'une faction pour combattre ici", 0, False
@@ -415,7 +399,7 @@ class Gamemode:
 
     if isDead:
       await self.bot.ActiveList.remove_eligibility(cSlayer)
-      content = "Tu es mort ! Tu perds l'éligibilité aux butins sur tous les combats en cours."
+      content += "\n\n> ☠️ Tu es mort ! Tu perds l'éligibilité aux butins sur tous les combats en cours. ☠️"
 
     #Familier 
       #Critique
@@ -437,7 +421,7 @@ class Gamemode:
     if total_damage_taken > 0:
       await Slayer.getDrop(pets=[193])
       #Leta
-    if Slayer.cSlayer.stats["total_letality_l"] + Slayer.cSlayer.stats["total_letality_h"] + Slayer.cSlayer.stats["total_letality_s"] > 4000:
+    if Slayer.cSlayer.stats["total_letality_l"] + Slayer.cSlayer.stats["total_letality_h"] + Slayer.cSlayer.stats["total_letality_s"] > 6000:
       await Slayer.getDrop(rate=1, pets=[409])
 
     #Achievement Biggest_Hit
@@ -470,16 +454,33 @@ class Gamemode:
 
     return content, total_damage_dealt, monster_killed
 
+  def get_Opponent_Rarity(self):
+    return random.choices(list(self.spawnrate.keys()), list(self.spawnrate.values()), k=1)[0]
+  
+  def get_Opponent_Element(self):
+    return random.choice(list(self.bot.Elements.keys()))
+  
+  def get_Opponent_Type(self):
+    return "monster"
+
 class Hunt(Gamemode):
   def __init__(self, bot, gamemodedata):
       super().__init__(bot, gamemodedata)
-  pass
 
 class FactionWar(Gamemode):
   def __init__(self, bot, gamemodedata):
       super().__init__(bot, gamemodedata)
       self.timer_start = lib.datetime.datetime.timestamp(lib.datetime.datetime.now())
       self.spawns_count = 1
+
+  def get_Opponent_Rarity(self):
+    return random.choices(list(self.spawnrate.keys()), list(self.spawnrate.values()), k=1)[0]
+  
+  def get_Opponent_Element(self):
+    return "neutral"
+  
+  def get_Opponent_Type(self):
+    return "banner"
 
   def role_tracker_content(self):
     if self.role_tracker_activated and self.bot.Rarities[self.Opponents[self.count].rarity].tracker_role_id_banner != 0:

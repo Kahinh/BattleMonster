@@ -9,12 +9,36 @@ sys.path.insert(0, parentdir)
 
 import lib
 
+@dataclass
+class Faction:
+  id: int
+  name: str
+  description: str
+  emote: str
+  gatherable_affinity: str
+  money: int
 
+  def __init__(self, rFaction):
+    self.id = rFaction["id"]
+    self.name = rFaction["name"]
+    self.description = rFaction["description"]
+    self.emote = rFaction["emote"]
+    self.gatherable_affinity = rFaction["gatherable_affinity"]
+    self.money = rFaction["money"]
+
+@dataclass
 class Spe:
-  def __init__(
-    self, 
-    rSpe
-    ):
+
+  id: int
+  name: str
+  description: str
+  damage: int
+  stacks: int
+  cost: int
+  emote: str
+  ability_name: str
+
+  def __init__(self, bot, rSpe):
     self.id = rSpe["id"]
     self.name = rSpe["name"]
     self.description = rSpe["description"]
@@ -61,6 +85,28 @@ class Spe:
       "vivacity": rSpe["vivacity"]
     }
 
+  @staticmethod
+  def get_Spe_Class(bot, rSpe):
+    match int(rSpe["id"]):
+      case 1:
+        return Recrue(bot, rSpe)
+      case 2:
+        return EscrimeDouble(bot, rSpe)
+      case 3:
+        return Templier(bot, rSpe)
+      case 4:
+        return ChefdeGuerre(bot, rSpe)
+      case 5:
+        return Forgeron(bot, rSpe)
+      case 6:
+        return Stratège(bot, rSpe)
+      case 7:
+        return Démon(bot, rSpe)
+      case 8:
+        return Assassin(bot, rSpe)
+      case _:
+        print("Cette spé n'existe pas")
+
   def adjust_slot_count(self, rSlots):
     Slots = deepcopy(rSlots)
     #SURAREMENT
@@ -77,7 +123,10 @@ class Spe:
       base += 1
     return base
   
-  def get_damage(self, cOpponent, cSlayer):
+  def get_damage(self, cOpponent, cSlayer, hit):
+
+    bot = cSlayer.bot
+
     if self.id == 3: #Templier
       return int(cSlayer.stats["total_armor"]), ""
     elif self.id == 4: #Chef de Guerre
@@ -93,29 +142,45 @@ class Spe:
         return int(cSlayer.stats["total_letality_s"] * (1+cSlayer.stats["total_letality_per_s"])), ""
       else:
         #TODO A REFAIRE POUR LE REWORK LETA
-        armor_reduction = int((cOpponent.armor * cSlayer.stats["total_letality_per_s"] + cSlayer.stats["total_letality_s"]) / 5)
+        armor_reduction = int((cOpponent.armor - cSlayer.reduceArmor(hit, cOpponent.armor)) * bot.Variables["chasseur_armor_reduction_mult"])
         armor_reduction = int(min(armor_reduction, cOpponent.armor - cOpponent.armor_cap))
         cOpponent.armor -= armor_reduction
         return 0, f"(-{armor_reduction} 🛡️)"
     else:
       return 0, ""
 
-  def getDisplayStats(self, cItem2=None):
-    return lib.get_display_stats(self, cItem2)
+  def getDisplayStats(self, cObject2=None):
+    return lib.get_display_stats(self, cObject2)
 
-@dataclass
-class Faction:
-  id: int
-  name: str
-  description: str
-  emote: str
-  gatherable_affinity: str
-  money: int
+class Recrue(Spe):
+  def __init__(self, bot, rSpe):
+    super().__init__(bot, rSpe)
 
-  def __init__(self, rFaction):
-    self.id = rFaction["id"]
-    self.name = rFaction["name"]
-    self.description = rFaction["description"]
-    self.emote = rFaction["emote"]
-    self.gatherable_affinity = rFaction["gatherable_affinity"]
-    self.money = rFaction["money"]
+class EscrimeDouble(Spe):
+  def __init__(self, bot, rSpe):
+    super().__init__(bot, rSpe)
+
+class Templier(Spe):
+  def __init__(self, bot, rSpe):
+    super().__init__(bot, rSpe)
+
+class ChefdeGuerre(Spe):
+  def __init__(self, bot, rSpe):
+    super().__init__(bot, rSpe)
+
+class Forgeron(Spe):
+  def __init__(self, bot, rSpe):
+    super().__init__(bot, rSpe)
+
+class Stratège(Spe):
+  def __init__(self, bot, rSpe):
+    super().__init__(bot, rSpe)
+
+class Démon(Spe):
+  def __init__(self, bot, rSpe):
+    super().__init__(bot, rSpe)
+
+class Assassin(Spe):
+  def __init__(self, bot, rSpe):
+    super().__init__(bot, rSpe)
+

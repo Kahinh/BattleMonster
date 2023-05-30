@@ -31,13 +31,14 @@ class Gather_Button(lib.discord.ui.Button):
                             nbr += int(self.view.bot.Variables["bonus_gatherables_in_faction"])
                     
                     #On remove du stock, et on envoie les gatherables dans l'inventaire du slayer. 
-                    self.view.stock -= nbr
+                    self.view.stock -= 1
+                    
                     embed = lib.Embed.create_embed_gatherables_gathered(self.view.cGather, nbr)
                     await interaction.followup.send(embed=embed, ephemeral=True)
                     await Slayer.update_inventory_gatherables(self.view.cGather.gatherable_id, nbr)
 
                     #end view si le stock est fini
-                    if self.view.stock == 0:
+                    if self.view.stock <= 0:
                         await self.view.end_view()
             
             else:

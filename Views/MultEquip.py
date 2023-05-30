@@ -12,9 +12,9 @@ class Equiped_Dropdown(lib.discord.ui.Select):
         if not self.view.obsolete:
             try:
                 self.view.Slayer.cSlayer.inventory_items[int(self.values[0])].unequip()
-                self.view.cItem.equip()
+                self.view.cObject.equip()
                 await self.view.Slayer.updateSlayer()
-                await self.view.bot.dB.switch_item(self.view.Slayer.cSlayer, self.view.cItem, self.view.Slayer.cSlayer.inventory_items[int(self.values[0])])
+                await self.view.bot.dB.switch_item(self.view.Slayer.cSlayer, self.view.cObject, self.view.Slayer.cSlayer.inventory_items[int(self.values[0])])
 
                 #On update le Inventoryview ?
                 await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.id, "inventaire")
@@ -26,7 +26,7 @@ class Equiped_Dropdown(lib.discord.ui.Select):
                 self.view.stop()
                 
                 self.view.Slayer.cSlayer.calculateStats(self.view.bot.rBaseBonuses)
-                await self.view.bot.ActiveList.close_interface(self.view.Slayer.cSlayer.id, self.view.cItem.id)
+                await self.view.bot.ActiveList.close_interface(self.view.Slayer.cSlayer.id, self.view.cObject.id)
                 await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
             except:
                 await interaction.followup.send("Une erreur s'est produite !", ephemeral=True)
@@ -34,12 +34,12 @@ class Equiped_Dropdown(lib.discord.ui.Select):
             await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class MultEquipView(lib.discord.ui.View):
-    def __init__(self, bot, Slayer, List, interaction, cItem):
+    def __init__(self, bot, Slayer, List, interaction, cObject):
         super().__init__(timeout=60)
         self.bot = bot
         self.Slayer = Slayer
         self.interaction = interaction
-        self.cItem = cItem
+        self.cObject = cObject
         self.List = []
         self.obsolete = False
 

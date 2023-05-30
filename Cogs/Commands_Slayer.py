@@ -44,7 +44,7 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
     await interaction.response.defer(ephemeral=True)
     if self.bot.power:
       Slayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
-      embed = lib.Embed.create_embed_spe(Slayer, lib.Toolbox.get_spe_row_by_id(self.bot.rSpe, 1))
+      embed = lib.Embed.create_embed_spe(Slayer, self.bot.Specializations[1])
       view = lib.SpeView(self.bot, Slayer, interaction)
       await self.bot.ActiveList.add_interface(interaction.user.id, "inventaire_spe", view)
       await interaction.followup.send(embed=embed, view=view, ephemeral=True)
