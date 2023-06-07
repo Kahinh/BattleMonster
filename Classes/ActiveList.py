@@ -28,7 +28,6 @@ class ActiveList:
     if user_id not in self.active_slayers:
       #On init le Slayer
       cSlayer = await Slayer.handler_Build(self.bot, user_id, user_name)
-      cSlayer.trigger_refreshes()
       self.add_active_slayer(user_id, cSlayer)
     else:
       cSlayer = self.active_slayers[user_id].cSlayer

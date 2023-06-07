@@ -73,12 +73,11 @@ class Slayer:
                 cSlayer.inventories["items"].update({row["id"]: cObject})
 
         async def build_current_loadout():
-            cSpe = await Spe.get_Spe_Class(bot, 1 if slayer_data is None else slayer_data["specialization"], cSlayer)
-            cSlayer.current_loadout = Loadout(bot, "Current", cSlayer, cSpe, [cSlayer.inventories["items"][id] for id in cSlayer.inventories["items"] if cSlayer.inventories["items"][id].equipped == True])
+            cSlayer.current_loadout = await Loadout.get_Object_Class_from_cSlayer(bot, "Current", cSlayer, 1 if slayer_data is None else slayer_data["specialization"], [cSlayer.inventories["items"][id] for id in cSlayer.inventories["items"] if cSlayer.inventories["items"][id].equipped == True])
         
         async def build_loadouts():
             for row in slayer_loadouts:
-                cSlayer.loadouts.update({row["id"] : await Loadout.handler_Build(bot, row["name"], cSlayer, row)})
+                cSlayer.loadouts.update({row["id"] : await Loadout.get_Object_Class_from_db(bot, row["name"], cSlayer, [eval(str(i)) for i in row["loadout"].strip('][').split(',')][0], [eval(str(i)) for i in row["loadout"].strip('][').split(',')][1:])})
 
         #On trigger les builds
         build_achievements()
@@ -119,9 +118,6 @@ class Slayer:
     def item_can_be_equipped(self, cSlot):
         empty_slot, only_one_place_on_slot = self.current_loadout.item_can_be_equipped(cSlot)
         return empty_slot, only_one_place_on_slot
-
-    def update_stats(self, list_bonus_value):
-        self.current_loadout.update_stats(list_bonus_value)
 
     def slot_nbr_max_items(self, cSlot):
         return self.current_loadout.slot_nbr_max_items(cSlot)
@@ -174,9 +170,6 @@ class Slayer:
     
     def activate_temporary_stat(self):
         self.current_loadout.activate_temporary_stat()
-
-    def deactivate_temporary_stat(self):
-        self.current_loadout.deactivate_temporary_stat()
 
     async def equip_item(self, cObject):
         await self.current_loadout.equip_item(cObject)

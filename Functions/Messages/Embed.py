@@ -211,25 +211,26 @@ def create_embed_achievement(cSlayer, avatar):
     embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cSlayer.creation_date).strftime("%d/%m/%Y")}')
     return embed
 
-def create_embed_equipment(bot, cSlayer, avatar, group):
-    description = f"Score d'équipement : **{int(cSlayer.gearscore)}**\n"
+def create_embed_equipment(bot, cLoadout_or_cSlayer, avatar, group):
+    description = f"Score d'équipement : **{int(cLoadout_or_cSlayer.gearscore)}**\n"
     for _, cSlot in bot.Slots.items():
         if cSlot.activated and cSlot.group == group:
-            if (nbr := cSlayer.slot_nbr_max_items(cSlot)) > 0:
+            if (nbr := cLoadout_or_cSlayer.slot_nbr_max_items(cSlot)) > 0:
                 description += f"\n**{cSlot.display_emote} {cSlot.display_text}** - ({str(nbr)})"
-                for cObject in cSlayer.slot_items_equipped(cSlot):
+                for cObject in cLoadout_or_cSlayer.slot_items_equipped(cSlot):
                     if cObject.level > 1:
                         description += f"\n- {bot.Elements[cObject.element].display_emote} [{cObject.level}] {cObject.name} - *{bot.Rarities[cObject.rarity].display_text}*"
                     else:
                         description += f"\n- {bot.Elements[cObject.element].display_emote} {cObject.name} - *{bot.Rarities[cObject.rarity].display_text}*"
 
 
-    embed=lib.discord.Embed(title=f"Équipement de {cSlayer.name}",
+    embed=lib.discord.Embed(title=f"Équipement de {cLoadout_or_cSlayer.name}",
     description=description,
     color=0x1abc9c)   
 
     embed.set_thumbnail(url=avatar)
-    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cSlayer.creation_date).strftime("%d/%m/%Y")}')
+    if hasattr(cLoadout_or_cSlayer, "creation_date"):
+        embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cLoadout_or_cSlayer.creation_date).strftime("%d/%m/%Y")}')
     return embed
 
 def create_embed_spe(cSlayer, cSpe):
@@ -373,62 +374,44 @@ def create_embed_enhancement_mythic(cSlayer, mythic_list, index, bot):
         embed.set_thumbnail(url=mythic_list[index].img_url)
     return embed
 
-def create_embed_profil_global(cSlayer, avatar):
+def create_embed_profil_global(cLoadout_or_cSlayer, avatar):
 
-    description = \
-    f"**{cSlayer.cSpe.emote} {cSlayer.cSpe.name}**" \
-    f"```- 🪙 Coin : {int(cSlayer.money)}```" \
-    "**__Statistiques__**" \
-    f"```- {'💀' if cSlayer.dead else '❤️'} Vie : {int(cSlayer.current_health)}/{cSlayer.health}```" \
-    f"```- 🔰 Score : {cSlayer.gearscore}```" \
-    f"```- 🛡️ Armure : {cSlayer.stats['armor']}```" \
-    f"```- 🌪️ Vivacité : {cSlayer.stats['cooldown']}s```" \
-    f"```- ☄️ Charge : {cSlayer.special_stacks}/{cSlayer.stats['stacks']}```" \
-    f"```- 🍀 Luck : {int(cSlayer.stats['luck'] * 100)}%```"
+    description = f"**{cLoadout_or_cSlayer.cSpe.emote} {cLoadout_or_cSlayer.cSpe.name}**"
+    if hasattr(cLoadout_or_cSlayer, "money"):
+        description += f"```- 🪙 Coin : {int(cLoadout_or_cSlayer.money)}```"
+    description += "**__Statistiques__**"
+    if hasattr(cLoadout_or_cSlayer, "money"):
+        description += f"```- {'💀' if cLoadout_or_cSlayer.dead else '❤️'} Vie : {int(cLoadout_or_cSlayer.current_health)}/{cLoadout_or_cSlayer.health}```"
+    else:
+        description += f"```- ❤️ Vie : {cLoadout_or_cSlayer.stats['health']}```"
+    description += f"```- 🔰 Score : {cLoadout_or_cSlayer.gearscore}```"
+    description += f"```- 🛡️ Armure : {cLoadout_or_cSlayer.stats['armor']}```"
+    description += f"```- 🌪️ Vivacité : {cLoadout_or_cSlayer.stats['cooldown']}s```"
+    if hasattr(cLoadout_or_cSlayer, "money"):
+        description += f"```- ☄️ Charge : {cLoadout_or_cSlayer.special_stacks}/{cLoadout_or_cSlayer.stats['stacks']}```"
+    else:
+        description += f"```- ☄️ Charge : {cLoadout_or_cSlayer.stats['stacks']}```"
+    description += f"```- 🍀 Luck : {int(cLoadout_or_cSlayer.stats['luck'] * 100)}%```"
 
-    embed=lib.discord.Embed(title=f"Profil de {cSlayer.name}",
+    embed=lib.discord.Embed(title=f"Profil de {cLoadout_or_cSlayer.name}",
     description=description,
     color=0x1abc9c)   
 
     embed.set_thumbnail(url=avatar)
-    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cSlayer.creation_date).strftime("%d/%m/%Y")}')
+    if hasattr(cLoadout_or_cSlayer, "creation_date"):
+        embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cLoadout_or_cSlayer.creation_date).strftime("%d/%m/%Y")}')
     return embed
 
-def create_embed_profil_l(cSlayer, avatar):
-    bot = cSlayer.bot
+def create_embed_profil_attack(cLoadout_or_cSlayer, avatar, hit):
+    bot = cLoadout_or_cSlayer.bot
     description = "**__Statistiques__**"
-    for statistic in cSlayer.stats:
-        if "_l" in statistic:
-            description += f"```- {bot.Statistics[statistic[:-2]].display_emote} {bot.Statistics[statistic[:-2]].display_name}: {str(int(cSlayer.stats[statistic]*100)) + '%' if bot.Statistics[statistic[:-2]].percentage else int(cSlayer.stats[statistic])}```"
-    embed=lib.discord.Embed(title=f"Statistiques Attaques Légères de {cSlayer.name}",
+    for statistic in cLoadout_or_cSlayer.stats:
+        if f"_{hit}" in statistic:
+            description += f"```- {bot.Statistics[statistic[:-2]].display_emote} {bot.Statistics[statistic[:-2]].display_name}: {str(int(cLoadout_or_cSlayer.stats[statistic]*100)) + '%' if bot.Statistics[statistic[:-2]].percentage else int(cLoadout_or_cSlayer.stats[statistic])}```"
+    embed=lib.discord.Embed(title=f"{hit} {cLoadout_or_cSlayer.name}",
     description=description,
     color=0x1abc9c)  
     embed.set_thumbnail(url=avatar)
-    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cSlayer.creation_date).strftime("%d/%m/%Y")}')
-    return embed 
-
-def create_embed_profil_h(cSlayer, avatar):
-    bot = cSlayer.bot
-    description = "**__Statistiques__**"
-    for statistic in cSlayer.stats:
-        if "_h" in statistic:
-            description += f"```- {bot.Statistics[statistic[:-2]].display_emote} {bot.Statistics[statistic[:-2]].display_name}: {str(int(cSlayer.stats[statistic]*100)) + '%' if bot.Statistics[statistic[:-2]].percentage else int(cSlayer.stats[statistic])}```"
-    embed=lib.discord.Embed(title=f"Statistiques Attaques Lourdes de {cSlayer.name}",
-    description=description,
-    color=0x1abc9c)  
-    embed.set_thumbnail(url=avatar)
-    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cSlayer.creation_date).strftime("%d/%m/%Y")}')
-    return embed 
-
-def create_embed_profil_s(cSlayer, avatar):
-    bot = cSlayer.bot
-    description = "**__Statistiques__**"
-    for statistic in cSlayer.stats:
-        if "_s" in statistic:
-            description += f"```- {bot.Statistics[statistic[:-2]].display_emote} {bot.Statistics[statistic[:-2]].display_name}: {str(int(cSlayer.stats[statistic]*100)) + '%' if bot.Statistics[statistic[:-2]].percentage else int(cSlayer.stats[statistic])}```"
-    embed=lib.discord.Embed(title=f"Statistiques Attaques Spéciales de {cSlayer.name}",
-    description=description,
-    color=0x1abc9c)  
-    embed.set_thumbnail(url=avatar)
-    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cSlayer.creation_date).strftime("%d/%m/%Y")}')
+    if hasattr(cLoadout_or_cSlayer, "creation_date"):
+        embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cLoadout_or_cSlayer.creation_date).strftime("%d/%m/%Y")}')
     return embed 

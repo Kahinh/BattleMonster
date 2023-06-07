@@ -39,8 +39,8 @@ class Spe:
   emote: str
   ability_name: str
 
-  def __init__(self, bot, rSpe, cSlayer=None):
-    self.cSlayer = cSlayer
+  def __init__(self, bot, rSpe, cLoadout=None):
+    self.cLoadout = cLoadout
     self.bot = bot
     self.id = rSpe["id"]
     self.name = rSpe["name"]
@@ -55,24 +55,24 @@ class Spe:
     self.remaining_hit_temporary_stat = 0
 
   @staticmethod
-  async def get_Spe_Class(bot, id, cSlayer):
+  async def get_Spe_Class(bot, id, cLoadout):
     match int(id):
       case 1:
-        return await Recrue.handler_Build(bot, id, cSlayer)
+        return await Recrue.handler_Build(bot, id, cLoadout)
       case 2:
-        return await EscrimeDouble.handler_Build(bot, id, cSlayer)
+        return await EscrimeDouble.handler_Build(bot, id, cLoadout)
       case 3:
-        return await Templier.handler_Build(bot, id, cSlayer)
+        return await Templier.handler_Build(bot, id, cLoadout)
       case 4:
-        return await ChefdeGuerre.handler_Build(bot, id, cSlayer)
+        return await ChefdeGuerre.handler_Build(bot, id, cLoadout)
       case 5:
-        return await Forgeron.handler_Build(bot, id, cSlayer)
+        return await Forgeron.handler_Build(bot, id, cLoadout)
       case 6:
-        return await Stratège.handler_Build(bot, id, cSlayer)
+        return await Stratège.handler_Build(bot, id, cLoadout)
       case 7:
-        return await Démon.handler_Build(bot, id, cSlayer)
+        return await Démon.handler_Build(bot, id, cLoadout)
       case 8:
-        return await Assassin.handler_Build(bot, id, cSlayer)
+        return await Assassin.handler_Build(bot, id, cLoadout)
       case _:
         print("Cette spé n'existe pas")
 
@@ -99,9 +99,9 @@ class Spe:
         print("Cette spé n'existe pas")
 
   @classmethod
-  async def handler_Build(cls, bot, id, cSlayer):
+  async def handler_Build(cls, bot, id, cLoadout):
     rSpe = await bot.dB.pull_spe_data(int(id))
-    self = cls(bot, rSpe, cSlayer)
+    self = cls(bot, rSpe, cLoadout)
     return self
 
   def slot_nbr_max_items(self, cSlot):
@@ -117,7 +117,7 @@ class Spe:
     self.bonuses["damage_s"] += self.damage
   
   def refresh_stats(self):
-    self.cSlayer.update_stats([])
+    self.cLoadout.update_stats([])
 
   def activate_temporary_stat(self):
     pass
@@ -128,7 +128,7 @@ class Spe:
     else:
       self.remaining_hit_temporary_stat -= 1
       if self.remaining_hit_temporary_stat == 0:
-        self.cSlayer.deactivate_temporary_stat()
+        self.cLoadout.deactivate_temporary_stat()
 
   def temporary_stats(self):
     return []
@@ -149,12 +149,12 @@ class Spe:
     return dict_stats
 
 class Recrue(Spe):
-  def __init__(self, bot, rSpe, cSlayer=None):
-    super().__init__(bot, rSpe, cSlayer)
+  def __init__(self, bot, rSpe, cLoadout=None):
+    super().__init__(bot, rSpe, cLoadout)
 
 class EscrimeDouble(Spe):
-  def __init__(self, bot, rSpe, cSlayer=None):
-    super().__init__(bot, rSpe, cSlayer)
+  def __init__(self, bot, rSpe, cLoadout=None):
+    super().__init__(bot, rSpe, cLoadout)
   
   def slot_nbr_max_items(self, cSlot):
     if cSlot.name == "weapon":
@@ -166,8 +166,8 @@ class EscrimeDouble(Spe):
     return 1
 
 class Templier(Spe):
-  def __init__(self, bot, rSpe, cSlayer=None):
-    super().__init__(bot, rSpe, cSlayer)
+  def __init__(self, bot, rSpe, cLoadout=None):
+    super().__init__(bot, rSpe, cLoadout)
 
   def slot_nbr_max_items(self, cSlot):
     if cSlot.name == "shield":
@@ -176,19 +176,19 @@ class Templier(Spe):
       return cSlot.count
 
   def refresh_stats(self):
-    self.cSlayer.update_stats([["damage_s", self.cSlayer.stats["armor"]]])
+    self.cLoadout.update_stats([["damage_s", self.cLoadout.stats["armor"]]])
 
 class ChefdeGuerre(Spe):
-  def __init__(self, bot, rSpe, cSlayer=None):
-    super().__init__(bot, rSpe, cSlayer)
+  def __init__(self, bot, rSpe, cLoadout=None):
+    super().__init__(bot, rSpe, cLoadout)
 
 class Forgeron(Spe):
-  def __init__(self, bot, rSpe, cSlayer=None):
-    super().__init__(bot, rSpe, cSlayer)
+  def __init__(self, bot, rSpe, cLoadout=None):
+    super().__init__(bot, rSpe, cLoadout)
 
 class Stratège(Spe):
-  def __init__(self, bot, rSpe, cSlayer=None):
-    super().__init__(bot, rSpe, cSlayer)
+  def __init__(self, bot, rSpe, cLoadout=None):
+    super().__init__(bot, rSpe, cLoadout)
 
   def adapt_max(self, cap_max, statistic):
     if statistic == "leta_per":
@@ -197,8 +197,8 @@ class Stratège(Spe):
       return cap_max
 
 class Démon(Spe):
-  def __init__(self, bot, rSpe, cSlayer=None):
-    super().__init__(bot, rSpe, cSlayer)
+  def __init__(self, bot, rSpe, cLoadout=None):
+    super().__init__(bot, rSpe, cLoadout)
     self.spe_damage = 0
   
   def demon_proc(self):
@@ -212,11 +212,11 @@ class Démon(Spe):
       return False
 
   def refresh_stats(self):
-    self.cSlayer.update_stats([["damage_s", self.spe_damage]])
+    self.cLoadout.update_stats([["damage_s", self.spe_damage]])
 
 class Assassin(Spe):
-  def __init__(self, bot, rSpe, cSlayer=None):
-    super().__init__(bot, rSpe, cSlayer)
+  def __init__(self, bot, rSpe, cLoadout=None):
+    super().__init__(bot, rSpe, cLoadout)
 
   def activate_temporary_stat(self):
     self.remaining_hit_temporary_stat = int(self.bot.Variables['assassin_nbr_hit_activation'])

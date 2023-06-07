@@ -163,11 +163,11 @@ class SlayerView(lib.discord.ui.View):
         elif self.tab == "Ressources":
             embed = lib.Embed.create_embed_gatherables_profil(self.cSlayer, self.avatar, self.bot)
         elif self.tab == "L":
-            embed = lib.Embed.create_embed_profil_l(self.cSlayer, self.avatar)
+            embed = lib.Embed.create_embed_profil_attack(self.cSlayer.current_loadout, self.avatar, "l")
         elif self.tab == "H":
-            embed = lib.Embed.create_embed_profil_h(self.cSlayer, self.avatar)
+            embed = lib.Embed.create_embed_profil_attack(self.cSlayer.current_loadout, self.avatar, "h")
         elif self.tab == "S":
-            embed = lib.Embed.create_embed_profil_s(self.cSlayer, self.avatar)
+            embed = lib.Embed.create_embed_profil_attack(self.cSlayer.current_loadout, self.avatar, "s")
         else: #Profil
             embed = lib.Embed.create_embed_profil_global(self.cSlayer, self.avatar)
 

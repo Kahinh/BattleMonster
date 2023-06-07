@@ -20,25 +20,52 @@ class Loadout:
         bot,
         name,
         cSlayer,
-        cSpe,
-        items
+        is_current_loadout
         ):
         self.bot = bot
         self.name = name
         self.cSlayer = cSlayer
-        self.items = items
-        self.cSpe = cSpe
-        self.gearscore = self.get_gear_score()
-        self.init_pre_stats() #stats des items
+        self.is_current_loadout = is_current_loadout
+
+        #First init
+        self.items = []
+        self.cSpe = None
+
+        #Second init
+        self.gearscore = 0
+        self.pre_stats = {}
+        self.stats = {}
+
+    @staticmethod
+    async def get_Object_Class_from_db(bot, name, cSlayer, spe_id, items_list):
+        return await Loadout.handler_Build(bot, name, cSlayer, spe_id, items_list, True)
+
+    @staticmethod
+    async def get_Object_Class_from_cSlayer(bot, name, cSlayer, spe_id, items_list):
+        return await Loadout.handler_Build(bot, name, cSlayer, spe_id, items_list, False)
 
     @classmethod
-    async def handler_Build(cls, bot, name, cSlayer, row):
-        cSpe = await Spe.handler_Build(bot, row[0], cSlayer)
-        list_items = []
-        for id in [eval(str(i)) for i in row["loadout"].strip('][').split(',')][1:]:
-            if id in cSlayer.inventories["items"]:
-                list_items.append(cSlayer.inventories["items"][id])
-        cLoadout = Loadout(bot, name, cSlayer, cSpe, list_items)
+    async def handler_Build(cls, bot, name, cSlayer, spe_id, items_list, item_to_compile):
+
+        cLoadout = cls(bot, name, cSlayer, not item_to_compile)
+
+        if item_to_compile:
+            list_items = []
+            for id in items_list:
+                if id in cSlayer.inventories["items"]:
+                    list_items.append(cSlayer.inventories["items"][id])
+        else:
+            list_items = items_list
+        
+        cSpe = await Spe.get_Spe_Class(bot, spe_id, cLoadout)
+        cLoadout.cSpe = cSpe
+        cLoadout.items = list_items
+
+        cLoadout.gearscore = cLoadout.get_gear_score()
+        cLoadout.init_pre_stats() #stats des items
+
+        cLoadout.trigger_refreshes()
+
         return cLoadout
 
     def init_pre_stats(self):
