@@ -7,10 +7,10 @@ class Details_Button(lib.discord.ui.Button):
     async def callback(self, interaction: lib.discord.Interaction):
         if interaction.user.id in self.view.Battle.storage_loots:
             embed = lib.Embed.create_embed_recap_loot(self.view.bot, self.view.Battle.storage_loots[interaction.user.id])
-            Slayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
+            cSlayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
 
             if self.view.Battle.storage_loots[interaction.user.id].get("items", []) != []:
-                view=lib.LootReviewView(self.view.bot, self.view.Battle.storage_loots[interaction.user.id], Slayer, interaction)
+                view=lib.LootReviewView(self.view.bot, self.view.Battle.storage_loots[interaction.user.id], cSlayer, interaction)
                 await self.view.bot.ActiveList.add_interface(interaction.user.id, "LootReview", view)
                 await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
             else:    

@@ -2,6 +2,7 @@ import random
 from Classes.Objects import Item, Mythic
 from Classes.Opponents import Opponent, Monster, Banner, Mythique1, Mythique2, Mythique3, Mythique4, Mythique5, Mythique6
 from math import sqrt
+from datetime import datetime
 
 import logging
 logging.basicConfig(filename='logs.log', 
@@ -68,6 +69,32 @@ class Gamemode:
     else:
       return None
 
+  @classmethod
+  async def handler_Build(cls, bot, gamemodedata):
+
+    self = cls(bot, gamemodedata)
+
+    async def pullGamemodeLootSlot():
+      rlootslot = await self.bot.dB.pull_GamemodeLootSlot(self.name)
+      for row in rlootslot:
+        self.lootslot.append(row["slot"])
+    
+    async def pullGamemodeSpawnRate():
+      rspawnrate = await self.bot.dB.pullGamemodeSpawnRate(self.name)
+      for row in rspawnrate:
+        self.spawnrate.update({row["rarities"]:float(row["spawn_rate"])})
+
+    async def createOpponents():
+      for i in range(self.spawns_count):
+        opponent = await Opponent.get_Opponent_Class(self, self.get_Opponent_Element(), self.get_Opponent_Rarity(), self.get_Opponent_Type())
+        self.Opponents.append(opponent)
+
+    await pullGamemodeLootSlot()
+    await pullGamemodeSpawnRate()
+    await createOpponents()
+
+    return self
+
   def isReady(self):
     if self.lootslot == []:
       logging.warning(f"NO LOOTSLOT FOR GAMEMODE {self.name}")
@@ -98,28 +125,6 @@ class Gamemode:
     view.message = await channel.send(content=self.role_tracker_content(), embed=embed, view=view)
     self.bot.ActiveList.add_battle(view.message.id, view)
 
-  async def handler_Build(self):
-
-    async def pullGamemodeLootSlot():
-      rlootslot = await self.bot.dB.pull_GamemodeLootSlot(self.name)
-      for row in rlootslot:
-        self.lootslot.append(row["slot"])
-    
-    async def pullGamemodeSpawnRate():
-      rspawnrate = await self.bot.dB.pullGamemodeSpawnRate(self.name)
-      for row in rspawnrate:
-        self.spawnrate.update({row["rarities"]:float(row["spawn_rate"])})
-
-    async def createOpponents():
-      for i in range(self.spawns_count):
-        opponent = Opponent.get_Opponent_Class(self, self.get_Opponent_Element(), self.get_Opponent_Rarity(), self.get_Opponent_Type())
-        await opponent.handler_Build()
-        self.Opponents.append(opponent)
-
-    await pullGamemodeLootSlot()
-    await pullGamemodeSpawnRate()
-    await createOpponents()
-
   async def handler_Loot(self):
   #On crée les requests à la dB
     request_opponents_killed_achievement = []
@@ -130,76 +135,76 @@ class Gamemode:
     async def push_dB_request():
       await self.bot.dB.push_behemoths_killed_achievement(request_opponents_killed_achievement)
       await self.bot.dB.push_MythicStones(request_mythic_stones)
-      await self.bot.dB.push_loots(request_items)
-      await self.bot.dB.push_money(request_money)
+      await self.bot.dB.push_loots_executemany(request_items)
+      await self.bot.dB.push_money_executemany(request_money)
 
     async def review_loots():
       for id in self.storage_loots:
-        Slayer = await self.bot.ActiveList.get_Slayer(id, "")
-        storage_loot_handler(Slayer)
-        for row in self.storage_loots[Slayer.cSlayer.id]["loots"]:
+        cSlayer = await self.bot.ActiveList.get_Slayer(id, "")
+        storage_loot_handler(cSlayer)
+        for row in self.storage_loots[cSlayer.id]["loots"]:
           
           cObject = lib.Object.get_Object_Class(self.bot, row)
 
           #ON VEND AUTOMATIQUEMENT L'ITEM
-          if Slayer.isinInventory(cObject.id):
-            auto_sellItem(Slayer, cObject)
+          if cSlayer.isinInventory(cObject.id):
+            auto_sellItem(cSlayer, cObject)
           #ON AJOUTE DANS LA DB INVENTAIRE
           else:
-            auto_addtoinventoryItem(Slayer, cObject)
+            auto_addtoinventoryItem(cSlayer, cObject)
 
-    def auto_sellItem(Slayer, cObject):
+    def auto_sellItem(cSlayer, cObject):
       #On rajoute la monnaie dans la Class Slayer
-      Slayer.addMoney(self.bot.Rarities[cObject.rarity].price)
+      cSlayer.money += self.bot.Rarities[cObject.rarity].price
 
       #On store le give money
-      self.storage_loots[Slayer.cSlayer.id]["money"] += self.bot.Rarities[cObject.rarity].price
-      request_money.append((self.bot.Rarities[cObject.rarity].price, Slayer.cSlayer.id))
+      self.storage_loots[cSlayer.id]["money"] += self.bot.Rarities[cObject.rarity].price
+      request_money.append((self.bot.Rarities[cObject.rarity].price, cSlayer.id))
 
       #Puis on ajoute la monnaie gagnée au Battle
       self.stats["money"] += self.bot.Rarities[cObject.rarity].price
 
-    def auto_addtoinventoryItem(Slayer, cObject):
+    def auto_addtoinventoryItem(cSlayer, cObject):
       #On rajoute l'item dans la Class Slayer
-      Slayer.addtoInventory(cObject)
+      cSlayer.inventories["items"][cObject.id] = cObject
       #On store le give item
-      request_items.append((Slayer.cSlayer.id, cObject.id, 1, False))
-      self.storage_loots[Slayer.cSlayer.id]["items"].append(cObject)
+      request_items.append((cSlayer.id, cObject.id, 1, False))
+      self.storage_loots[cSlayer.id]["items"].append(cObject)
       #Puis on ajoute l'item gagné au Battle
       self.stats["loots"] += 1
 
-    def award_loots(Slayer, cOpponent):
+    def award_loots(cSlayer, cOpponent):
 
       #On calcule le nombre de roll_dices
-      roll_dices = cOpponent.get_roll_dices(Slayer)
+      roll_dices = cOpponent.get_roll_dices(cSlayer)
 
       #On prend en compte le roll_dice
       for j in range(roll_dices):
         #On calcule le loot obtenu
-        if random.choices(population=[True, False], weights=[cOpponent.slayers_hits[Slayer.cSlayer.id].luck, 1-cOpponent.slayers_hits[Slayer.cSlayer.id].luck], k=1)[0]:
+        if random.choices(population=[True, False], weights=[cOpponent.slayers_hits[cSlayer.id].luck, 1-cOpponent.slayers_hits[cSlayer.id].luck], k=1)[0]:
           
           #On positionne dans le storage_loot
-          storage_loot_handler(Slayer)
-          self.storage_loots[Slayer.cSlayer.id]["loots"].append(random.choice(cOpponent.loot_table))
+          storage_loot_handler(cSlayer)
+          self.storage_loots[cSlayer.id]["loots"].append(random.choice(cOpponent.loot_table))
 
-    def achievement_opponents_killed(Slayer):
-      Slayer.cSlayer.achievements["monsters_killed"] += 1
-      request_opponents_killed_achievement.append((1, Slayer.cSlayer.id))
+    def achievement_opponents_killed(cSlayer):
+      cSlayer.achievements.update({"monsters_killed": cSlayer.achievements.get("monsters_killed", 0) + 1})
+      request_opponents_killed_achievement.append((cSlayer.id, "monsters_killed", cSlayer.achievements["monsters_killed"]))
 
-    def award_mythics_stones(Slayer):
+    def award_mythics_stones(cSlayer):
         #Mythic Stones = gatherable 5
-        stones_earned =cOpponent.award_mythic_stones(Slayer)
-        Slayer.cSlayer.inventory_gatherables[5] += stones_earned
-        request_mythic_stones.append((Slayer.cSlayer.id, 5, stones_earned))
+        stones_earned =cOpponent.award_mythic_stones(cSlayer)
+        cSlayer.inventories["gatherables"][5] += stones_earned
+        request_mythic_stones.append((cSlayer.id, 5, stones_earned))
         self.stats["mythic_stones"] += stones_earned
 
         #On positionne dans le storage_loot
-        storage_loot_handler(Slayer)
-        self.storage_loots[Slayer.cSlayer.id]["mythic_stones"] += stones_earned
+        storage_loot_handler(cSlayer)
+        self.storage_loots[cSlayer.id]["mythic_stones"] += stones_earned
 
-    def storage_loot_handler(Slayer):
-      if Slayer.cSlayer.id not in self.storage_loots:
-        self.storage_loots[Slayer.cSlayer.id] = {
+    def storage_loot_handler(cSlayer):
+      if cSlayer.id not in self.storage_loots:
+        self.storage_loots[cSlayer.id] = {
           "mythic_stones": 0,
           "items" : [],
           "money" : 0,
@@ -214,14 +219,14 @@ class Gamemode:
             #On ne considère que les éligibles
             if cOpponent.slayers_hits[id].eligible:
               #On récupère le Slayer
-              Slayer = await self.bot.ActiveList.get_Slayer(id, "")
+              cSlayer = await self.bot.ActiveList.get_Slayer(id, "")
               #On distribue l'achievement Monsters killed
-              achievement_opponents_killed(Slayer)
+              achievement_opponents_killed(cSlayer)
               #On distribue les mythiques
               if cOpponent.rarity == "mythic":
-                award_mythics_stones(Slayer)
+                award_mythics_stones(cSlayer)
               #On distribue les loots
-              award_loots(Slayer, cOpponent)
+              award_loots(cSlayer, cOpponent)
 
               #On revoit les butins : AutoVente ou vrai distrib ?
               await review_loots()
@@ -229,12 +234,11 @@ class Gamemode:
               #On push via le dB Manager
               await push_dB_request()
 
-  async def handler_Attack(self, Slayer, hit):
+  async def handler_Attack(self, cSlayer, hit):
 
     #Simplification des args
     cOpponent = self.Opponents[self.count]
     bot = self.bot
-    cSlayer = Slayer.cSlayer
 
     def Slayer_Receive_Damage():
       isDead, message = cSlayer.recapHealth(total_damage_taken)
@@ -266,7 +270,7 @@ class Gamemode:
       else:
         return False
 
-    def handler_Hit(Slayer, hit):
+    def handler_Hit(cSlayer, hit):
 
       #Initiation du content
       hit_content = ""
@@ -275,7 +279,7 @@ class Gamemode:
       damage_taken = 0
         
       def isParry():
-        if cOpponent.isParry(hit, Slayer):
+        if cOpponent.isParry(hit, cSlayer):
           return True
         else:
           return False
@@ -285,7 +289,7 @@ class Gamemode:
       
       def CritMult(is_Crit):
         if is_Crit:
-          return cSlayer.stats[f"total_crit_damage_{hit}"]
+          return cSlayer.stats[f"crit_damage_{hit}"]
         else:
           return 0
       
@@ -300,9 +304,9 @@ class Gamemode:
       
       def ArmorMult(armor):
         if armor >= 0:
-            return float(sqrt((1000/(1000+armor))))
+            return float(sqrt((int(self.bot.Variables["ratio_armor"])/(int(self.bot.Variables["ratio_armor"])+armor))))
         if armor < 0:
-            return float(sqrt(1+(((1000+abs(armor))/1000)*float(bot.Variables["malus_negative_armor_with_leta"]))))
+            return float(sqrt(1+(((int(self.bot.Variables["ratio_armor"])+abs(armor))/int(self.bot.Variables["ratio_armor"]))*float(bot.Variables["malus_negative_armor_with_leta"]))))
       
       def getStacks():
         stacks_earned = cSlayer.getStacks(hit)
@@ -318,7 +322,7 @@ class Gamemode:
               damage_dealt, hit_content = cSlayer.dealDamage(hit, cOpponent, is_Crit, CritMult(is_Crit), ProtectCrit(is_Crit), ArmorMult(Armor()))
               hit_content += getStacks()
             else:
-              damage_taken, hit_content = cOpponent.dealDamage(Slayer)
+              damage_taken, hit_content = cOpponent.dealDamage(cSlayer)
 
       return damage_dealt, damage_taken, hit_content, is_Crit
 
@@ -340,7 +344,7 @@ class Gamemode:
       
     #On peut attaquer selon le timing
     if (canAttack := cOpponent.slayer_canAttack(cSlayer)) and not canAttack[0] and hit != "s":
-      return f"{cOpponent.slayers_hits[cSlayer.id].checkStatus(0, cOpponent)}", 0, False
+      return f"> Hop hop hop, tu dois encore attendre avant d'attaquer !\n{cOpponent.slayers_hits[cSlayer.id].checkStatus(0, cOpponent)}", 0, False
     
     if (int(cSlayer.faction) not in self.bot.Factions and self.type == "factionwar"):
       return "Tu dois faire parti d'une faction pour combattre ici", 0, False
@@ -349,10 +353,20 @@ class Gamemode:
       return f"\n> **Raté !** Score insuffisant", 0, False
     
     #Spe Berserker
-    if hit == "s" and cSlayer.Spe.id == 8:
-      cSlayer.berserker_mode = 5
-      cSlayer.calculateStats(self.bot.rBaseBonuses)
+    if hit == "s" and cSlayer.cSpe.id == 8:
+      cSlayer.activate_temporary_stat()
       content = f"\n> Vous avez activé le mode Berserker, vous obtenez {int(self.bot.Variables['assassin_crit_chance_bonus'])*100}% Chance Critique et {int(self.bot.Variables['assassin_crit_damage_bonus'])*100}% Dégâts Critiques pendant 5 coups !"
+      cSlayer.useStacks(hit)
+      content += cSlayer.recap_useStacks(hit)
+      return content, 0, False
+    
+    if hit == "s" and cSlayer.cSpe.id == 5:
+      i = 0
+      for id in cOpponent.slayers_hits:
+        if id != cSlayer.id and cSlayer.cSpe.id != 5:
+          cOpponent.slayers_hits[id].timestamp_next_hit = datetime.timestamp(datetime.now())
+          i += 1
+      content = f"\n> Vous avez reset les attaques de {int(i)} Slayers !"
       cSlayer.useStacks(hit)
       content += cSlayer.recap_useStacks(hit)
       return content, 0, False
@@ -363,7 +377,7 @@ class Gamemode:
     
     #Nombre de hits que le Slayer peut faire :
     for i in range(cSlayer.getNbrHit()):
-      damage_dealt, damage_taken, hit_content, is_Crit = handler_Hit(Slayer, hit)
+      damage_dealt, damage_taken, hit_content, is_Crit = handler_Hit(cSlayer, hit)
       total_damage_dealt += damage_dealt
       total_damage_taken += damage_taken
       content += hit_content
@@ -404,44 +418,46 @@ class Gamemode:
     #Familier 
       #Critique
     if is_Crit:
-      await Slayer.getDrop(rate=0.004, pets=[230])
+      await cSlayer.getDrop(rate=0.004, pets=[230])
       #Damage
     if total_damage_dealt > 0:
-      await Slayer.getDrop(pets=[194])
+      await cSlayer.getDrop(pets=[194])
       #Bworky Final Damage S
     if total_damage_dealt > 150000 and hit == 's':
-      await Slayer.getDrop(rate=1, pets=[301])
+      await cSlayer.getDrop(rate=1, pets=[301])
       #Tirubima Final Damage H
     if total_damage_dealt > 50000 and hit == 'h':
-      await Slayer.getDrop(rate=1, pets=[302])
+      await cSlayer.getDrop(rate=1, pets=[302])
       #Blokus Parry %
     if total_damage_taken > 1000:
-      await Slayer.getDrop(rate=1, pets=[303])
+      await cSlayer.getDrop(rate=1, pets=[303])
       #Armor
     if total_damage_taken > 0:
-      await Slayer.getDrop(pets=[193])
+      await cSlayer.getDrop(pets=[193])
       #Leta
-    if Slayer.cSlayer.stats["total_letality_l"] + Slayer.cSlayer.stats["total_letality_h"] + Slayer.cSlayer.stats["total_letality_s"] > 6000:
-      await Slayer.getDrop(rate=1, pets=[409])
+    if cSlayer.stats["letality_l"] + cSlayer.stats["letality_h"] + cSlayer.stats["letality_s"] > 6000:
+      await cSlayer.getDrop(rate=1, pets=[409])
 
     #Achievement Biggest_Hit
-    await Slayer.update_biggest_hit(total_damage_dealt)
+    if total_damage_dealt > cSlayer.achievements.get("biggest_hit", 0):
+        cSlayer.achievements.update({"biggest_hit": total_damage_dealt})
+        await self.bot.dB.push_Achievement(cSlayer.id, "biggest_hit", total_damage_dealt)
       #1000
-    if Slayer.cSlayer.achievements['monsters_killed'] >= 1000:
-      await Slayer.getDrop(rate=1, pets=[411])
+    if cSlayer.achievements.get("monsters_killed", 0) >= 1000:
+      await cSlayer.getDrop(rate=1, pets=[411])
       #2000
-    if Slayer.cSlayer.achievements['monsters_killed'] >= 2000:
-      await Slayer.getDrop(rate=1, pets=[412])
+    if cSlayer.achievements.get("monsters_killed", 0) >= 2000:
+      await cSlayer.getDrop(rate=1, pets=[412])
       #5000
-    if Slayer.cSlayer.achievements['monsters_killed'] >= 5000:
-      await Slayer.getDrop(rate=1, pets=[413])
+    if cSlayer.achievements.get("monsters_killed", 0) >= 5000:
+      await cSlayer.getDrop(rate=1, pets=[413])
       #10000
-    if Slayer.cSlayer.achievements['monsters_killed'] >= 10000:
-      await Slayer.getDrop(rate=1, pets=[414])
+    if cSlayer.achievements.get("monsters_killed", 0) >= 10000:
+      await cSlayer.getDrop(rate=1, pets=[414])
 
 
     #On update le Slayer dans la dB
-    await self.bot.dB.push_slayer_data(Slayer.cSlayer)
+    await self.bot.dB.push_slayer_data(cSlayer)
 
     #A t on tué un monstre ?
     monster_killed = False

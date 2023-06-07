@@ -3,11 +3,13 @@ import datetime
 class DamageDone:
   def __init__(
     self, 
+    cSlayer,
     cooldown = 0,
     total_damage = 0,
     eligible=False,
-    luck = 0
+    luck = 0,
     ):
+    self.cSlayer = cSlayer
     self.total_damage = total_damage
     self.mult_spe = 0
     self.timestamp_next_hit = cooldown + datetime.datetime.timestamp(datetime.datetime.now())

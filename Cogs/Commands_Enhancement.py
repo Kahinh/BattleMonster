@@ -10,8 +10,8 @@ class Commands_Enhancement(lib.commands.GroupCog, name="amélioration"):
     """ Ouvre l'interface des familiers. Nourrissez les pour les améliorer. """
     await interaction.response.defer(ephemeral=True)
     if self.bot.power:
-      Slayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
-      view = lib.EnhancementPetsView(self.bot, Slayer, interaction)
+      cSlayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
+      view = lib.EnhancementPetsView(self.bot, cSlayer, interaction)
       await self.bot.ActiveList.add_interface(interaction.user.id, "ameliopet", view)
       await interaction.followup.send(embed=view.embed, view=view, ephemeral=True)
     else:
@@ -22,8 +22,8 @@ class Commands_Enhancement(lib.commands.GroupCog, name="amélioration"):
     """ Ouvre l'interface des mythiques. Améliorez les grâce à vos pierres mythiques. """
     await interaction.response.defer(ephemeral=True)
     if self.bot.power:
-      Slayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
-      view = lib.EnhancementMythicsView(self.bot, Slayer, interaction)
+      cSlayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
+      view = lib.EnhancementMythicsView(self.bot, cSlayer, interaction)
       await self.bot.ActiveList.add_interface(interaction.user.id, "ameliomythic", view)
       await interaction.followup.send(embed=view.embed, view=view, ephemeral=True)
     else:

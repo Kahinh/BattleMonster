@@ -11,22 +11,19 @@ class Equiped_Dropdown(lib.discord.ui.Select):
         await interaction.response.defer(ephemeral=True)
         if not self.view.obsolete:
             try:
-                self.view.Slayer.cSlayer.inventory_items[int(self.values[0])].unequip()
-                self.view.cObject.equip()
-                await self.view.Slayer.updateSlayer()
-                await self.view.bot.dB.switch_item(self.view.Slayer.cSlayer, self.view.cObject, self.view.Slayer.cSlayer.inventory_items[int(self.values[0])])
+                await self.view.cSlayer.equip_item(self.view.cObject)
+                await self.view.cSlayer.unequip_item(self.view.cSlayer.inventories["item"][int(self.values[0])])
 
                 #On update le Inventoryview ?
-                await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.id, "inventaire")
-                await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.id, "LootReview")
+                await self.view.bot.ActiveList.update_interface(self.view.cSlayer.id, "inventaire")
 
-                self.view.bot.ActiveList.remove_interface(self.view.Slayer.cSlayer.id, "mult_equip")
+                self.view.bot.ActiveList.remove_interface(self.view.cSlayer.id, "mult_equip")
                 message = await self.view.interaction.original_response()
                 await message.edit(view=None)
                 self.view.stop()
                 
-                self.view.Slayer.cSlayer.calculateStats(self.view.bot.rBaseBonuses)
-                await self.view.bot.ActiveList.close_interface(self.view.Slayer.cSlayer.id, self.view.cObject.id)
+                self.view.cSlayer.calculateStats(self.view.bot.rBaseBonuses)
+                await self.view.bot.ActiveList.close_interface(self.view.cSlayer.id, self.view.cObject.id)
                 await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
             except:
                 await interaction.followup.send("Une erreur s'est produite !", ephemeral=True)
@@ -34,22 +31,22 @@ class Equiped_Dropdown(lib.discord.ui.Select):
             await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
 class MultEquipView(lib.discord.ui.View):
-    def __init__(self, bot, Slayer, List, interaction, cObject):
+    def __init__(self, bot, cSlayer, List, interaction, cObject):
         super().__init__(timeout=60)
         self.bot = bot
-        self.Slayer = Slayer
+        self.cSlayer = cSlayer
         self.interaction = interaction
         self.cObject = cObject
         self.List = []
         self.obsolete = False
 
         for item in List: 
-            self.List.append(self.Slayer.cSlayer.inventory_items[item])
+            self.List.append(self.cSlayer.inventory_items[item])
 
         self.add_item(Equiped_Dropdown(self.List))
 
     async def close_view(self):
-        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.id, "mult_equip")
+        self.bot.ActiveList.remove_interface(self.cSlayer.id, "mult_equip")
         message = await self.interaction.original_response()
         await message.edit(view=None)
         self.stop()

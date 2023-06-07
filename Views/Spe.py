@@ -20,14 +20,9 @@ class Equip_Button(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
-            self.view.Slayer.cSlayer.special_stacks = 0
-            self.view.Slayer.cSlayer.mult_damage = 0
-            self.view.Slayer.cSlayer.berserker_mode = 0
-            self.view.Slayer.cSlayer.specialization = int(self.view.current_spe_id)
-            self.view.Slayer.cSlayer.Spe = self.view.bot.Specializations[int(self.view.current_spe_id)]
-            await self.view.bot.dB.push_slayer_data(self.view.Slayer.cSlayer)
-            await self.view.Slayer.updateSlayer()
-
+            # self.view.cSlayer.mult_damage = 0
+            # self.view.cSlayer.berserker_mode = 0
+            await self.view.cSlayer.set_specialization(self.view.current_spe_id)
             await self.view.update_view(interaction)
             await interaction.followup.send(content="La spécialité a bien été équipée !", ephemeral=True) 
         else:
@@ -40,14 +35,9 @@ class Buy_Button(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
-            if self.view.Slayer.cSlayer.money >= self.price:
-                self.view.Slayer.cSlayer.inventory_specializations.append(int(self.view.current_spe_id))
-                self.view.Slayer.removeMoney(self.price)
-
-                await self.view.bot.dB.push_slayer_data(self.view.Slayer.cSlayer)
-                await self.view.bot.dB.push_spe_list(self.view.Slayer.cSlayer)
+            if is_moneyspent := await self.view.cSlayer.add_remove_money(self.price):
+                await self.view.cSlayer.set_inventory_specializations(int(self.view.current_spe_id))
                 await self.view.update_view(interaction)
-
                 await interaction.followup.send(content="La spécialité a bien été achetée !", ephemeral=True) 
             else:
                 await interaction.response.send_message(content="Malheureusement, tu ne possèdes pas suffisament de 🪙 !", ephemeral=True)
@@ -55,21 +45,21 @@ class Buy_Button(lib.discord.ui.Button):
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class SpeView(lib.discord.ui.View):
-    def __init__(self, bot, Slayer, interaction):
+    def __init__(self, bot, cSlayer, interaction):
         super().__init__(timeout=120)
         self.bot = bot
-        self.Slayer = Slayer
+        self.cSlayer = cSlayer
         self.interaction = interaction
         self.current_spe_id = 1
         self.obsolete = False
 
         self.add_item(Spe_Dropdown(self.bot.Specializations))
-        if 1 != self.Slayer.cSlayer.specialization:
+        if 1 != self.cSlayer.cSpe.id:
             self.add_item(Equip_Button())
 
     async def update_view(self, interaction=None):
         cSpe = self.bot.Specializations[self.current_spe_id]
-        embed = lib.Embed.create_embed_spe(self.Slayer, cSpe)
+        embed = lib.Embed.create_embed_spe(self.cSlayer, cSpe)
         await self.update_buttons(cSpe)
         view = self  
         if interaction is None:
@@ -81,15 +71,14 @@ class SpeView(lib.discord.ui.View):
     async def update_buttons(self, cSpe):
         self.clear_items()
         self.add_item(Spe_Dropdown(self.bot.Specializations))
-        if int(cSpe.id) not in self.Slayer.cSlayer.inventory_specializations:
+        if int(cSpe.id) not in self.cSlayer.inventories["specializations"]:
             self.add_item(Buy_Button(cSpe.cost))
         else:
-            if cSpe.id != self.Slayer.cSlayer.specialization:
+            if cSpe.id != self.cSlayer.cSpe.id:
                 self.add_item(Equip_Button())
 
-
     async def close_view(self):
-        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.id, "inventaire_spe")
+        self.bot.ActiveList.remove_interface(self.cSlayer.id, "inventaire_spe")
         message = await self.interaction.original_response()
         await message.edit(view=None)
         self.stop()

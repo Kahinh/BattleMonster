@@ -56,22 +56,25 @@ class Opponent:
     self.letality_per = 0
 
   @staticmethod
-  def get_Opponent_Class(gamemode, element, rarity, type):
+  async def get_Opponent_Class(gamemode, element, rarity, type):
     if type == "banner":
-      return Banner(gamemode, element, rarity, type)
+      return await Banner.handler_Build(gamemode, element, rarity, type)
     else:
       if rarity == "mythic":
         return random.choice([ \
-              Mythique1(gamemode, element, rarity, type), \
-              Mythique2(gamemode, element, rarity, type), \
-              Mythique3(gamemode, element, rarity, type), \
-              Mythique4(gamemode, element, rarity, type), \
-              Mythique5(gamemode, element, rarity, type), \
-              Mythique6(gamemode, element, rarity, type)])
+              await Mythique1.handler_Build(gamemode, element, rarity, type), \
+              await Mythique2.handler_Build(gamemode, element, rarity, type), \
+              await Mythique3.handler_Build(gamemode, element, rarity, type), \
+              await Mythique4.handler_Build(gamemode, element, rarity, type), \
+              await Mythique5.handler_Build(gamemode, element, rarity, type), \
+              await Mythique6.handler_Build(gamemode, element, rarity, type)])
       else: 
-        return Monster(gamemode, element, rarity, type)
+        return await Monster.handler_Build(gamemode, element, rarity, type)
 
-  async def handler_Build(self):
+  @classmethod
+  async def handler_Build(cls, gamemode, element, rarity, type):
+
+    self = cls(gamemode, element, rarity, type)
 
     async def pullOpponentData():
       return await self.bot.dB.pull_OpponentData(self.rarity, self.element, self.type)
@@ -106,13 +109,15 @@ class Opponent:
     compileOpponentData(OpponentData)
     self.loot_table = await pullOpponentLootTable()
 
-  def dealDamage(self, Slayer):
-    armor = int(self.reduceArmor(Slayer.cSlayer.stats["total_armor"]))
+    return self
+
+  def dealDamage(self, cSlayer):
+    armor = int(self.reduceArmor(cSlayer.stats["armor"]))
     damage = int(self.damage)
     #Armor
-    damage = int(max(damage * 1000/(1000+armor), 0))
+    damage = int(max(damage * int(self.bot.Variables["ratio_armor"])/(int(self.bot.Variables["ratio_armor"])+armor), 0))
     #Max HP
-    damage = int(min(damage, Slayer.cSlayer.stats["total_max_health"] - Slayer.cSlayer.damage_taken))
+    damage = int(min(damage, cSlayer.health - cSlayer.damage_taken))
     return damage, f"\n> ↪️ Parade: **-{int(damage)}** vie"
 
   def reduceArmor(self, armor):
@@ -120,7 +125,7 @@ class Opponent:
       return int(armor)
 
   def storeLastHits(self, damage, cSlayer, gamemode_type):
-    if cSlayer.Spe.id != 4 and damage != 0:
+    if cSlayer.cSpe.id != 4 and damage != 0:
 
       #On check quelle liste il faut prendre
       list_lasthits = self.identify_lasthits_list(cSlayer)
@@ -131,12 +136,17 @@ class Opponent:
 
   def identify_lasthits_list(self, cSlayer):
     return self.last_hits
+  
+  def extract_lasthits_list(self, cSlayer):
+    extraction = sum(self.last_hits)
+    self.last_hits = []
+    return extraction
 
-  def isParry(self, hit, Slayer):
-    if (self.parry["parry_chance_l"] + Slayer.cSlayer.stats[f"total_parry_l"]) >= 1 and (self.parry["parry_chance_h"] + Slayer.cSlayer.stats[f"total_parry_h"]) >= 1:
+  def isParry(self, hit, cSlayer):
+    if (self.parry["parry_chance_l"] + cSlayer.stats[f"parry_l"]) >= 1 and (self.parry["parry_chance_h"] + cSlayer.stats[f"parry_h"]) >= 1:
       return True
     else:
-      ParryChance = min(max(self.parry[f"parry_chance_{hit}"] + Slayer.cSlayer.stats[f"total_parry_{hit}"], 0), 1)
+      ParryChance = min(max(self.parry[f"parry_chance_{hit}"] + cSlayer.stats[f"parry_{hit}"], 0), 1)
       return random.choices(population=[True, False], weights=[ParryChance, 1-ParryChance], k=1)[0]
 
   def getDamage(self, damage):
@@ -159,9 +169,9 @@ class Opponent:
 
   def slayer_storeAttack(self, cSlayer, damage, hit):
     if cSlayer.id in self.slayers_hits:
-      self.slayers_hits[cSlayer.id].updateClass(damage, None if hit == "s" else cSlayer.stats["total_cooldown"], cSlayer.stats["total_luck"])
+      self.slayers_hits[cSlayer.id].updateClass(damage, None if hit == "s" else cSlayer.stats["cooldown"], cSlayer.stats["luck"])
     else:
-      self.slayers_hits[cSlayer.id] = DamageDone(0 if hit == "s" else cSlayer.stats["total_cooldown"], damage if damage > 0 else 0, True if damage > 0 else False, cSlayer.stats["total_luck"])
+      self.slayers_hits[cSlayer.id] = DamageDone(cSlayer, 0 if hit == "s" else cSlayer.stats["cooldown"], damage if damage > 0 else 0, True if damage > 0 else False, cSlayer.stats["luck"])
     content = self.slayers_hits[cSlayer.id].checkStatus(damage, self)
     return content
   
@@ -193,7 +203,7 @@ class Opponent:
       else:
         return False
 
-  def get_roll_dices(self, Slayer):
+  def get_roll_dices(self, cSlayer):
     return self.roll_dices
 
 @dataclass
@@ -201,7 +211,7 @@ class Monster(Opponent):
   def __init__(self, gamemode, element, rarity, type):
     super().__init__(gamemode, element, rarity, type)
 
-  def award_mythic_stones(self, Slayer):
+  def award_mythic_stones(self, cSlayer):
     return 0
   
 class Banner(Opponent):
@@ -254,22 +264,27 @@ class Banner(Opponent):
   def identify_lasthits_list(self, cSlayer):
     return self.last_hits[cSlayer.faction]
 
+  def extract_lasthits_list(self, cSlayer):
+    extraction = sum(self.last_hits[cSlayer.faction])
+    self.last_hits[cSlayer.faction] = []
+    return extraction
+
   def getDamage(self, damage):
     pass
 
-  def get_roll_dices(self, Slayer):
+  def get_roll_dices(self, cSlayer):
     listed_factions = dict(sorted(self.faction_best_damage.items(), key=lambda x:x[1], reverse=True))
-    slayer_faction_positionning = list(listed_factions.keys()).index(Slayer.cSlayer.faction)
+    slayer_faction_positionning = list(listed_factions.keys()).index(cSlayer.faction)
 
     roll_dices = max(self.roll_dices - (slayer_faction_positionning * int(self.bot.Variables["factionwar_roll_dices_malus_by_positionning"])), 0)
     return int(roll_dices)
 
-  def isParry(self, hit, Slayer):
+  def isParry(self, hit, cSlayer):
     return False
   
-  def award_mythic_stones(self, Slayer):
+  def award_mythic_stones(self, cSlayer):
     listed_factions = dict(sorted(self.faction_best_damage.items(), key=lambda x:x[1], reverse=True))
-    slayer_faction_positionning = list(listed_factions.keys()).index(Slayer.cSlayer.faction)
+    slayer_faction_positionning = list(listed_factions.keys()).index(cSlayer.faction)
 
     roll_dices = max(self.roll_dices - (slayer_faction_positionning * int(self.bot.Variables["factionwar_roll_dices_malus_by_positionning"])), 0)
     return int(roll_dices)
@@ -278,7 +293,7 @@ class Mythique(Opponent):
   def __init__(self, gamemode, element, rarity, type):
     super().__init__(gamemode, element, "mythic", type)
 
-  def award_mythic_stones(self, Slayer):
+  def award_mythic_stones(self, cSlayer):
     return random.randint(int(self.bot.Variables["min_mythic_stones"]),int(self.bot.Variables["max_mythic_stones"]))
 
 class Mythique1(Mythique):

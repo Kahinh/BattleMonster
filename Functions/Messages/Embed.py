@@ -114,12 +114,12 @@ def create_embed_end_factionwar(Battle):
     embed.set_thumbnail(url='https://images-ext-2.discordapp.net/external/K5FrBGB9d-8IbCg_bnZyheglS9Q61aXohV4hJSMiImA/%3Fcb%3D20200801054948/https/static.wikia.nocookie.net/dauntless_gamepedia_en/images/1/13/Hunt_Icon.png/revision/latest')
     return embed
 
-def create_embed_new_loot(bot, Slayer, cObject):
+def create_embed_new_loot(bot, cSlayer, cObject):
 
-    content = Slayer.equippedonSlot(cObject.slot)
+    content = cSlayer.equippedonSlot(cObject.slot)
     #Setup Description
     description = \
-        f"*{bot.Elements[cObject.element].display_emote} {bot.rSlots[cObject.slot]['display_text']} {bot.Rarities[cObject.rarity].display_text}*" \
+        f"*{bot.Elements[cObject.element].display_emote} {bot.Slots[cObject.slot].display_text} {bot.Rarities[cObject.rarity].display_text}*" \
         f"\n\n{cObject.description}"
 
     if content != "":
@@ -140,20 +140,20 @@ def create_embed_new_loot(bot, Slayer, cObject):
 
     return embed
 
-def create_embed_money_loot(bot, Slayer, cObject):
+def create_embed_money_loot(bot, cSlayer, cObject):
 
-    content = Slayer.equippedonSlot(cObject.slot)
+    content = cSlayer.equippedonSlot(cObject.slot)
 
     #Setup Description
     description = \
-        f"*{bot.Elements[cObject.element].display_emote} {bot.rSlots[cObject.slot]['display_text']} {bot.Rarities[cObject.rarity].display_text}*" \
+        f"*{bot.Elements[cObject.element].display_emote} {bot.Slots[cObject.slot].display_text} {bot.Rarities[cObject.rarity].display_text}*" \
         f"\n\n{cObject.description}"
 
     if content != "":
         description += content
 
     description += \
-        f"\n\nVous possédez déjà ce {bot.rSlots[cObject.slot]['display_text']} ! Il a dont été vendu pour **{bot.Rarities[cObject.rarity].price} 🪙**" \
+        f"\n\nVous possédez déjà ce {bot.Slots[cObject.slot].display_text} ! Il a dont été vendu pour **{bot.Rarities[cObject.rarity].price} 🪙**" \
         f"\n\n📑 Détails - Afficher les statistiques de l'équipement"
 
     embed=lib.discord.Embed(title=f"{cObject.name}",
@@ -165,7 +165,7 @@ def create_embed_money_loot(bot, Slayer, cObject):
 
     return embed
 
-def create_embed_item(bot, cObject1, Slayer, cObject2=None):
+def create_embed_item(bot, cSlayer, cObject1, cObject2=None):
     #cObject1 = Celui qu'on regarde
     #cObject2 = Celui qu'on possède
     if cObject1 == None:
@@ -176,12 +176,15 @@ def create_embed_item(bot, cObject1, Slayer, cObject2=None):
         )        
     else:
         desc_stat = cObject1.getDisplayStats(cObject2)
-        content = Slayer.equippedonSlot(cObject1.slot)
+        slots_items_equipped = cSlayer.slot_items_equipped(bot.Slots[cObject1.slot])
 
         description = f"__Description :__\n{cObject1.description}"
 
-        if content != "":
-            description += content
+        if slots_items_equipped != []:
+            description += f"\n\n__Objet(s) actuellement équipés à cet emplacement :__"
+            for cObject in slots_items_equipped:
+                description += f"\n- {bot.Elements[cObject.element].display_emote} {'[' + str(cObject.level) + ']' if cObject.level > 0 else ''} {cObject.name} ({cObject.slot} / {bot.Rarities[cObject.rarity].display_text})"
+
 
         description += f"\n\n__Statistiques :__{desc_stat}"
         
@@ -194,85 +197,42 @@ def create_embed_item(bot, cObject1, Slayer, cObject2=None):
         embed.set_thumbnail(url=f"{cObject1.img_url}")
     return embed
 
-def create_embed_profil(Slayer, avatar):
+def create_embed_achievement(cSlayer, avatar):
 
     description = \
-    f"**{Slayer.cSlayer.Spe.emote} {Slayer.cSlayer.Spe.name}** {'*[ON : ' + str(Slayer.cSlayer.berserker_mode) + '/5]*' if Slayer.cSlayer.berserker_mode > 0 else ''}" \
-    f"\n🪙 Coin : **{int(Slayer.cSlayer.money)}**" \
-    "\n\n**__Statistiques__**" \
-    f"\n{'💀' if Slayer.cSlayer.dead else '❤️'} Vie : **{int(Slayer.cSlayer.stats['total_max_health'] - Slayer.cSlayer.damage_taken)}/{Slayer.cSlayer.stats['total_max_health']}**" \
-    f"\n🔰 Score : **{Slayer.cSlayer.gearscore}**" \
-    f"\n🛡️ Armure : **{Slayer.cSlayer.stats['total_armor']}**" \
-    f"\n🌪️ Vivacité : **{Slayer.cSlayer.stats['total_cooldown']}**s" \
-    f"\n☄️ Charge : **{Slayer.cSlayer.special_stacks}/{Slayer.cSlayer.stats['total_stacks']}**" \
-    f"\n🍀 Luck : **{Slayer.cSlayer.stats['total_luck'] * 100}**%"
+    f"🎖️ Monstres tués : **{cSlayer.achievements['monsters_killed']}**" \
+    f"\n🏆 Meilleur attaque : **{cSlayer.achievements['biggest_hit']}**"
 
-    embed=lib.discord.Embed(title=f"Profil de {Slayer.cSlayer.name}",
-    description=description,
-    color=0x1abc9c)   
-
-    for i in ("l", "h", "s"):
-        if not (i == "s" and Slayer.cSlayer.Spe.id == 8):
-            if i == "l":
-                name = "__Attaque Légère__"
-            elif i == "h":
-                name = "__Attaque Lourde__"
-            elif i == "s":
-                name = "__Capacité Spéciale__"
-            description = \
-            f"\n⚔️ Puissance : **{Slayer.cSlayer.stats['total_damage_' + i]}**" \
-            f"\n⚔️ Dégâts Finaux : **{int(Slayer.cSlayer.stats['total_final_damage_' + i]*100)}**%" \
-            f"\n☄️ Gains Charge : **{Slayer.cSlayer.stats['total_special_charge_' + i]}**" \
-            f"\n✨ Chance Critique : **{int(Slayer.cSlayer.stats['total_crit_chance_' + i]*100)}**%" \
-            f"\n💢 Dégâts Critiques : **{int(Slayer.cSlayer.stats['total_crit_damage_' + i]*100)}**%" \
-            f"\n🗡️ Pénétration : **{Slayer.cSlayer.stats['total_letality_' + i]}**,  **{int(Slayer.cSlayer.stats['total_letality_per_' + i]*100)}**%"
-            if int(Slayer.cSlayer.stats['total_parry_' + i]*100) != 0:
-                description += f"\n↪️ Parade : **{int(Slayer.cSlayer.stats['total_parry_' + i]*100)}**%"
-            embed.add_field(name=name, value=description, inline=False)
-
-    embed.set_thumbnail(url=avatar)
-    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(Slayer.cSlayer.creation_date).strftime("%d/%m/%Y")}')
-    return embed
-
-def create_embed_achievement(Slayer, avatar):
-
-    description = \
-    f"🎖️ Monstres tués : **{Slayer.cSlayer.achievements['monsters_killed']}**" \
-    f"\n🏆 Meilleur attaque : **{Slayer.cSlayer.achievements['biggest_hit']}**"
-
-    embed=lib.discord.Embed(title=f"Prouesses de {Slayer.cSlayer.name}",
+    embed=lib.discord.Embed(title=f"Prouesses de {cSlayer.name}",
     description=description,
     color=0x1abc9c)   
 
     embed.set_thumbnail(url=avatar)
-    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(Slayer.cSlayer.creation_date).strftime("%d/%m/%Y")}')
+    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cSlayer.creation_date).strftime("%d/%m/%Y")}')
     return embed
 
-def create_embed_equipment(bot, Slayer, avatar):
-    description = f"Score d'équipement : **{int(Slayer.cSlayer.gearscore)}**\n"
-    for slot in Slayer.cSlayer.slots_count:
-        if Slayer.cSlayer.slots_count[slot]['activated']:
-            if Slayer.cSlayer.slots_count[slot]['count'] > 0:
-                if slot in Slayer.cSlayer.slots: nbr = len(Slayer.cSlayer.slots[slot])
-                else: nbr = 0
-                description += f"\n**{Slayer.cSlayer.slots_count[slot]['display_emote']} {Slayer.cSlayer.slots_count[slot]['display_text']}** - ({nbr}/{Slayer.cSlayer.slots_count[slot]['count']})"
-                if slot in Slayer.cSlayer.slots:
-                    for item in Slayer.cSlayer.slots[slot]:
-                        cObject = Slayer.cSlayer.inventory_items[item]
-                        if cObject.level > 1:
-                            description += f"\n- {bot.Elements[cObject.element].display_emote} [{cObject.level}] {cObject.name} - *{bot.Rarities[cObject.rarity].display_text}*"
-                        else:
-                            description += f"\n- {bot.Elements[cObject.element].display_emote} {cObject.name} - *{bot.Rarities[cObject.rarity].display_text}*"
+def create_embed_equipment(bot, cSlayer, avatar, group):
+    description = f"Score d'équipement : **{int(cSlayer.gearscore)}**\n"
+    for _, cSlot in bot.Slots.items():
+        if cSlot.activated and cSlot.group == group:
+            if (nbr := cSlayer.slot_nbr_max_items(cSlot)) > 0:
+                description += f"\n**{cSlot.display_emote} {cSlot.display_text}** - ({str(nbr)})"
+                for cObject in cSlayer.slot_items_equipped(cSlot):
+                    if cObject.level > 1:
+                        description += f"\n- {bot.Elements[cObject.element].display_emote} [{cObject.level}] {cObject.name} - *{bot.Rarities[cObject.rarity].display_text}*"
+                    else:
+                        description += f"\n- {bot.Elements[cObject.element].display_emote} {cObject.name} - *{bot.Rarities[cObject.rarity].display_text}*"
 
-    embed=lib.discord.Embed(title=f"Équipement de {Slayer.cSlayer.name}",
+
+    embed=lib.discord.Embed(title=f"Équipement de {cSlayer.name}",
     description=description,
     color=0x1abc9c)   
 
     embed.set_thumbnail(url=avatar)
-    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(Slayer.cSlayer.creation_date).strftime("%d/%m/%Y")}')
+    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cSlayer.creation_date).strftime("%d/%m/%Y")}')
     return embed
 
-def create_embed_spe(Slayer, cSpe):
+def create_embed_spe(cSlayer, cSpe):
     embed=lib.discord.Embed(title=f"{cSpe.emote} {cSpe.name}",
     description= \
         f"{cSpe.description}\n" \
@@ -281,7 +241,7 @@ def create_embed_spe(Slayer, cSpe):
         f"\n\n__Statistiques :__"
         f"{cSpe.getDisplayStats()}" \
         f"\n**Actuellement équipé :**" \
-        f"\n{Slayer.cSlayer.Spe.emote} {Slayer.cSlayer.Spe.name}",
+        f"\n{cSlayer.cSpe.emote} {cSlayer.cSpe.name}",
     color=0xe74c3c
     )        
     embed.set_thumbnail(url="https://media.discordapp.net/attachments/1000070083915304991/1033518782544613417/unknown.png")
@@ -297,7 +257,7 @@ def create_embed_recap_loot(bot, recap_loot):
     if recap_loot.get('items', []) != []:
         description += f"\n\n__Item(s) récupéré(s) :__"
         for cObject in recap_loot['items']:
-            description += f"\n- {bot.Elements[cObject.element].display_emote} {cObject.name} (*{bot.rSlots[cObject.slot]['display_text']} {bot.Rarities[cObject.rarity].display_text}*)"
+            description += f"\n- {bot.Elements[cObject.element].display_emote} {cObject.name} (*{bot.Slots[cObject.slot].display_text} {bot.Rarities[cObject.rarity].display_text}*)"
 
     embed=lib.discord.Embed(title=f"Récapitulatif Butin :",
     description=description,
@@ -306,10 +266,10 @@ def create_embed_recap_loot(bot, recap_loot):
     embed.set_thumbnail(url="https://media.discordapp.net/attachments/1000070083915304991/1034553474999922848/unknown.png?width=1022&height=1022")
     return embed        
 
-def create_embed_new_pet(bot, Slayer, cObject):
+def create_embed_new_pet(bot, cSlayer, cObject):
     #Setup Description
     description = \
-        f"*{bot.Elements[cObject.element].display_emote} {bot.rSlots[cObject.slot]['display_text']} {bot.Rarities[cObject.rarity].display_text}*" \
+        f"*{bot.Elements[cObject.element].display_emote} {bot.Slots[cObject.slot].display_text} {bot.Rarities[cObject.rarity].display_text}*" \
         f"\n\n{cObject.description}"
 
     description += \
@@ -356,22 +316,22 @@ def create_embed_gatherables_gathered(Gather, nbr=1):
 
     return embed   
 
-def create_embed_gatherables_profil(Slayer, avatar, bot):
+def create_embed_gatherables_profil(cSlayer, avatar, bot):
 
     description = ""
-    for gatherable_id in Slayer.cSlayer.inventory_gatherables:
-        if int(Slayer.cSlayer.inventory_gatherables[gatherable_id]) > 0:
-            description += f"\n- {bot.Gatherables[gatherable_id].display_emote} {bot.Gatherables[gatherable_id].name} : {Slayer.cSlayer.inventory_gatherables[gatherable_id]}"
+    for gatherable_id in cSlayer.inventories["gatherables"]:
+        if int(cSlayer.inventories["gatherables"][gatherable_id]) > 0:
+            description += f"\n- {bot.Gatherables[gatherable_id].display_emote} {bot.Gatherables[gatherable_id].name} : {cSlayer.inventories['gatherables'][gatherable_id]}"
 
-    embed=lib.discord.Embed(title=f"Ressources de {Slayer.cSlayer.name}",
+    embed=lib.discord.Embed(title=f"Ressources de {cSlayer.name}",
     description=description,
     color=0x1abc9c)   
 
     embed.set_thumbnail(url=avatar)
-    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(Slayer.cSlayer.creation_date).strftime("%d/%m/%Y")}')
+    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cSlayer.creation_date).strftime("%d/%m/%Y")}')
     return embed
 
-def create_embed_enhancement_pet(Slayer, pet_list, index, bot):
+def create_embed_enhancement_pet(cSlayer, pet_list, index, bot):
     if pet_list == []:   
         embed=lib.discord.Embed(title=f"Pas d'améliorations",
         description="Vous ne possédez pas de familiers améliorables.",
@@ -383,7 +343,7 @@ def create_embed_enhancement_pet(Slayer, pet_list, index, bot):
         description += pet_list[index].getDisplayStats()
 
         description += "\n\n**__Nourriture :__**"
-        description += f"\n{bot.PetFood[pet_list[index].id].display_emote} {bot.PetFood[pet_list[index].id].name} - **{Slayer.cSlayer.inventory_gatherables[bot.PetFood[pet_list[index].id].id]}/{100-pet_list[index].level}** requis pour atteindre le nv. max."
+        description += f"\n{bot.PetFood[pet_list[index].id].display_emote} {bot.PetFood[pet_list[index].id].name} - **{cSlayer.inventories['gatherables'][bot.PetFood[pet_list[index].id].id]}/{100-pet_list[index].level}** requis pour atteindre le nv. max."
 
         embed=lib.discord.Embed(title=f"{pet_list[index].name} - Niveau : {pet_list[index].level}",
         description=description,
@@ -392,7 +352,7 @@ def create_embed_enhancement_pet(Slayer, pet_list, index, bot):
         embed.set_thumbnail(url=pet_list[index].img_url)
     return embed
 
-def create_embed_enhancement_mythic(Slayer, mythic_list, index, bot):
+def create_embed_enhancement_mythic(cSlayer, mythic_list, index, bot):
     if mythic_list == []:   
         embed=lib.discord.Embed(title=f"Pas d'améliorations disponibles",
         description="Vous ne possédez pas de mythiques améliorables.",
@@ -404,7 +364,7 @@ def create_embed_enhancement_mythic(Slayer, mythic_list, index, bot):
         description += mythic_list[index].getDisplayStats()
 
         description += "\n\n**__Améliorations :__**"
-        description += f"\n{bot.Gatherables[5].display_emote} {bot.Gatherables[5].name} - **{Slayer.cSlayer.inventory_gatherables[5]}** disponibles."
+        description += f"\n{bot.Gatherables[5].display_emote} {bot.Gatherables[5].name} - **{cSlayer.inventories['gatherables'][5]}** disponibles."
 
         embed=lib.discord.Embed(title=f"{bot.Elements[mythic_list[index].element].display_emote} {mythic_list[index].name} - Niveau : {mythic_list[index].level}",
         description=description,
@@ -412,3 +372,63 @@ def create_embed_enhancement_mythic(Slayer, mythic_list, index, bot):
 
         embed.set_thumbnail(url=mythic_list[index].img_url)
     return embed
+
+def create_embed_profil_global(cSlayer, avatar):
+
+    description = \
+    f"**{cSlayer.cSpe.emote} {cSlayer.cSpe.name}**" \
+    f"```- 🪙 Coin : {int(cSlayer.money)}```" \
+    "**__Statistiques__**" \
+    f"```- {'💀' if cSlayer.dead else '❤️'} Vie : {int(cSlayer.current_health)}/{cSlayer.health}```" \
+    f"```- 🔰 Score : {cSlayer.gearscore}```" \
+    f"```- 🛡️ Armure : {cSlayer.stats['armor']}```" \
+    f"```- 🌪️ Vivacité : {cSlayer.stats['cooldown']}s```" \
+    f"```- ☄️ Charge : {cSlayer.special_stacks}/{cSlayer.stats['stacks']}```" \
+    f"```- 🍀 Luck : {int(cSlayer.stats['luck'] * 100)}%```"
+
+    embed=lib.discord.Embed(title=f"Profil de {cSlayer.name}",
+    description=description,
+    color=0x1abc9c)   
+
+    embed.set_thumbnail(url=avatar)
+    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cSlayer.creation_date).strftime("%d/%m/%Y")}')
+    return embed
+
+def create_embed_profil_l(cSlayer, avatar):
+    bot = cSlayer.bot
+    description = "**__Statistiques__**"
+    for statistic in cSlayer.stats:
+        if "_l" in statistic:
+            description += f"```- {bot.Statistics[statistic[:-2]].display_emote} {bot.Statistics[statistic[:-2]].display_name}: {str(int(cSlayer.stats[statistic]*100)) + '%' if bot.Statistics[statistic[:-2]].percentage else int(cSlayer.stats[statistic])}```"
+    embed=lib.discord.Embed(title=f"Statistiques Attaques Légères de {cSlayer.name}",
+    description=description,
+    color=0x1abc9c)  
+    embed.set_thumbnail(url=avatar)
+    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cSlayer.creation_date).strftime("%d/%m/%Y")}')
+    return embed 
+
+def create_embed_profil_h(cSlayer, avatar):
+    bot = cSlayer.bot
+    description = "**__Statistiques__**"
+    for statistic in cSlayer.stats:
+        if "_h" in statistic:
+            description += f"```- {bot.Statistics[statistic[:-2]].display_emote} {bot.Statistics[statistic[:-2]].display_name}: {str(int(cSlayer.stats[statistic]*100)) + '%' if bot.Statistics[statistic[:-2]].percentage else int(cSlayer.stats[statistic])}```"
+    embed=lib.discord.Embed(title=f"Statistiques Attaques Lourdes de {cSlayer.name}",
+    description=description,
+    color=0x1abc9c)  
+    embed.set_thumbnail(url=avatar)
+    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cSlayer.creation_date).strftime("%d/%m/%Y")}')
+    return embed 
+
+def create_embed_profil_s(cSlayer, avatar):
+    bot = cSlayer.bot
+    description = "**__Statistiques__**"
+    for statistic in cSlayer.stats:
+        if "_s" in statistic:
+            description += f"```- {bot.Statistics[statistic[:-2]].display_emote} {bot.Statistics[statistic[:-2]].display_name}: {str(int(cSlayer.stats[statistic]*100)) + '%' if bot.Statistics[statistic[:-2]].percentage else int(cSlayer.stats[statistic])}```"
+    embed=lib.discord.Embed(title=f"Statistiques Attaques Spéciales de {cSlayer.name}",
+    description=description,
+    color=0x1abc9c)  
+    embed.set_thumbnail(url=avatar)
+    embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cSlayer.creation_date).strftime("%d/%m/%Y")}')
+    return embed 

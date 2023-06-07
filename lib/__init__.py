@@ -43,12 +43,11 @@ from Views.Enhancement_Mythics import EnhancementMythicsView
 from Classes.DamageDone import DamageDone
 from Classes.dBManager import dB
 from Classes.ActiveList import ActiveList
-from Classes.MainSlayers import MSlayer, Slayer
-from Classes.Properties import Rarities, Elements
+from Classes.Properties import Rarity, Element, Slot, Statistic
 from Classes.Handler_Gatherables import Gather, GatherablesSpawn, Gatherables
 from Classes.Opponents import Opponent, Monster, Banner, Mythique1, Mythique2, Mythique3, Mythique4, Mythique5, Mythique6
 from Classes.Gamemodes import Gamemode, Hunt, FactionWar, Donjon
-from Classes.Attributes import Spe, Faction
+from Classes.Attributes import Spe, Faction, Base_Slayer
 from Classes.Objects import Object, Item, Mythic, Pet
 
 #TODO TODELETE
@@ -58,6 +57,7 @@ from Classes.Queries import qGameModes, qOpponents, qChannels, qBaseBonuses, qRa
 import Functions.Messages.Embed as Embed
 import Functions.Tools.Toolbox as Toolbox
 from Functions.Tools.DisplayStats import get_display_stats
+from Functions.Tools.generate_bonuses import get_bonuses, add_bonuses, remove_bonuses, cap_min_max_stats
 
 #Localisation
 

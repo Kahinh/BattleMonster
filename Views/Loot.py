@@ -5,7 +5,7 @@ class Details_Button(lib.discord.ui.Button):
         super().__init__(label="Détails", style=lib.discord.ButtonStyle.blurple)
 
     async def callback(self, interaction: lib.discord.Interaction):
-        embed = lib.Embed.create_embed_item(self.view.bot, self.view.cObject, self.view.Slayer)
+        embed = lib.Embed.create_embed_item(self.view.bot, self.view.cObject, self.view.cSlayer)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 class Equip_Button(lib.discord.ui.Button):
@@ -13,61 +13,40 @@ class Equip_Button(lib.discord.ui.Button):
         super().__init__(label="Équiper", style=lib.discord.ButtonStyle.green)
         
     async def callback(self, interaction: lib.discord.Interaction):
-        if self.view.Slayer.cSlayer.id == interaction.user.id:
+        if self.view.cSlayer.id == interaction.user.id:
             #On call la fonction
-            Slayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, "")
-            isEquipped, List = await Slayer.equip_item(self.view.cObject)
+            cSlayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, "")
+            isEquipped, List = await cSlayer.equip_item(self.view.cObject)
 
             if isEquipped:
                 #On update le Inventoryview ?
-                await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.id, "inventaire")
+                await self.view.bot.ActiveList.update_interface(self.view.cSlayer.id, "inventaire")
                 await interaction.response.send_message(content="L'objet a été équipé !", ephemeral=True) 
             else:
                 if len(List) == 0:
                     await interaction.response.send_message(content="Une erreur est survenue !", ephemeral=True)
                 else:
-                    viewMult = lib.MultEquipView(self.view.bot, self.view.Slayer, List, interaction, self.view.cObject)
+                    viewMult = lib.MultEquipView(self.view.bot, self.view.cSlayer, List, interaction, self.view.cObject)
                     await self.view.bot.ActiveList.add_interface(interaction.user.id, "mult_equip", viewMult)
                     await interaction.response.send_message(content="Tous les emplacements sont déjà utilisés, quel objet souhaitez-vous remplacer ?", view=viewMult, ephemeral=True)
         
         else:
             await interaction.response.send_message("Ce n'est pas ton butin !", ephemeral=True)
 
-class Sell_Button(lib.discord.ui.Button):
-    def __init__(self):
-        super().__init__(label="Vendre", style=lib.discord.ButtonStyle.red)
-
-    async def callback(self, interaction: lib.discord.Interaction):
-        if self.view.Slayer.cSlayer.id == interaction.user.id:
-
-            #On call la fonction
-            Slayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, "")
-            Sold = await Slayer.sell_item(self.view.cObject)
-            await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.id, "inventaire")
-
-            if Sold:
-                await interaction.response.send_message("L'objet a été vendu !", ephemeral=True)
-            else:
-                await interaction.response.send_message("Une erreur s'est produite !", ephemeral=True)
-            
-        else:
-            await interaction.response.send_message("Ce n'est pas ton butin !", ephemeral=True)
-
 class LootView(lib.discord.ui.View):
-    def __init__(self, bot, Slayer, cObject, isLoot=False):
+    def __init__(self, bot, cSlayer, cObject, isLoot=False):
         super().__init__(timeout=600)
         self.bot = bot
-        self.Slayer = Slayer
+        self.cSlayer = cSlayer
         self.cObject = cObject
 
         # Adds the dropdown to our view object.
         self.add_item(Details_Button())
         if isLoot:
             self.add_item(Equip_Button())
-            #self.add_item(Sell_Button())
 
     async def end_view(self):
-        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.id, self.cObject.id)
+        self.bot.ActiveList.remove_interface(self.cSlayer.id, self.cObject.id)
         await self.message.edit(view=None)
         self.stop()
 

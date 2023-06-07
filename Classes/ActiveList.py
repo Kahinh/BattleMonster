@@ -1,15 +1,7 @@
 import datetime
-from email import message
-import os
-import inspect
-import sys
 import asyncio
 
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir) 
-
-from Classes.MainSlayers import MSlayer
+from Classes.Slayers import Slayer
 
 class ActiveList:
   def __init__(
@@ -35,14 +27,14 @@ class ActiveList:
   async def get_Slayer(self, user_id, user_name):
     if user_id not in self.active_slayers:
       #On init le Slayer
-      Slayer = MSlayer(self.bot, user_id, user_name)
-      await Slayer.constructClass()
-      self.add_active_slayer(user_id, Slayer)
+      cSlayer = await Slayer.handler_Build(self.bot, user_id, user_name)
+      cSlayer.trigger_refreshes()
+      self.add_active_slayer(user_id, cSlayer)
     else:
-      Slayer = self.active_slayers[user_id].Slayer
+      cSlayer = self.active_slayers[user_id].cSlayer
       self.active_slayers[user_id].timestamp = datetime.datetime.timestamp(datetime.datetime.now())
-    await Slayer.getDrop(rate=1, pets=[410])
-    return Slayer
+    await cSlayer.getDrop(rate=1, pets=[410])
+    return cSlayer
 
   async def add_interface(self, id, interface_name, interface_class):
     #On check si on peut add une interface, et on retourne si elle est déjà utilisée
@@ -64,14 +56,14 @@ class ActiveList:
 
   def get_active_Slayer(self, user_id):
     if user_id in self.active_slayers:
-      Slayer = self.active_slayers[user_id].Slayer
+      cSlayer = self.active_slayers[user_id].cSlayer
       self.active_slayers[user_id].timestamp = datetime.datetime.timestamp(datetime.datetime.now())
-      return Slayer
+      return cSlayer
     else:
       return None
 
-  def add_active_slayer(self, id, Slayer):
-    self.active_slayers[id] = ActiveSlayer(Slayer)
+  def add_active_slayer(self, id, cSlayer):
+    self.active_slayers[id] = ActiveSlayer(cSlayer)
 
   def remove_interface(self, id, interface):
     if id in self.active_slayers:
@@ -148,10 +140,10 @@ class ActiveList:
 class ActiveSlayer:
   def __init__(
     self,
-    Slayer
+    cSlayer
     ):
     self.timestamp = datetime.datetime.timestamp(datetime.datetime.now())
-    self.Slayer = Slayer
+    self.cSlayer = cSlayer
     self.interfaces = {}
 
   def isInactive(self):

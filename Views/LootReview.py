@@ -5,7 +5,7 @@ class Loot_Dropdown(lib.discord.ui.Select):
         options = []
         options.append(lib.discord.SelectOption(label="Recap", value="None", emoji="♾️"))
         for cObject in loot_recap["items"]:
-            options.append(lib.discord.SelectOption(label=cObject.name, value=cObject.id, emoji=bot.rSlots[cObject.slot]["display_emote"]))
+            options.append(lib.discord.SelectOption(label=cObject.name, value=cObject.id, emoji=bot.Slots[cObject.slot].display_emote))
 
         super().__init__(placeholder='Filtrer le butin ...', min_values=1, max_values=1, options=options)
 
@@ -28,17 +28,17 @@ class Equip_Button(lib.discord.ui.Button):
                 if int(cObject.id) == int(self.view.item_displayed):
                     cObject_equipped = cObject
 
-            isEquipped, List = await self.view.Slayer.equip_item(cObject_equipped)
+            isEquipped, List = await self.view.cSlayer.equip_item(cObject_equipped)
 
             if isEquipped:
                 await self.view.update_view(interaction) 
-                await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.id, "inventaire")
+                await self.view.bot.ActiveList.update_interface(self.view.cSlayer.id, "inventaire")
                 await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
             else:
                 if len(List) == 0:
                     await interaction.response.send_message(content="Une erreur est survenue !", ephemeral=True)
                 else:
-                    viewMult = lib.MultEquipView(self.view.bot, self.view.Slayer, List, interaction, cObject_equipped)
+                    viewMult = lib.MultEquipView(self.view.bot, self.view.cSlayer, List, interaction, cObject_equipped)
                     await self.view.bot.ActiveList.add_interface(interaction.user.id, "mult_equip", viewMult)
                     await interaction.response.send_message(content="Tous les emplacements sont déjà utilisés, quel objet souhaitez-vous remplacer ?", view=viewMult, ephemeral=True)
         else:
@@ -53,10 +53,10 @@ class Sell_Button(lib.discord.ui.Button):
             for cObject in self.view.recap_loot["items"]:
                 if int(cObject.id) == int(self.view.item_displayed):
                     cObject_sold = cObject
-            Sold = await self.view.Slayer.sell_item(cObject_sold)
+            Sold = await self.view.cSlayer.sell_item(cObject_sold)
             await self.view.update_view(interaction)   
             if Sold:
-                await self.view.bot.ActiveList.update_interface(self.view.Slayer.cSlayer.id, "inventaire")
+                await self.view.bot.ActiveList.update_interface(self.view.cSlayer.id, "inventaire")
                 await interaction.followup.send("L'objet a été vendu !", ephemeral=True)
             else:
                 await interaction.followup.send("Une erreur s'est produite !", ephemeral=True)
@@ -64,11 +64,11 @@ class Sell_Button(lib.discord.ui.Button):
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class LootReviewView(lib.discord.ui.View):
-    def __init__(self, bot, recap_loot, Slayer, interaction):
+    def __init__(self, bot, recap_loot, cSlayer, interaction):
         super().__init__(timeout=30)
         self.bot = bot
         self.recap_loot = recap_loot
-        self.Slayer = Slayer
+        self.cSlayer = cSlayer
         self.interaction = interaction
         self.obsolete = False
         self.item_displayed = None
@@ -92,12 +92,12 @@ class LootReviewView(lib.discord.ui.View):
                 if int(item.id) == int(self.item_displayed):
                     cObject = item
                     break
-            embed = lib.Embed.create_embed_item(self.bot, cObject, self.Slayer)
-            lib.Toolbox.disable_enable_LootReviewView(self.children, self.Slayer, int(self.item_displayed))
+            embed = lib.Embed.create_embed_item(self.bot, self.cSlayer, cObject)
+            lib.Toolbox.disable_enable_LootReviewView(self.children, self.cSlayer, int(self.item_displayed))
             await interaction.response.edit_message(embed=embed, view=self)
 
     async def close_view(self):
-        self.bot.ActiveList.remove_interface(self.Slayer.cSlayer.id, "LootReview")
+        self.bot.ActiveList.remove_interface(self.cSlayer.id, "LootReview")
         try:
             message = await self.interaction.original_response()
             await message.edit(view=None)

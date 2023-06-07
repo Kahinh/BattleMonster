@@ -23,6 +23,9 @@ class BattleMonster(lib.commands.Bot):
         self.Variables = {}
         self.Factions = {}
         self.Specializations = {}
+        self.Slots = {}
+        self.Statistics = {}
+        self.Base_Player = None
 
         super().__init__(
             command_prefix='$',
@@ -47,28 +50,26 @@ class BattleMonster(lib.commands.Bot):
         #TODO Mettre tout ça dans le dBManager
         async with self.db_pool.acquire() as conn:
             async with conn.transaction():
-                self.rGamemodes = await conn.fetch(lib.qGameModes.SELECT_ALL)    
-                #TODO rBaseBonuses -> Variables -> A supprimer
-                self.rBaseBonuses = await conn.fetchrow(lib.qBaseBonuses.SELECT_ALL)   
+                self.rGamemodes = await conn.fetch("SELECT * FROM gamemodes")    
+                rBaseBonuses = await conn.fetchrow("SELECT * FROM base_bonuses_slayers")   
                 rChannels = await conn.fetch(lib.qChannels.SELECT_ALL, lib.tokens.TestProd)  
-                rElements = await conn.fetch(lib.qElements.SELECT_ALL)
-                rRarities = await conn.fetch(lib.qRarities.SELECT_ALL)
-                #TODO rSlots -> Class
-                rSlots = await conn.fetch(lib.qSlots.SELECT_ALL)
+                rElements = await conn.fetch("SELECT * FROM elements")
+                rRarities = await conn.fetch("SELECT * FROM rarities")
+                rSlots = await conn.fetch("SELECT * FROM slots")
                 rSpe = await conn.fetch("SELECT * FROM specializations")
-                rGatherables = await conn.fetch(lib.qGatherables.SELECT_ALL)
-                rGatherablesSpawn = await conn.fetch(lib.qGatherables_Spawn.SELECT_ALL)
+                rGatherables = await conn.fetch("SELECT * FROM gatherables")
+                rGatherablesSpawn = await conn.fetch("SELECT * FROM gatherables_spawn")
                 rPetFood = await conn.fetch("SELECT * FROM pet_food")
                 rVariables = await conn.fetch("SELECT * FROM variables")
                 rFactions = await conn.fetch("SELECT * FROM factions")
+                rStatistics = await conn.fetch("SELECT * FROM statistics")
 
-        self.rSlots = lib.Toolbox.transformSlots(rSlots) 
         self.rChannels = lib.Toolbox.transformChannels(rChannels)
 
         #Rarities
-        for row in rRarities: self.Rarities.update({row["name"]: lib.Rarities(row)})
+        for row in rRarities: self.Rarities.update({row["name"]: lib.Rarity(row)})
         #Elements
-        for row in rElements: self.Elements.update({row["name"]: lib.Elements(row)})
+        for row in rElements: self.Elements.update({row["name"]: lib.Element(row)})
         #Gatherables
         for row in rGatherables: self.Gatherables.update({row["id"]: lib.Gatherables(row, self.Rarities[row["rarity"]].gatherables_spawn)})
         #GatherablesSpawn
@@ -79,8 +80,14 @@ class BattleMonster(lib.commands.Bot):
         for row in rVariables: self.Variables.update({row["name"]: row["value"]})
         #Factions
         for row in rFactions: self.Factions.update({int(row["id"]): lib.Faction(row)})
+        #Statistics
+        for row in rStatistics: self.Statistics.update({row["name"] : lib.Statistic(row)})
         #Spe
-        for row in rSpe: self.Specializations.update({int(row["id"]): lib.Spe.get_Spe_Class(self, row)})
+        for row in rSpe: self.Specializations.update({int(row["id"]): lib.Spe.get_Spe_Class_row(self, row)})
+        #Slots
+        for row in rSlots: self.Slots.update({row["slot"] : lib.Slot(row)})
+        #Base Bonuses
+        self.Base_Player = lib.Base_Slayer(self, rBaseBonuses)
 
     async def on_ready(self):
         print(">>>>>>>>>> BOT LIVE <<<<<<<<<<")
