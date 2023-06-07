@@ -84,6 +84,7 @@ class Loadout:
             self.stats[couple[0]] += couple[1]
 
     def refresh_stats(self):
+        
         stats = deepcopy(self.pre_stats)
         stats = lib.add_bonuses(self.bot, stats, self.cSpe.bonuses)
         stats = lib.add_bonuses(self.bot, stats, self.bot.Base_Player.bonuses)

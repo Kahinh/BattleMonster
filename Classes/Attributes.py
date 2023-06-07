@@ -136,16 +136,16 @@ class Spe:
   def getDisplayStats(self, cObject2=None):
     return lib.get_display_stats(self, cObject2)
   
-  def adapt_min(self, cap_min, statistic):
+  def adapt_min(self, cap_min, statistic, dict_data):
     return cap_min
 
-  def adapt_max(self, cap_max, statistic):
-    return cap_max
+  def adapt_max(self, cap_max, statistic, dict_data):
+    if "special_charge" in statistic:
+      return int(float(self.bot.Variables["charge_gain_max_mult"]) * int(dict_data['stacks'] - dict_data['stacks_reduction']))
+    else:
+      return cap_max
   
   def retreat_stats(self, dict_stats):
-    dict_stats["special_charge_l"] = min(int(float(self.bot.Variables["charge_gain_max_mult"]) * int(dict_stats['stacks'] - dict_stats['stacks_reduction'])), dict_stats["special_charge_l"])
-    dict_stats["special_charge_h"] = min(int(float(self.bot.Variables["charge_gain_max_mult"]) * int(dict_stats['stacks'] - dict_stats['stacks_reduction'])), dict_stats["special_charge_h"])
-    dict_stats["special_charge_s"] = min(int(float(self.bot.Variables["charge_gain_max_mult"]) * int(dict_stats['stacks'] - dict_stats['stacks_reduction'])), dict_stats["special_charge_s"])
     return dict_stats
 
 class Recrue(Spe):
@@ -190,7 +190,7 @@ class Stratège(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
     super().__init__(bot, rSpe, cLoadout)
 
-  def adapt_max(self, cap_max, statistic):
+  def adapt_max(self, cap_max, statistic, dict_data):
     if statistic == "leta_per":
       return self.bot.Variables["chasseur_leta_per_cap_max"]
     else:

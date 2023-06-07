@@ -23,7 +23,7 @@ def cap_min_max_stats(bot, dict_data, cSpe):
     for _, cStatistic in bot.Statistics.items():
         for sub_division in cStatistic.sub_division():
             if cStatistic.cap_min is not None:
-                dict_data[sub_division] = max(cSpe.adapt_min(cStatistic.cap_min, cStatistic.name), dict_data[sub_division])
+                dict_data[sub_division] = max(cSpe.adapt_min(cStatistic.cap_min, cStatistic.name, dict_data), dict_data[sub_division])
             if cStatistic.cap_max is not None:
-                dict_data[sub_division] = min(cSpe.adapt_max(cStatistic.cap_max, cStatistic.name), dict_data[sub_division])
+                dict_data[sub_division] = min(cSpe.adapt_max(cStatistic.cap_max, cStatistic.name, dict_data), dict_data[sub_division])
     return dict_data
