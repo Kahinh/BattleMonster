@@ -33,6 +33,6 @@ Merci à vous de jouer !
 - [X] Beta 0.1
 - [X] Beta 0.2
 - [X] Beta 0.3
-- [] Beta 0.4
+- [X] Beta 0.4
 - [] Beta 0.5
 - [] Beta 0.6
