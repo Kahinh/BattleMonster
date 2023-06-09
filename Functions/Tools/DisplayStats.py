@@ -19,7 +19,7 @@ def get_display_stats(cStatOwner1, cStatOwner2):
     def create_desc_stat_1_line(bonuses_item2, stat, name, emote):
         desc_stat = ""
         if (cn(cStatOwner1.bonuses[stat])) != 0 or cn((bonuses_item2.get(stat, 0))) != 0:
-            desc_stat += f"```ansi\n{emote}{name}: {_ffin(cStatOwner1.bonuses[stat], stat)} {sa(cStatOwner1.bonuses[stat], bonuses_item2.get(stat, 0)) + '[' + str(_ffin(bonuses_item2.get(stat, 0), stat)) + ']' if bonuses_item2 != {} else ''}```"    
+            desc_stat += f"```ansi\n{emote}{name}: {sa(cStatOwner1.bonuses[stat], bonuses_item2.get(stat, 0)) + _ffin(cStatOwner1.bonuses[stat], stat)} {btb() + '(' + str(_ffin(bonuses_item2.get(stat, 0), stat)) + ')' if bonuses_item2 != {} else ''}```"    
         return desc_stat
 
     def create_desc_stat_2_lines(bonuses_item2, stat, name, emote, order=1):
@@ -30,10 +30,10 @@ def get_display_stats(cStatOwner1, cStatOwner2):
                 desc_stat += f"```ansi\n{emote}{name}:"
                 #Parry L
                 if cn(cStatOwner1.bonuses[f'{stat}_l']) != 0 or cn(bonuses_item2.get(f'{stat}_l', 0)) != 0:
-                    desc_stat += f"\n\u001b[0;0m   Légère: {_ffin(cStatOwner1.bonuses[f'{stat}_l'], stat)} {sa(cStatOwner1.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0), order) + '[' + str(_ffin(bonuses_item2.get(f'{stat}_l', 0), stat)) + ']' if bonuses_item2 != {} else ''}"
+                    desc_stat += f"\n\u001b[0;0m   Légère: {sa(cStatOwner1.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0), order) + _ffin(cStatOwner1.bonuses[f'{stat}_l'], stat)} {btb() + '(' + str(_ffin(bonuses_item2.get(f'{stat}_l', 0), stat)) + ')' if bonuses_item2 != {} else ''}"
                 #Parry H
                 if cn(cStatOwner1.bonuses[f'{stat}_h']) != 0 or cn(bonuses_item2.get(f'{stat}_h', 0)) != 0:
-                    desc_stat += f"\n\u001b[0;0m   Lourde: {_ffin(cStatOwner1.bonuses[f'{stat}_h'], stat)} {sa(cStatOwner1.bonuses[f'{stat}_h'], bonuses_item2.get(f'{stat}_h', 0), order) + '[' + str(_ffin(bonuses_item2.get(f'{stat}_h', 0), stat)) + ']' if bonuses_item2 != {} else ''}"
+                    desc_stat += f"\n\u001b[0;0m   Lourde: {sa(cStatOwner1.bonuses[f'{stat}_h'], bonuses_item2.get(f'{stat}_h', 0), order) + _ffin(cStatOwner1.bonuses[f'{stat}_h'], stat)} {btb() + '(' + str(_ffin(bonuses_item2.get(f'{stat}_h', 0), stat)) + ')' if bonuses_item2 != {} else ''}"
             
                 #on referme le ```
                 desc_stat += "```"            
@@ -41,7 +41,7 @@ def get_display_stats(cStatOwner1, cStatOwner2):
             #Le cas où les deux sont semblables
             else:
                 if cn(cStatOwner1.bonuses[f"{stat}_l"]) != 0 or cn(bonuses_item2.get(f"{stat}_l", 0)) != 0:
-                    desc_stat += f"```ansi\n{emote}{name}: {_ffin(cStatOwner1.bonuses[f'{stat}_l'], stat)} {sa(cStatOwner1.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0), order) + '[' + str(_ffin(bonuses_item2.get(f'{stat}_l', 0), stat)) + ']' if bonuses_item2 != {} else ''}```" 
+                    desc_stat += f"```ansi\n{emote}{name}: {sa(cStatOwner1.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0), order) + _ffin(cStatOwner1.bonuses[f'{stat}_l'], stat)} {btb() + '(' + str(_ffin(bonuses_item2.get(f'{stat}_l', 0), stat)) + ')' if bonuses_item2 != {} else ''}```" 
         return desc_stat  
 
     def create_desc_stat_3_lines(bonuses_item2, stat, name, emote, order=1):
@@ -52,20 +52,20 @@ def get_display_stats(cStatOwner1, cStatOwner2):
                 desc_stat += f"```ansi\n{emote}{name}:"
                 #Damage L
                 if cn(cStatOwner1.bonuses[f'{stat}_l']) != 0 or cn(bonuses_item2.get(f'{stat}_l', 0)) != 0:
-                    desc_stat += f"\n\u001b[0;0m   Légère: {_ffin(cStatOwner1.bonuses[f'{stat}_l'], stat)} {sa(cStatOwner1.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0), order) + '[' + str(_ffin(bonuses_item2.get(f'{stat}_l', 0), stat)) + ']' if bonuses_item2 != {} else ''}"
+                    desc_stat += f"\n\u001b[0;0m   Légère: {sa(cStatOwner1.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0), order) + _ffin(cStatOwner1.bonuses[f'{stat}_l'], stat)} {btb() + '(' + str(_ffin(bonuses_item2.get(f'{stat}_l', 0), stat)) + ')' if bonuses_item2 != {} else ''}"
                 #Damage H
                 if cn(cStatOwner1.bonuses[f'{stat}_h']) != 0 or cn(bonuses_item2.get(f'{stat}_h', 0)) != 0:
-                    desc_stat += f"\n\u001b[0;0m   Lourde: {_ffin(cStatOwner1.bonuses[f'{stat}_h'], stat)} {sa(cStatOwner1.bonuses[f'{stat}_h'], bonuses_item2.get(f'{stat}_h', 0), order) + '[' + str(_ffin(bonuses_item2.get(f'{stat}_h', 0), stat)) + ']' if bonuses_item2 != {} else ''}"
+                    desc_stat += f"\n\u001b[0;0m   Lourde: {sa(cStatOwner1.bonuses[f'{stat}_h'], bonuses_item2.get(f'{stat}_h', 0), order) + _ffin(cStatOwner1.bonuses[f'{stat}_h'], stat)} {btb() + '(' + str(_ffin(bonuses_item2.get(f'{stat}_h', 0), stat)) + ')' if bonuses_item2 != {} else ''}"
                 #Damage s
                 if cn(cStatOwner1.bonuses[f'{stat}_s']) != 0 or cn(bonuses_item2.get(f'{stat}_s', 0)) != 0:
-                    desc_stat += f"\n\u001b[0;0m   Spécial: {_ffin(cStatOwner1.bonuses[f'{stat}_s'], stat)} {sa(cStatOwner1.bonuses[f'{stat}_s'], bonuses_item2.get(f'{stat}_s', 0), order) + '[' + str(_ffin(bonuses_item2.get(f'{stat}_s', 0), stat)) + ']' if bonuses_item2 != {} else ''}"
+                    desc_stat += f"\n\u001b[0;0m   Spécial: {sa(cStatOwner1.bonuses[f'{stat}_s'], bonuses_item2.get(f'{stat}_s', 0), order) + _ffin(cStatOwner1.bonuses[f'{stat}_s'], stat)} {btb() + '(' + str(_ffin(bonuses_item2.get(f'{stat}_s', 0), stat)) + ')' if bonuses_item2 != {} else ''}"
 
                 #on referme le ```
                 desc_stat += "```"
             #Le cas où les deux sont semblables
             else:
                 if cn(cStatOwner1.bonuses[f"{stat}_l"]) != 0 or cn(bonuses_item2.get(f"{stat}_l", 0)) != 0:
-                    desc_stat += f"```ansi\n{emote}{name}: {_ffin(cStatOwner1.bonuses[f'{stat}_l'], stat)} {sa(cStatOwner1.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0)) + '[' + str(_ffin(bonuses_item2.get(f'{stat}_l', 0), stat)) + ']' if bonuses_item2 != {} else ''}```"
+                    desc_stat += f"```ansi\n{emote}{name}: {sa(cStatOwner1.bonuses[f'{stat}_l'], bonuses_item2.get(f'{stat}_l', 0)) + _ffin(cStatOwner1.bonuses[f'{stat}_l'], stat)} {btb() + '(' + str(_ffin(bonuses_item2.get(f'{stat}_l', 0), stat)) + ')' if bonuses_item2 != {} else ''}```"
         return desc_stat
 
     def _ffin(number, stat=None):
@@ -100,9 +100,13 @@ def get_display_stats(cStatOwner1, cStatOwner2):
                 else:
                     return "\u001b[1;31m"
 
+    def btb():
+    #back to basic
+        return "\u001b[0;0m"
+
     #Score
     if hasattr(cStatOwner1, "gearscore"):
-        desc_stat += f"```ansi\n🔰Score: {_ffin(cStatOwner1.gearscore)} {sa(cStatOwner1.gearscore, gearscore2) + '[' + str(_ffin(gearscore2)) + ']' if bonuses_item2 != {} else ''}```" 
+        desc_stat += f"```ansi\n🔰Score: {sa(cStatOwner1.gearscore, gearscore2) + _ffin(cStatOwner1.gearscore)} {btb() + '(' + str(_ffin(gearscore2)) + ')' if bonuses_item2 != {} else ''}```" 
     #Armor
     desc_stat += create_desc_stat_1_line(bonuses_item2, "armor", "Armure", "🛡️")
     #Armor_Per

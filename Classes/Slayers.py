@@ -73,7 +73,7 @@ class Slayer:
                 cSlayer.inventories["items"].update({row["id"]: cObject})
 
         async def build_current_loadout():
-            cSlayer.current_loadout = await Loadout.get_Object_Class_from_cSlayer(bot, "Current", cSlayer, 1 if slayer_data is None else slayer_data["specialization"], [cSlayer.inventories["items"][id] for id in cSlayer.inventories["items"] if cSlayer.inventories["items"][id].equipped == True])
+            cSlayer.current_loadout = await Loadout.get_Object_Class_from_cSlayer(bot, "Current", cSlayer, 1 if slayer_data is None else slayer_data["specialization"], [cSlayer.inventories["items"][id] for id in cSlayer.inventories["items"] if cSlayer.inventories["items"][id].equipped == True], True)
         
         async def build_loadouts():
             for row in slayer_loadouts:

@@ -178,3 +178,15 @@ class dB:
             ' ON CONFLICT ON CONSTRAINT slayer_and_achievement_unique' \
             ' DO UPDATE' \
             ' SET value = $3',data_behemoths_killed_achievement)
+          
+  async def push_creation_loadouts(self, slayer_id, name, loadout_list):
+    async with self.bot.db_pool.acquire() as conn:   
+        id = await conn.fetchval('INSERT INTO slayers_loadouts (slayer_id, name, loadout)' \
+          ' VALUES ($1, $2, $3) RETURNING id', slayer_id, name, str(loadout_list), column=0)
+    return id
+
+  async def push_update_loadouts(self, loadout_id, slayer_id, name, loadout_list):
+    async with self.bot.db_pool.acquire() as conn:   
+        await conn.execute('UPDATE slayers_loadouts SET slayer_id = $1, name = $2, loadout = $3' \
+          ' WHERE id = $4', slayer_id, name, str(loadout_list), loadout_id)
+    return id

@@ -37,17 +37,17 @@ class Loadout:
         self.stats = {}
 
     @staticmethod
-    async def get_Object_Class_from_db(bot, name, cSlayer, spe_id, items_list):
-        return await Loadout.handler_Build(bot, name, cSlayer, spe_id, items_list, True)
+    async def get_Object_Class_from_db(bot, name, cSlayer, spe_id, items_list, is_current_loadout=False):
+        return await Loadout.handler_Build(bot, name, cSlayer, spe_id, items_list, is_current_loadout, True)
 
     @staticmethod
-    async def get_Object_Class_from_cSlayer(bot, name, cSlayer, spe_id, items_list):
-        return await Loadout.handler_Build(bot, name, cSlayer, spe_id, items_list, False)
+    async def get_Object_Class_from_cSlayer(bot, name, cSlayer, spe_id, items_list, is_current_loadout=False):
+        return await Loadout.handler_Build(bot, name, cSlayer, spe_id, items_list, is_current_loadout, False)
 
     @classmethod
-    async def handler_Build(cls, bot, name, cSlayer, spe_id, items_list, item_to_compile):
+    async def handler_Build(cls, bot, name, cSlayer, spe_id, items_list, is_current_loadout, item_to_compile):
 
-        cLoadout = cls(bot, name, cSlayer, not item_to_compile)
+        cLoadout = cls(bot, name, cSlayer, is_current_loadout)
 
         if item_to_compile:
             list_items = []
@@ -78,6 +78,7 @@ class Loadout:
     def trigger_refreshes(self):
         self.refresh_stats()
         self.cSpe.refresh_stats()
+        self.gearscore = self.get_gear_score()
 
     def update_stats(self, list_bonus_value):
         for couple in list_bonus_value:
@@ -150,21 +151,36 @@ class Loadout:
 
     async def equip_item(self, cObject):
         damage_taken_percentage = self.cSlayer.damage_taken_percentage
+        await self.bot.dB.equip_item(self.cSlayer, cObject)
         cObject.equipped = True
         self.items.append(cObject)
-        await self.bot.dB.equip_item(self.cSlayer, cObject)
         self.pre_stats = lib.add_bonuses(self.bot, self.pre_stats, cObject.bonuses)
         self.trigger_refreshes()
         await self.cSlayer.adapt_damage_taken(damage_taken_percentage)
 
     async def unequip_item(self, cObject):
         damage_taken_percentage = self.cSlayer.damage_taken_percentage
+        await self.bot.dB.unequip_item(self.cSlayer, cObject)
         cObject.equipped = False
         self.items.remove(cObject)
-        await self.bot.dB.unequip_item(self.cSlayer, cObject)
         self.pre_stats = lib.remove_bonuses(self.bot, self.pre_stats, cObject.bonuses)
         self.trigger_refreshes()
         await self.cSlayer.adapt_damage_taken(damage_taken_percentage)
+
+    async def remove_item_for_enhancement(self, cObject):
+        if self.is_current_loadout:
+            damage_taken_percentage = self.cSlayer.damage_taken_percentage
+        self.pre_stats = lib.remove_bonuses(self.bot, self.pre_stats, cObject.bonuses)
+        if self.is_current_loadout:
+            await self.cSlayer.adapt_damage_taken(damage_taken_percentage)
+
+    async def add_item_for_enhancement(self, cObject):
+        if self.is_current_loadout:
+            damage_taken_percentage = self.cSlayer.damage_taken_percentage
+        self.pre_stats = lib.add_bonuses(self.bot, self.pre_stats, cObject.bonuses)
+        self.trigger_refreshes()
+        if self.is_current_loadout:
+            await self.cSlayer.adapt_damage_taken(damage_taken_percentage)
 
     def already_equipped(self, slot):
         items_list = []
@@ -178,3 +194,8 @@ class Loadout:
         self.cSpe = cSpe
         await self.correct_slots_after_changing_spe()
         self.trigger_refreshes()
+
+    def get_loadout_list(self):
+        loadout_list = [self.cSpe.id]
+        loadout_list.extend([cObject.id for cObject in self.items])
+        return loadout_list

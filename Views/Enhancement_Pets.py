@@ -44,11 +44,21 @@ class Feed_Amount(lib.discord.ui.Modal):
         if isInt:
             if feed_amount <= self.max_food and feed_amount > 0:
                 #Je retire de l'inventaire les gatherables utilisées
-                if self.cObject.equipped: await self.cSlayer.unequip_item(self.cObject)
+                if self.cObject.equipped: await self.cSlayer.current_loadout.remove_item_for_enhancement(self.cObject)
+                
+                #On ajuste tous les loadout si besoin
+                for _, cLoadout in self.cSlayer.loadouts.items():
+                    if self.cObject.equipped:
+                        await cLoadout.remove_item_for_enhancement(self.cObject)
                 await self.cSlayer.update_inventory_gatherables(self.cFood.id, -feed_amount)
                 #Je up le niveau de l'item
                 await self.cObject.update_item_level(feed_amount, self.cSlayer)
-                if self.cObject.equipped: await self.cSlayer.equip_item(self.cObject)
+                if self.cObject.equipped: await self.cSlayer.current_loadout.add_item_for_enhancement(self.cObject)
+                
+                #On ajuste tous les loadout si besoin
+                for _, cLoadout in self.cSlayer.loadouts.items():
+                    if self.cObject.equipped:
+                        await cLoadout.add_item_for_enhancement(self.cObject)
 
                 await self.bot.ActiveList.update_interface(interaction.user.id, "ameliopet")
                 await interaction.response.send_message(f'Vous avez donné {feed_amount} {self.cFood.name} ({self.cFood.display_emote}) à {self.cObject.name}', ephemeral=True)

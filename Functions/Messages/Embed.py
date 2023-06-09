@@ -188,7 +188,7 @@ def create_embed_item(bot, cSlayer, cObject1, cObject2=None):
 
         description += f"\n\n__Statistiques :__{desc_stat}"
         
-        embed=lib.discord.Embed(title=f"{bot.Elements[cObject1.element].display_emote} {'[' + str(cObject1.level) + ']' if cObject1.level > 0 else ''} {cObject1.name} ({cObject1.slot} / {bot.Rarities[cObject1.rarity].display_text})",
+        embed=lib.discord.Embed(title=f"{bot.Elements[cObject1.element].display_emote} {'[Nv. ' + str(cObject1.level) + ']' if cObject1.level > 0 else ''} {cObject1.name} ({cObject1.slot} / {bot.Rarities[cObject1.rarity].display_text})",
         description= \
             f"{description}",
         color=int(bot.Rarities[cObject1.rarity].display_color, 16)
@@ -375,7 +375,40 @@ def create_embed_enhancement_mythic(cSlayer, mythic_list, index, bot):
         embed.set_thumbnail(url=mythic_list[index].img_url)
     return embed
 
-def create_embed_profil_global(cLoadout_or_cSlayer, avatar):
+def create_embed_profil_global(cLoadout_or_cSlayer, avatar, cLoadout2=None):
+
+    duplicated = False
+    if cLoadout2 is None: 
+        cLoadout2 = cLoadout_or_cSlayer
+        duplicated = True
+
+    def btb():
+    #back to basic
+        return "\u001b[0;0m"
+
+    def sa(equippednumber, secondnumber, order=1):
+    #select ANSI
+        #Basique : \u001b[0;0m
+        #Rouge : \u001b[1;31m
+        #Vert : \u001b[1;32m
+        #Jaune : \u001b[1;33m
+        equippednumber = int(equippednumber*100)
+        secondnumber = int(secondnumber*100)
+        if duplicated:
+            return "\u001b[0;0m"
+        if equippednumber == secondnumber:
+            return "\u001b[1;33m"
+        else:
+            if order == 0:
+                if equippednumber > secondnumber:
+                    return "\u001b[1;31m"
+                else:
+                    return "\u001b[1;32m"
+            else:
+                if equippednumber > secondnumber:
+                    return "\u001b[1;32m"
+                else:
+                    return "\u001b[1;31m"
 
     description = f"**{cLoadout_or_cSlayer.cSpe.emote} {cLoadout_or_cSlayer.cSpe.name}**"
     if hasattr(cLoadout_or_cSlayer, "money"):
@@ -384,15 +417,15 @@ def create_embed_profil_global(cLoadout_or_cSlayer, avatar):
     if hasattr(cLoadout_or_cSlayer, "money"):
         description += f"```- {'💀' if cLoadout_or_cSlayer.dead else '❤️'} Vie : {int(cLoadout_or_cSlayer.current_health)}/{cLoadout_or_cSlayer.health}```"
     else:
-        description += f"```- ❤️ Vie : {cLoadout_or_cSlayer.stats['health']}```"
-    description += f"```- 🔰 Score : {cLoadout_or_cSlayer.gearscore}```"
-    description += f"```- 🛡️ Armure : {cLoadout_or_cSlayer.stats['armor']}```"
-    description += f"```- 🌪️ Vivacité : {cLoadout_or_cSlayer.stats['cooldown']}s```"
+        description += f"```ansi\n- ❤️ Vie : {sa(cLoadout2.stats['health'], cLoadout_or_cSlayer.stats['health'], 0)} {cLoadout_or_cSlayer.stats['health']} {btb() + '(' + str(cLoadout2.stats['health']) + ')' if not duplicated else ''}```"
+    description += f"```ansi\n- 🔰 Score : {sa(cLoadout2.gearscore, cLoadout_or_cSlayer.gearscore, 0)} {cLoadout_or_cSlayer.gearscore} {btb() + '(' + str(cLoadout2.gearscore) + ')' if not duplicated else ''}```"
+    description += f"```ansi\n- 🛡️ Armure : {sa(cLoadout2.stats['armor'], cLoadout_or_cSlayer.stats['armor'], 0)} {cLoadout_or_cSlayer.stats['armor']} {btb() + '(' + str(cLoadout2.stats['armor']) + ')' if not duplicated else ''}```"
+    description += f"```ansi\n- 🌪️ Vivacité : {sa(cLoadout2.stats['cooldown'], cLoadout_or_cSlayer.stats['cooldown'], 1)} {cLoadout_or_cSlayer.stats['cooldown']}s {btb() + '(' + str(cLoadout2.stats['cooldown']) + 's)' if not duplicated else ''}```"
     if hasattr(cLoadout_or_cSlayer, "money"):
         description += f"```- ☄️ Charge : {cLoadout_or_cSlayer.special_stacks}/{cLoadout_or_cSlayer.stats['stacks']}```"
     else:
-        description += f"```- ☄️ Charge : {cLoadout_or_cSlayer.stats['stacks']}```"
-    description += f"```- 🍀 Luck : {int(cLoadout_or_cSlayer.stats['luck'] * 100)}%```"
+        description += f"```ansi\n- ☄️ Charge : {sa(cLoadout2.stats['stacks'], cLoadout_or_cSlayer.stats['stacks'], 1)} {cLoadout_or_cSlayer.stats['stacks']} {btb() + '(' + str(cLoadout2.stats['stacks']) + ')' if not duplicated else ''}```"
+    description += f"```ansi\n- 🍀 Luck : {sa(cLoadout2.stats['luck'], cLoadout_or_cSlayer.stats['luck'], 0)} {int(cLoadout_or_cSlayer.stats['luck'] * 100)}% {btb() + '(' + str(int(cLoadout2.stats['luck']*100)) + '%)' if not duplicated else ''}```"
 
     embed=lib.discord.Embed(title=f"Profil de {cLoadout_or_cSlayer.name}",
     description=description,
@@ -406,12 +439,45 @@ def create_embed_profil_global(cLoadout_or_cSlayer, avatar):
         embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cLoadout_or_cSlayer.creation_date).strftime("%d/%m/%Y")}')
     return embed
 
-def create_embed_profil_attack(cLoadout_or_cSlayer, avatar, hit):
+def create_embed_profil_attack(cLoadout_or_cSlayer, avatar, hit, cLoadout2=None):
     bot = cLoadout_or_cSlayer.bot
+    duplicated = False
+    if cLoadout2 is None: 
+        cLoadout2 = cLoadout_or_cSlayer
+        duplicated = True
+
+    def sa(equippednumber, secondnumber, order=1):
+    #select ANSI
+        #Basique : \u001b[0;0m
+        #Rouge : \u001b[1;31m
+        #Vert : \u001b[1;32m
+        #Jaune : \u001b[1;33m
+        equippednumber = int(equippednumber*100)
+        secondnumber = int(secondnumber*100)
+        if duplicated:
+            return "\u001b[0;0m"
+        if equippednumber == secondnumber:
+            return "\u001b[1;33m"
+        else:
+            if order == 0:
+                if equippednumber > secondnumber:
+                    return "\u001b[1;31m"
+                else:
+                    return "\u001b[1;32m"
+            else:
+                if equippednumber > secondnumber:
+                    return "\u001b[1;32m"
+                else:
+                    return "\u001b[1;31m"
+
+    def btb():
+    #back to basic
+        return "\u001b[0;0m"
+
     description = "**__Statistiques__**"
     for statistic in cLoadout_or_cSlayer.stats:
         if f"_{hit}" in statistic:
-            description += f"```- {bot.Statistics[statistic[:-2]].display_emote} {bot.Statistics[statistic[:-2]].display_name}: {str(int(cLoadout_or_cSlayer.stats[statistic]*100)) + '%' if bot.Statistics[statistic[:-2]].percentage else int(cLoadout_or_cSlayer.stats[statistic])}```"
+            description += f"```ansi\n- {bot.Statistics[statistic[:-2]].display_emote} {bot.Statistics[statistic[:-2]].display_name}: {sa(cLoadout2.stats[statistic], cLoadout_or_cSlayer.stats[statistic], bot.Statistics[statistic[:-2]].reverse)} {str(int(cLoadout_or_cSlayer.stats[statistic]*100)) + '%' if bot.Statistics[statistic[:-2]].percentage else int(cLoadout_or_cSlayer.stats[statistic])} {btb() + '(' + (str(int(cLoadout2.stats[statistic]*100)) + '%' if bot.Statistics[statistic[:-2]].percentage else str(int(cLoadout2.stats[statistic]))) + ')' if not duplicated else ''}```"
     embed=lib.discord.Embed(title=f"{hit} {cLoadout_or_cSlayer.name}",
     description=description,
     color=0x1abc9c)  
