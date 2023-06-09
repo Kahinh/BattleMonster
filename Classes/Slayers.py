@@ -77,7 +77,7 @@ class Slayer:
         
         async def build_loadouts():
             for row in slayer_loadouts:
-                cSlayer.loadouts.update({row["id"] : await Loadout.get_Object_Class_from_db(bot, row["name"], cSlayer, [eval(str(i)) for i in row["loadout"].strip('][').split(',')][0], [eval(str(i)) for i in row["loadout"].strip('][').split(',')][1:])})
+                cSlayer.loadouts.update({int(row["id"]) : await Loadout.get_Object_Class_from_db(bot, row["name"], cSlayer, [eval(str(i)) for i in row["loadout"].strip('][').split(',')][0], [eval(str(i)) for i in row["loadout"].strip('][').split(',')][1:])})
 
         #On trigger les builds
         build_achievements()

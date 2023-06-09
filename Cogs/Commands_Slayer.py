@@ -94,13 +94,16 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
     else:
       await interaction.followup.send(content="Le bot est en attente de redémarrage ou en cours d'update. Veuillez patienter.")
 
-  @lib.app_commands.command(name="loadout")
-  async def loadout(self, interaction: lib.discord.Interaction) -> None:
-    """ Permet de gérer ses sets d'équipement """
+  @lib.app_commands.command(name="loadouts")
+  async def loadouts(self, interaction: lib.discord.Interaction) -> None:
+    """ Affiche votre profil, comprenant vos statistiques et votre équipement """
     await interaction.response.defer(ephemeral=True)
     if self.bot.power:
       cSlayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
-      pass
+      view = lib.LoadoutView(self.bot, cSlayer, interaction, interaction.user.display_avatar)
+      embed = view.select_embed()
+      await self.bot.ActiveList.add_interface(interaction.user.id, "Loadout", view)
+      await interaction.followup.send(embed=embed, view=view, ephemeral=True)
     else:
       await interaction.followup.send(content="Le bot est en attente de redémarrage ou en cours d'update. Veuillez patienter.")
 

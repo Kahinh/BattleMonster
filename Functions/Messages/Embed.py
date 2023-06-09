@@ -195,6 +195,7 @@ def create_embed_item(bot, cSlayer, cObject1, cObject2=None):
         )
 
         embed.set_thumbnail(url=f"{cObject1.img_url}")
+        embed.set_footer(text=f"ID: {cObject1.id}")
     return embed
 
 def create_embed_achievement(cSlayer, avatar):
@@ -379,7 +380,7 @@ def create_embed_profil_global(cLoadout_or_cSlayer, avatar):
     description = f"**{cLoadout_or_cSlayer.cSpe.emote} {cLoadout_or_cSlayer.cSpe.name}**"
     if hasattr(cLoadout_or_cSlayer, "money"):
         description += f"```- 🪙 Coin : {int(cLoadout_or_cSlayer.money)}```"
-    description += "**__Statistiques__**"
+    description += "\n**__Statistiques__**"
     if hasattr(cLoadout_or_cSlayer, "money"):
         description += f"```- {'💀' if cLoadout_or_cSlayer.dead else '❤️'} Vie : {int(cLoadout_or_cSlayer.current_health)}/{cLoadout_or_cSlayer.health}```"
     else:
@@ -397,7 +398,10 @@ def create_embed_profil_global(cLoadout_or_cSlayer, avatar):
     description=description,
     color=0x1abc9c)   
 
-    embed.set_thumbnail(url=avatar)
+    if hasattr(cLoadout_or_cSlayer, "creation_date"):
+        embed.set_thumbnail(url=avatar)
+    else:
+        embed.set_thumbnail(url="https://media.discordapp.net/attachments/1000070083915304991/1116618600158068826/150.png")
     if hasattr(cLoadout_or_cSlayer, "creation_date"):
         embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cLoadout_or_cSlayer.creation_date).strftime("%d/%m/%Y")}')
     return embed
@@ -411,7 +415,10 @@ def create_embed_profil_attack(cLoadout_or_cSlayer, avatar, hit):
     embed=lib.discord.Embed(title=f"{hit} {cLoadout_or_cSlayer.name}",
     description=description,
     color=0x1abc9c)  
-    embed.set_thumbnail(url=avatar)
+    if hasattr(cLoadout_or_cSlayer, "creation_date"):
+        embed.set_thumbnail(url=avatar)
+    else:
+        embed.set_thumbnail(url="https://media.discordapp.net/attachments/1000070083915304991/1116618600158068826/150.png")
     if hasattr(cLoadout_or_cSlayer, "creation_date"):
         embed.set_footer(text=f'Chasse depuis le {lib.datetime.datetime.fromtimestamp(cLoadout_or_cSlayer.creation_date).strftime("%d/%m/%Y")}')
     return embed 
