@@ -372,8 +372,7 @@ class LoadoutView(lib.discord.ui.View):
                     item.disabled = False
 
     async def close_view(self):
-        if self.interface_name == "profil":
-            self.bot.ActiveList.remove_interface(self.cLoadout.id, "profil")
+        self.bot.ActiveList.remove_interface(self.cSlayer.id, "Loadout")
         message = await self.interaction.original_response()
         await message.edit(view=None)
         self.stop()

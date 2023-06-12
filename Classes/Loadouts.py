@@ -77,6 +77,7 @@ class Loadout:
 
     def trigger_refreshes(self):
         self.refresh_stats()
+        self.cSpe.update_spe_damage()
         self.gearscore = self.get_gear_score()
 
     def update_stats(self, list_bonus_value):

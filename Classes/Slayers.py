@@ -245,7 +245,7 @@ class Slayer:
             if damage == 0:
                 return 0, f"\n> ⚔️ {self.cSpe.ability_name if hit == 's' else hit} : {int(damage)} - Le {cOpponent.group_name} est déjà mort !"
 
-        content = f"\n> ⚔️ {self.cSpe.ability_name if hit == 's' else hit} : {int(damage)} {'‼️' if isCrit else ''} {'(-' + str(armor_reduction) + '🛡️)' if armor_reduction > 0 else ''} {'[🔥+' + str(self.current_loadout.cSpe.spe_damage) + ']' if self.current_loadout.cSpe.spe_damage > 0 else ''} {'[🪓' + str(self.remaining_hit_temporary_stat -1) + 'restants]' if self.remaining_hit_temporary_stat > 0 else ''}"
+        content = f"\n> ⚔️ {self.cSpe.ability_name if hit == 's' else hit} : {int(damage)} {'‼️' if isCrit else ''} {'(-' + str(armor_reduction) + '🛡️)' if armor_reduction > 0 else ''} {'[🔥+' + str(self.current_loadout.cSpe.spe_damage) + ']' if self.current_loadout.cSpe.spe_damage > 0 and hit == 's' else ''} {'[🪓' + str(self.remaining_hit_temporary_stat -1) + 'restants]' if self.remaining_hit_temporary_stat > 0 else ''}"
         self.cSpe.reduce_remaining_hit_temporary_stat()
         #content = f"\n> ⚔️ {self.cSpe.ability_name if hit == 'S' else hit} : {int(damage)} {'‼️' if isCrit else ''} {'[🔥+' + str(mult_damage) + ']' if mult_damage > 0 else ''} {additionnal_ability if additionnal_ability != '' else ''} {'[🪓' + str(self.berserker_mode -1) + 'restants]' if self.berserker_mode > 0 else ''}"
 

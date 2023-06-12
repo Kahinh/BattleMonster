@@ -98,8 +98,8 @@ class Opponent:
       self.damage = int(OpponentData["damage"] * self.gamemode.scaling["damage"])
       self.letality = int(OpponentData["letality"] * self.gamemode.scaling["letality"])
       self.letality_per = min(OpponentData["letality_per"] * max(int(self.gamemode.scaling["letality"]/3),1),1)
-      self.armor = int(OpponentData["armor"] * self.gamemode.scaling["armor"])
-      self.armor_cap = int(OpponentData["armor"] * (1 + (int(self.bot.ActiveList.get_active_slayer_nbr()) * float(self.bot.Variables["mult_active_slayers_armor"]))))
+      self.armor = int(OpponentData["armor"] * int(self.gamemode.scaling["armor"]) * (1 + (int(self.bot.ActiveList.get_active_slayer_nbr()) * float(self.bot.Variables["mult_active_slayers_armor"]))))
+      self.armor_cap = int(OpponentData["armor"])
       self.protect_crit = int(OpponentData["protect_crit"] * self.gamemode.scaling["protect_crit"])
       self.img_url_normal = OpponentData["img_url_normal"]
       self.img_url_enraged = OpponentData["img_url_enraged"]
