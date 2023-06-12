@@ -3,10 +3,6 @@ import lib
 from copy import deepcopy
 from hashids import Hashids
 from Classes.Loadouts import Loadout
-#DOTENV
-import os
-from dotenv import load_dotenv
-load_dotenv()
 
 class Loadout_Dropdown(lib.discord.ui.Select):
     def __init__(self, Loadouts, bot):
@@ -158,8 +154,8 @@ class Action_Button_export(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
-            hashids = Hashids(salt=os.getenv('HASH_ID_BM'), min_length=16)
-            export_loadout_list = [int(os.getenv('EXPORT_VERSION')), self.view.cLoadout.cSpe.id]
+            hashids = Hashids(salt=lib.HASH_ID_BM, min_length=16)
+            export_loadout_list = [int(lib.EXPORT_VERSION), self.view.cLoadout.cSpe.id]
             for cObject in self.view.cLoadout.items:
                 export_loadout_list.append(cObject.id)
             export_loadout_list = hashids.encode(*export_loadout_list)
@@ -201,10 +197,10 @@ class Loadout_Name_Import(lib.discord.ui.Modal):
         self.add_item(self.loadout_hash)
 
     async def on_submit(self, interaction: lib.discord.Interaction):
-        hashids = Hashids(salt=os.getenv('HASH_ID_BM'), min_length=16)
+        hashids = Hashids(salt=lib.HASH_ID_BM, min_length=16)
         loadout_data = list(hashids.decode(self.loadout_hash.value))
         if loadout_data != []:
-            if int(loadout_data[0]) == int(os.getenv('EXPORT_VERSION')):
+            if int(loadout_data[0]) == int(lib.EXPORT_VERSION):
 
                 #On contrôle les équipements dans le import:
                 missing_spe_id = None

@@ -60,6 +60,10 @@ import Functions.Tools.Toolbox as Toolbox
 from Functions.Tools.DisplayStats import get_display_stats
 from Functions.Tools.generate_bonuses import get_bonuses, add_bonuses, remove_bonuses, cap_min_max_stats
 
+#DATA 
+from gitignore.data import HASH_ID_BM
+from gitignore.data import EXPORT_VERSION
+
 #Localisation
 
 #LOGGING
