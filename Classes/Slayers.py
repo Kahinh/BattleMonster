@@ -225,8 +225,7 @@ class Slayer:
             if cOpponent.armor == cOpponent.armor_cap:
                 damage = (damage + int(self.stats["total_letality_s"])) * (1 + self.stats["total_letality_per"])
             else:
-                print(cOpponent.armor, self.reduceArmor(hit, cOpponent.armor), self.bot.Variables["chasseur_armor_reduction_mult"])
-                armor_reduction = int((cOpponent.armor - self.reduceArmor(hit, cOpponent.armor)) * self.bot.Variables["chasseur_armor_reduction_mult"])
+                armor_reduction = int((cOpponent.armor - max(self.reduceArmor(hit, cOpponent.armor), 0)) * self.bot.Variables["chasseur_armor_reduction_mult"])
                 armor_reduction = int(min(armor_reduction, cOpponent.armor - cOpponent.armor_cap))
                 cOpponent.armor -= armor_reduction
 
