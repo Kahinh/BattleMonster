@@ -211,8 +211,6 @@ class Loadout_Name_Import(lib.discord.ui.Modal):
                 missing_items_id = []
                 items_id = []
 
-                print(int(loadout_data[1]), self.cSlayer.inventories["specializations"])
-
                 if int(loadout_data[1]) in self.cSlayer.inventories["specializations"]:
                     spe_id = int(loadout_data[1])
                 else:

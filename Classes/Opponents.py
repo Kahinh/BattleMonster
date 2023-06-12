@@ -221,8 +221,9 @@ class Banner(Opponent):
     self.roll_dices = gamemode.max_dice
     self.group_name = "Pilier"
   
-  async def handler_Build(self):
-    await super().handler_Build()
+  @classmethod
+  async def handler_Build(cls, gamemode, element, rarity, type):
+    self = await super().handler_Build(gamemode, element, rarity, type)
     self.base_hp = None
     self.total_hp = None
 
@@ -237,6 +238,8 @@ class Banner(Opponent):
     #factions_best_damage
     self.faction_best_damage = {}
     self.split_by_faction_best_damage()
+
+    return self
   
   def split_by_faction_last_hits(self):
     for faction_id in self.bot.Factions:

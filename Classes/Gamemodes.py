@@ -61,11 +61,11 @@ class Gamemode:
     self.timer_start = None
 
   @staticmethod
-  def get_Gamemode_Class(bot, gamemodedata):
+  async def get_Gamemode_Class(bot, gamemodedata):
     if gamemodedata["type"] == "hunt":
-      return Hunt(bot, gamemodedata)
+      return await Hunt.handler_Build(bot, gamemodedata)
     elif gamemodedata["type"] == "factionwar":
-      return FactionWar(bot, gamemodedata)
+      return await FactionWar.handler_Build(bot, gamemodedata)
     else:
       return None
 
@@ -435,7 +435,7 @@ class Gamemode:
     if total_damage_taken > 0:
       await cSlayer.getDrop(pets=[193])
       #Leta
-    if cSlayer.stats["letality_l"] + cSlayer.stats["letality_h"] + cSlayer.stats["letality_s"] > 6000:
+    if int(cSlayer.stats["letality_l"]) + int(cSlayer.stats["letality_h"]) + int(cSlayer.stats["letality_s"]) > 6000:
       await cSlayer.getDrop(rate=1, pets=[409])
 
     #Achievement Biggest_Hit

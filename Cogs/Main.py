@@ -22,7 +22,7 @@ class Main(lib.commands.Cog):
             if gamemodedata["autospawn"]:
                 #random si ça doit spawn
                 if lib.random.choices(population=[True, False], weights=[float(gamemodedata["invoke_rate"]), 1-float(gamemodedata["invoke_rate"])], k=1)[0]:
-                    gamemode = await lib.Gamemode.handler_Build(self.bot, gamemodedata)
+                    gamemode = await lib.Gamemode.get_Gamemode_Class(self.bot, gamemodedata)
                     if gamemode.isReady() : await gamemode.handler_Spawn()
                     await lib.asyncio.sleep(10)
 

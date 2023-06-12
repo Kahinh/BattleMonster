@@ -11,21 +11,14 @@ class Gamemode_Dropdown(lib.discord.ui.Select):
     async def callback(self, interaction: lib.discord.Interaction):
         for row in self.view.gamemodes:
             if int(row["id"]) == int(self.values[0]):
-                gamemode = row
+                gamemodedata = row
         await interaction.response.send_message(content="L'event va apparaître !", ephemeral=True)
-        if gamemode["type"] == "hunt":
-            Gamemode = lib.Hunt(self.view.bot, gamemode)
-            await Gamemode.handler_Build()
-            await Gamemode.handler_Spawn(channel_id=interaction.channel_id)
-            await lib.asyncio.sleep(10)
-        elif gamemode["type"] == "factionwar":
-            Gamemode = lib.FactionWar(self.view.bot, gamemode)
-            await Gamemode.handler_Build()
-            await Gamemode.handler_Spawn(interaction.channel_id)
-            await lib.asyncio.sleep(10)
+        gamemode = await lib.Gamemode.get_Gamemode_Class(self.view.bot, gamemodedata)
+        if gamemode.isReady() : await gamemode.handler_Spawn(interaction.channel_id)
+        await lib.asyncio.sleep(10)
 
         channel = self.view.bot.get_channel(self.view.bot.rChannels["logs"])
-        await channel.send(content=f"<@{interaction.user.id}> a fait apparaître un {gamemode['name']}!")
+        await channel.send(content=f"<@{interaction.user.id}> a fait apparaître un {gamemodedata['name']}!")
 
         await self.view.close_view()
 
