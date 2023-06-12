@@ -9,20 +9,20 @@ class Gather_Button(lib.discord.ui.Button):
 
         if self.view.stock > 0:
 
-            if interaction.user.id not in self.view.cSlayer_user:
+            if interaction.user.id not in self.view.Slayer_user:
 
                 cSlayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, "")
                 if cSlayer.dead:
                     await interaction.followup.send("Tu es mort, tu ne peux pas récolter", ephemeral=True)
                 else:
                     #On enregistre que le joueur a joué pour pas qu'il puisse utiliser à nouveau
-                    self.view.cSlayer_user.append(interaction.user.id)
+                    self.view.Slayer_user.append(interaction.user.id)
                     nbr = int(self.view.bot.Variables["bonus_gatherables_default"])
 
                     #Si le pet équipé se nourrit de la bouffe, on fait +1
-                    if "pet" in cSlayer.slots:
-                        if cSlayer.slots["pet"] != []:
-                            if int(self.view.bot.PetFood[cSlayer.slots["pet"][0]].id) == int(self.view.cGather.gatherable_id):
+                    if (pet_list := cSlayer.slot_items_equipped(cSlayer.bot.Slots["pet"])) and len(pet_list) > 0:
+                        for cPet in pet_list:
+                            if int(self.view.bot.PetFood[cPet.id].id) == int(self.view.cGather.gatherable_id):
                                 nbr += int(self.view.bot.Variables["bonus_gatherables_in_pets"])
 
                     #Si on a la faction qui a l'affinité

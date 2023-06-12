@@ -118,7 +118,7 @@ class Equip_Button(lib.discord.ui.Button):
             self.itemID_compare = 0
 
             if any([empty_slot, only_one_place_on_slot]):
-                if only_one_place_on_slot:
+                if only_one_place_on_slot and not empty_slot:
                     await self.view.cSlayer.unequip_item(self.view.cSlayer.slot_items_equipped(self.view.bot.Slots[self.view.items_list_filtered[self.view.index].slot])[0])
                 await self.view.cSlayer.equip_item(self.view.items_list_filtered[self.view.index])
                 await self.view.update_view(interaction) 
@@ -194,6 +194,9 @@ class InventoryView(lib.discord.ui.View):
                     self.remove_item(item)
         if len(self.itemsequipped_list) > 1:
             self.add_item(Compare_Dropdown(self.itemsequipped_list))
+
+    def get_embed(self, cObject=None):
+        return lib.Embed.create_embed_item(self.bot, self.cSlayer, None if self.items_list_filtered == [] else self.items_list_filtered[self.index], cObject)
             
 
     async def update_view(self, interaction=None, itemID_Compare=0, itemID_Updated=None):
@@ -215,7 +218,7 @@ class InventoryView(lib.discord.ui.View):
             else:
                 cObject = None
 
-            embed = lib.Embed.create_embed_item(self.bot, self.cSlayer, None if self.items_list_filtered == [] else self.items_list_filtered[self.index], cObject)
+            embed = self.get_embed(cObject)
             self.disable_enable_InventoryView()
             view = self  
 

@@ -23,14 +23,17 @@ class dB:
     async with self.bot.db_pool.acquire() as conn:
         async with conn.transaction():
             await conn.execute(f'UPDATE "slayers_inventory_items" SET equipped = True WHERE slayer_id = {cSlayer.id} AND item_id = {cItem.id}')
-            await conn.execute(f'UPDATE "slayers" SET damage_taken = {cSlayer.damage_taken} WHERE id = {cSlayer.id}')
 
   async def unequip_item(self, cSlayer, cItem):
     async with self.bot.db_pool.acquire() as conn:
         async with conn.transaction():
             await conn.execute(f'UPDATE "slayers_inventory_items" SET equipped = False WHERE slayer_id = {cSlayer.id} AND item_id = {cItem.id}')
-            await conn.execute(f'UPDATE "slayers" SET damage_taken = {cSlayer.damage_taken} WHERE id = {cSlayer.id}')
   
+  async def equip_unequip_mass_update(self, mass_update_data):
+    async with self.bot.db_pool.acquire() as conn:
+        async with conn.transaction():
+          await conn.executemany(f'UPDATE "slayers_inventory_items" SET equipped = $3 WHERE slayer_id = $1 AND item_id = $2', mass_update_data)
+
   async def pull_OpponentLootTable(self, monster, lootslot):
     async with self.bot.db_pool.acquire() as conn:
       loottable = await conn.fetch('SELECT * FROM "items" WHERE monster = $1 AND slot = ANY($2::text[])', monster, lootslot)

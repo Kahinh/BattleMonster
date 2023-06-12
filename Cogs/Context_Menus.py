@@ -17,7 +17,7 @@ class Context_Menus(lib.commands.Cog):
         await interaction.response.defer(ephemeral=True)
         if self.bot.power:
             cSlayer = await self.bot.ActiveList.get_Slayer(user.id, user.name)
-            embed = lib.Embed.create_embed_profil(cSlayer, user.display_avatar)
+            embed = lib.Embed.create_embed_profil_global(cSlayer, user.display_avatar)
             view = lib.SlayerView(self.bot, cSlayer, interaction, user.display_avatar, "shared_profil")
             await interaction.followup.send(embed=embed, view=view, ephemeral=True)
         else:

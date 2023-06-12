@@ -228,11 +228,11 @@ class Gamemode:
               #On distribue les loots
               award_loots(cSlayer, cOpponent)
 
-              #On revoit les butins : AutoVente ou vrai distrib ?
-              await review_loots()
+    #On revoit les butins : AutoVente ou vrai distrib ?
+    await review_loots()
 
-              #On push via le dB Manager
-              await push_dB_request()
+    #On push via le dB Manager
+    await push_dB_request()
 
   async def handler_Attack(self, cSlayer, hit):
 

@@ -12,7 +12,6 @@ from Functions.Messages.Embed import create_embed_new_pet
 class Slayer:
     id: int
     name: str
-    inventories: dict
     achievements: dict
 
     def __init__(
@@ -146,7 +145,7 @@ class Slayer:
         if self.inventories["gatherables"].get(gatherable_id, 0) + amount < 0:
             return False
         self.inventories["gatherables"][gatherable_id] += amount
-        await self.bot.dB.push_Gather(self.cSlayer.id, gatherable_id, self.cSlayer.inventories["gatherables"][gatherable_id])
+        await self.bot.dB.push_Gather(self.id, gatherable_id, self.inventories["gatherables"][gatherable_id])
         return True
     
     async def adapt_damage_taken(self, damage_taken_percentage):

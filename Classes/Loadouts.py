@@ -129,7 +129,9 @@ class Loadout:
         return gearscore
     
     async def correct_slots_after_changing_spe(self):
-        pass
+        for _, cSlot in self.bot.Slots.items():
+            while len(self.slot_items_equipped(cSlot)) > self.slot_nbr_max_items(cSlot):
+                await self.unequip_item(self.slot_items_equipped(cSlot)[0])
 
     def slot_items_equipped(self, cSlot):
         return [cObject for cObject in self.items if cObject.slot == cSlot.name]
@@ -190,7 +192,7 @@ class Loadout:
         return items_list
     
     async def set_specialization(self, spe_id):
-        cSpe = await Spe.get_Spe_Class(self.bot, spe_id, self.cSlayer)
+        cSpe = await Spe.get_Spe_Class(self.bot, spe_id, self)
         self.cSpe = cSpe
         await self.correct_slots_after_changing_spe()
         self.trigger_refreshes()

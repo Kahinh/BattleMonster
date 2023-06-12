@@ -12,7 +12,7 @@ class Loadout_Dropdown(lib.discord.ui.Select):
     def __init__(self, Loadouts, bot):
         options = []
         for loadout_id in Loadouts:
-            options.append(lib.discord.SelectOption(label=f"{Loadouts[loadout_id].name}- (GS : {Loadouts[loadout_id].gearscore})", value=loadout_id, emoji=Loadouts[loadout_id].cSpe.emote))
+            options.append(lib.discord.SelectOption(label=f"{Loadouts[loadout_id].name} - (GS : {Loadouts[loadout_id].gearscore})", value=loadout_id, emoji=Loadouts[loadout_id].cSpe.emote))
         if len(options) < bot.Variables["loadout_maximum"]:
             options.append(lib.discord.SelectOption(label="Enregistrer l'équipement actuel", value=0, emoji='🆕'))
 
@@ -21,7 +21,7 @@ class Loadout_Dropdown(lib.discord.ui.Select):
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
             if int(self.values[0]) == 0:
-                await interaction.response.send_modal(Loadout_Name(self.view.cSlayer))
+                await interaction.response.send_modal(Loadout_Name(self.view, self.view.cSlayer))
             else:
                 self.view.index = int(self.values[0])
                 self.view.select_cLoadout()
@@ -30,7 +30,8 @@ class Loadout_Dropdown(lib.discord.ui.Select):
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Loadout_Name(lib.discord.ui.Modal):
-    def __init__(self, cSlayer, loadout_id=None):
+    def __init__(self, LoadoutView, cSlayer, loadout_id=None):
+        self.LoadoutView = LoadoutView
         self.cSlayer = cSlayer
         self.loadout_id = loadout_id
         super().__init__(title=f"Enregistrement du Loadout")
@@ -43,6 +44,7 @@ class Loadout_Name(lib.discord.ui.Modal):
         if self.loadout_id is None:
             id = await self.cSlayer.bot.dB.push_creation_loadouts(self.cSlayer.id, self.loadout_name.value, self.cSlayer.current_loadout.get_loadout_list())
             self.cSlayer.loadouts[id] = await Loadout.get_Object_Class_from_cSlayer(self.cSlayer.bot, str(self.loadout_name.value), self.cSlayer, self.cSlayer.current_loadout.cSpe.id, self.cSlayer.current_loadout.items)
+            self.LoadoutView.index = int(id)
             await interaction.response.send_message(f"Le loadout a bien été ajouté !", ephemeral=True)
         else:
             await self.cSlayer.bot.dB.push_update_loadouts(self.loadout_id, self.cSlayer.id, self.loadout_name.value, self.cSlayer.current_loadout.get_loadout_list())
@@ -171,7 +173,7 @@ class Action_Button_replace(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
-            await interaction.response.send_modal(Loadout_Name(self.view.cSlayer, self.view.index))
+            await interaction.response.send_modal(Loadout_Name(self.view, self.view.cSlayer, self.view.index))
         else:
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
@@ -181,19 +183,20 @@ class Action_Button_import(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
-            await interaction.response.send_modal(Loadout_Name_Import(self.view.cSlayer, self.view.index))
+            await interaction.response.send_modal(Loadout_Name_Import(self.view, self.view.cSlayer, self.view.index))
         else:
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class Loadout_Name_Import(lib.discord.ui.Modal):
-    def __init__(self, cSlayer, loadout_id):
+    def __init__(self, LoadoutView, cSlayer, loadout_id):
+        self.LoadoutView = LoadoutView
         self.cSlayer = cSlayer
         self.loadout_id = loadout_id
         super().__init__(title=f"Import de Loadout")
 
         #Item
         self.loadout_name = lib.discord.ui.TextInput(label=f"Nom du Loadout",default="Mon loadout", style=lib.discord.TextStyle.short, min_length=1, max_length=20)
-        self.loadout_hash = lib.discord.ui.TextInput(label=f"Code du Loadout",default="code....", style=lib.discord.TextStyle.short, min_length=1, max_length=30)
+        self.loadout_hash = lib.discord.ui.TextInput(label=f"Code du Loadout",default="code....", style=lib.discord.TextStyle.short, min_length=1, max_length=50)
         self.add_item(self.loadout_name)
         self.add_item(self.loadout_hash)
 
@@ -202,15 +205,46 @@ class Loadout_Name_Import(lib.discord.ui.Modal):
         loadout_data = list(hashids.decode(self.loadout_hash.value))
         if loadout_data != []:
             if int(loadout_data[0]) == int(os.getenv('EXPORT_VERSION')):
-                if len(self.cSlayer.loadouts) < self.cSlayer.bot.Variables["loadout_maximum"]:
-                    id = await self.cSlayer.bot.dB.push_creation_loadouts(self.cSlayer.id, self.loadout_name.value, loadout_data[1:])
-                    self.cSlayer.loadouts[id] = await Loadout.get_Object_Class_from_db(self.cSlayer.bot, str(self.loadout_name.value), self.cSlayer, loadout_data[1:][0], loadout_data[2:])
-                    await interaction.response.send_message(f"Le loadout a bien été ajouté !", ephemeral=True)
+
+                #On contrôle les équipements dans le import:
+                missing_spe_id = None
+                missing_items_id = []
+                items_id = []
+
+                print(int(loadout_data[1]), self.cSlayer.inventories["specializations"])
+
+                if int(loadout_data[1]) in self.cSlayer.inventories["specializations"]:
+                    spe_id = int(loadout_data[1])
                 else:
-                    await self.cSlayer.bot.dB.push_update_loadouts(self.loadout_id, self.cSlayer.id, self.loadout_name.value, loadout_data[1:])
-                    self.cSlayer.loadouts[self.loadout_id] = await Loadout.get_Object_Class_from_db(self.cSlayer.bot, str(self.loadout_name.value), self.cSlayer, loadout_data[1:][0], loadout_data[2:])
-                    await interaction.response.send_message(f"Le loadout a bien été remplacé !", ephemeral=True)
+                    missing_spe_id = loadout_data[1]
+                    spe_id = self.cSlayer.cSpe.id
+                
+                for item_id in loadout_data[2:]:
+                    if int(item_id) in self.cSlayer.inventories["items"]:
+                        items_id.append(int(item_id))
+                    else:
+                        missing_items_id.append(int(item_id))
+                
+                updated_loadout_data = [spe_id]
+                updated_loadout_data.extend(items_id)
+
+                if len(self.cSlayer.loadouts) < self.cSlayer.bot.Variables["loadout_maximum"]:
+                    id = await self.cSlayer.bot.dB.push_creation_loadouts(self.cSlayer.id, self.loadout_name.value, updated_loadout_data)
+                    self.cSlayer.loadouts[id] = await Loadout.get_Object_Class_from_db(self.cSlayer.bot, str(self.loadout_name.value), self.cSlayer, spe_id, items_id)
+                    self.LoadoutView.index = int(id)
+                else:
+                    await self.cSlayer.bot.dB.push_update_loadouts(self.loadout_id, self.cSlayer.id, self.loadout_name.value, updated_loadout_data)
+                    self.cSlayer.loadouts[self.loadout_id] = await Loadout.get_Object_Class_from_db(self.cSlayer.bot, str(self.loadout_name.value), self.cSlayer, spe_id, items_id)
                 await self.cSlayer.bot.ActiveList.update_interface(self.cSlayer.id, "Loadout")
+
+                #On construit le message
+                description = ""
+                if missing_spe_id is not None :
+                    description += f"\n- Spécialité manquante : {missing_spe_id}"
+                if missing_items_id != []:
+                    description += f"\n- Objets manquants : {missing_items_id}"
+
+                await interaction.response.send_message(f"Le loadout a bien été ajouté !{description}", ephemeral=True)
             else:
                 await interaction.response.send_message(content="Ce code provient d'une ancienne version de l'export !", ephemeral=True)
         else:
@@ -222,6 +256,20 @@ class Action_Button_equip(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
+            
+            #On update le spe id dans le table Slayer
+            if self.view.cSlayer.cSpe.id != self.view.cLoadout.cSpe.id:
+                await self.view.bot.dB.push_spe(self, self.view.cSlayer.id, self.view.cloadout.cSpe.id)
+            
+            mass_update_equipped = []
+            #On update le items equipped dans la table Inventory Items
+            for cObject in self.view.cSlayer.current_loadout.items:
+                mass_update_equipped.append((self.view.cSlayer.id, cObject.id, False))
+            for cObject in self.view.cLoadout.items:
+                mass_update_equipped.append((self.view.cSlayer.id, cObject.id, True))
+            if mass_update_equipped != []:
+                await self.view.bot.dB.equip_unequip_mass_update(mass_update_equipped)
+            
             self.view.cSlayer.current_loadout = await Loadout.get_Object_Class_from_cSlayer(self.view.cSlayer.bot, self.view.cLoadout.name, self.view.cSlayer, self.view.cLoadout.cSpe.id, self.view.cLoadout.items, True)
             await interaction.response.send_message(content="Le loadout a été équipé !", ephemeral=True)
         else:
@@ -267,6 +315,13 @@ class LoadoutView(lib.discord.ui.View):
             self.add_item(Action_Button_export())
         self.add_item(Action_Button_import())
         self.add_item(Action_Button_equip())
+        for item in self.children:
+            if hasattr(item, "options"):
+                for option in item.options:
+                    if option.value == self.index:
+                        option.default = True
+                    else:
+                        option.default = False
 
     
     def select_embed(self):
@@ -298,6 +353,10 @@ class LoadoutView(lib.discord.ui.View):
         return embed
 
     async def update_view(self, interaction=None):
+        #On update l'index et le cLoadout
+        if self.index == 0: self.index = list(self.cSlayer.loadouts.keys())[0] if len(self.cSlayer.loadouts) > 0 else 0
+        self.select_cLoadout()
+        #On add les items
         self.add_items()
         embed = self.select_embed()
         self.enable_disable_buttons()

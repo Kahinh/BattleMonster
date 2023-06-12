@@ -141,7 +141,7 @@ class Spe:
 
   def adapt_max(self, cap_max, statistic, dict_data):
     if "special_charge" in statistic:
-      return int(float(self.bot.Variables["charge_gain_max_mult"]) * int(dict_data['stacks'] - dict_data['stacks_reduction']))
+      return int(float(self.bot.Variables["charge_gain_max_mult"]) * int(dict_data['stacks'] - dict_data.get('stacks_reduction', 0)))
     else:
       return cap_max
   
@@ -191,6 +191,7 @@ class Stratège(Spe):
     super().__init__(bot, rSpe, cLoadout)
 
   def adapt_max(self, cap_max, statistic, dict_data):
+    cap_max = super().adapt_max(cap_max, statistic)
     if statistic == "leta_per":
       return self.bot.Variables["chasseur_leta_per_cap_max"]
     else:
@@ -223,12 +224,6 @@ class Assassin(Spe):
 
   def temporary_stats(self):
     return [['crit_chance_l', float(self.bot.Variables['assassin_crit_chance_bonus'])], ['crit_chance_h', float(self.bot.Variables['assassin_crit_chance_bonus'])], ['crit_damage_l', float(self.bot.Variables['assassin_crit_damage_bonus'])], ['crit_damage_h', float(self.bot.Variables['assassin_crit_damage_bonus'])]]
-
-  def adapt_max(self, cap_max, statistic):
-    if statistic == "leta_per":
-      return self.bot.Variables["chasseur_leta_per_cap_max"]
-    else:
-      return cap_max
 
   def retreat_stats(self, dict_stats):
     dict_stats = super().retreat_stats(dict_stats)
