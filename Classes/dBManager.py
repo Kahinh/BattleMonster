@@ -101,7 +101,7 @@ class dB:
             ' ON CONFLICT (slayer_id) DO ' \
             f"UPDATE SET specialization_list=$2", cSlayer.id, str(cSlayer.inventories["specializations"]))
     
-    logging.info(f"PUSH SPE_LIST : {cSlayer.id} {str(cSlayer.inventory_specializations)}")
+    logging.info(f"PUSH SPE_LIST : {cSlayer.id} {str(cSlayer.inventories['specializations'])}")
   
   async def get_rPet(self, pet_id):
     async with self.bot.db_pool.acquire() as conn:
