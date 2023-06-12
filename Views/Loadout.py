@@ -312,7 +312,8 @@ class LoadoutView(lib.discord.ui.View):
             self.add_item(Action_Button_replace())
             self.add_item(Action_Button_export())
         self.add_item(Action_Button_import())
-        self.add_item(Action_Button_equip())
+        if len(self.cSlayer.loadouts) > 0:
+            self.add_item(Action_Button_equip())
         for item in self.children:
             if hasattr(item, "options"):
                 for option in item.options:
