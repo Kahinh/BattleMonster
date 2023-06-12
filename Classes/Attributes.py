@@ -53,6 +53,7 @@ class Spe:
     self.bonuses = lib.get_bonuses(bot, rSpe)
     self.add_spe_damage()
     self.remaining_hit_temporary_stat = 0
+    self.spe_damage = 0
 
   @staticmethod
   async def get_Spe_Class(bot, id, cLoadout):
@@ -110,7 +111,7 @@ class Spe:
   def nbr_hit(self):
     return 0
 
-  def demon_proc(self):
+  def demon_proc(self, dict_data):
       return False
 
   def add_spe_damage(self):
@@ -191,7 +192,7 @@ class Stratège(Spe):
     super().__init__(bot, rSpe, cLoadout)
 
   def adapt_max(self, cap_max, statistic, dict_data):
-    cap_max = super().adapt_max(cap_max, statistic)
+    cap_max = super().adapt_max(cap_max, statistic, dict_data)
     if statistic == "leta_per":
       return self.bot.Variables["chasseur_leta_per_cap_max"]
     else:
@@ -200,11 +201,10 @@ class Stratège(Spe):
 class Démon(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
     super().__init__(bot, rSpe, cLoadout)
-    self.spe_damage = 0
   
-  def demon_proc(self):
+  def demon_proc(self, dict_data):
     if random.choices((True, False), (float(self.bot.Variables["demon_chance_proc"]), 1-float(self.bot.Variables["demon_chance_proc"])), k=1)[0]:
-      self.spe_damage += int(float(self.bot.Variables["demon_bonus_mult"]) * self.stats["damage_s"])
+      self.spe_damage += int(float(self.bot.Variables["demon_bonus_mult"]) * dict_data["damage_s"])
       self.refresh_stats()
       return True
     else:

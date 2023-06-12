@@ -53,7 +53,7 @@ class dB:
         async with conn.transaction():
             await conn.executemany('UPDATE "slayers" SET money = money + $1 WHERE id = $2', data_money)
       
-      print(f"PUSH MONEY : {data_money}")
+      logging.info(f"PUSH MONEY : {data_money}")
 
   async def push_money(self, slayer_id, amount): 
     async with self.bot.db_pool.acquire() as conn:
@@ -137,7 +137,7 @@ class dB:
           ' DO UPDATE' \
           ' SET amount = $3 + slayers_inventory_gatherables.amount', data_mythic_stones)
   
-      print(f"PUSH - MYTHIC STONES : {data_mythic_stones}")
+      logging.info(f"PUSH - MYTHIC STONES : {data_mythic_stones}")
 
   async def pull_OpponentData(self, rarity, element, type):
     async with self.bot.db_pool.acquire() as conn:
@@ -169,7 +169,7 @@ class dB:
         ' ON CONFLICT ON CONSTRAINT slayer_and_achievement_unique' \
         ' DO UPDATE' \
         ' SET value = $3', (achievement_data))
-    print(f"PUSH - ACHIEVEMENTS : {achievement_data}")
+    logging.info(f"PUSH - ACHIEVEMENTS : {achievement_data}")
   
   async def pull_spe_data(self, spe_id):
     async with self.bot.db_pool.acquire() as conn :
@@ -185,7 +185,7 @@ class dB:
             ' DO UPDATE' \
             ' SET value = $3',data_behemoths_killed_achievement)
 
-      print(f"PUSH - ACHIEVEMENTS : {data_behemoths_killed_achievement}")
+      logging.info(f"PUSH - ACHIEVEMENTS : {data_behemoths_killed_achievement}")
           
   async def push_creation_loadouts(self, slayer_id, name, loadout_list):
     async with self.bot.db_pool.acquire() as conn:   

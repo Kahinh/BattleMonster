@@ -317,7 +317,7 @@ class LoadoutView(lib.discord.ui.View):
         for item in self.children:
             if hasattr(item, "options"):
                 for option in item.options:
-                    if option.value == self.index:
+                    if option.value == self.index and self.index != 0:
                         option.default = True
                     else:
                         option.default = False
