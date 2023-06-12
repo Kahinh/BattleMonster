@@ -116,6 +116,9 @@ class Spe:
 
   def add_spe_damage(self):
     self.bonuses["damage_s"] += self.damage
+
+  def update_spe_damage(self):
+    pass
   
   def refresh_stats(self):
     self.cLoadout.update_stats([])
@@ -169,15 +172,16 @@ class EscrimeDouble(Spe):
 class Templier(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
     super().__init__(bot, rSpe, cLoadout)
+    self.update_spe_damage()
 
   def slot_nbr_max_items(self, cSlot):
     if cSlot.name == "shield":
       return cSlot.count + 1
     else:
       return cSlot.count
-
-  def refresh_stats(self):
-    self.cLoadout.update_stats([["damage_s", self.cLoadout.stats["armor"]]])
+    
+  def update_spe_damage(self):
+    if self.cLoadout is not None : self.spe_damage = self.cLoadout.stats["armor"] 
 
 class ChefdeGuerre(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
@@ -205,15 +209,10 @@ class Démon(Spe):
   def demon_proc(self, dict_data):
     if random.choices((True, False), (float(self.bot.Variables["demon_chance_proc"]), 1-float(self.bot.Variables["demon_chance_proc"])), k=1)[0]:
       self.spe_damage += int(float(self.bot.Variables["demon_bonus_mult"]) * dict_data["damage_s"])
-      self.refresh_stats()
       return True
     else:
       self.spe_damage = 0
-      self.refresh_stats()
       return False
-
-  def refresh_stats(self):
-    self.cLoadout.update_stats([["damage_s", self.spe_damage]])
 
 class Assassin(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):

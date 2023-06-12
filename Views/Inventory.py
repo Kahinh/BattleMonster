@@ -125,10 +125,10 @@ class Equip_Button(lib.discord.ui.Button):
                 await self.view.bot.ActiveList.update_interface(self.view.cSlayer.id, "LootReview")
                 await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
             else:
-                if len(self.view.slot_items_equipped(self.view.bot.Slots[self.view.items_list_filtered[self.view.index].slot])) == 0:
+                if len(self.view.cSlayer.slot_items_equipped(self.view.bot.Slots[self.view.items_list_filtered[self.view.index].slot])) == 0:
                     await interaction.response.send_message(content="Une erreur est survenue !", ephemeral=True)
                 else:
-                    viewMult = lib.MultEquipView(self.view.bot, self.view.cSlayer, self.view.slot_items_equipped(self.view.bot.Slots[self.view.items_list_filtered[self.view.index].slot]), interaction, self.view.items_list_filtered[self.view.index])
+                    viewMult = lib.MultEquipView(self.view.bot, self.view.cSlayer, self.view.cSlayer.slot_items_equipped(self.view.bot.Slots[self.view.items_list_filtered[self.view.index].slot]), interaction, self.view.items_list_filtered[self.view.index])
                     await self.view.bot.ActiveList.add_interface(interaction.user.id, "mult_equip", viewMult)
                     await interaction.response.send_message(content="Tous les emplacements sont déjà utilisés, quel objet souhaitez-vous remplacer ?", view=viewMult, ephemeral=True)
         else:

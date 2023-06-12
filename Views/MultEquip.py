@@ -10,23 +10,18 @@ class Equiped_Dropdown(lib.discord.ui.Select):
     async def callback(self, interaction: lib.discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         if not self.view.obsolete:
-            try:
-                await self.view.cSlayer.equip_item(self.view.cObject)
-                await self.view.cSlayer.unequip_item(self.view.cSlayer.inventories["item"][int(self.values[0])])
+            await self.view.cSlayer.equip_item(self.view.cObject)
+            await self.view.cSlayer.unequip_item(self.view.cSlayer.inventories["items"][int(self.values[0])])
 
-                #On update le Inventoryview ?
-                await self.view.bot.ActiveList.update_interface(self.view.cSlayer.id, "inventaire")
+            #On update le Inventoryview ?
+            await self.view.bot.ActiveList.update_interface(self.view.cSlayer.id, "inventaire")
 
-                self.view.bot.ActiveList.remove_interface(self.view.cSlayer.id, "mult_equip")
-                message = await self.view.interaction.original_response()
-                await message.edit(view=None)
-                self.view.stop()
-                
-                self.view.cSlayer.calculateStats(self.view.bot.rBaseBonuses)
-                await self.view.bot.ActiveList.close_interface(self.view.cSlayer.id, self.view.cObject.id)
-                await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
-            except:
-                await interaction.followup.send("Une erreur s'est produite !", ephemeral=True)
+            self.view.bot.ActiveList.remove_interface(self.view.cSlayer.id, "mult_equip")
+            message = await self.view.interaction.original_response()
+            await message.edit(view=None)
+            self.view.stop()
+            
+            await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
         else:
             await interaction.followup.send(content="Cette interface est obsolete. Il te faut la redémarrer !")
 
@@ -40,8 +35,7 @@ class MultEquipView(lib.discord.ui.View):
         self.List = []
         self.obsolete = False
 
-        for item in List: 
-            self.List.append(self.cSlayer.inventory_items[item])
+        self.List = List
 
         self.add_item(Equiped_Dropdown(self.List))
 

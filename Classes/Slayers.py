@@ -213,6 +213,8 @@ class Slayer:
         #Dégâts de base :
         damage = int(self.stats[f"damage_{hit}"])
 
+        if hit == "s": damage += int(damage + self.current_loadout.cSpe.spe_damage)
+
         #Add CDG :
         if self.cSpe.id == 4 and hit == "s":
             damage += int(cOpponent.extract_lasthits_list(self))

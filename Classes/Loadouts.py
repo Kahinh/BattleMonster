@@ -77,7 +77,6 @@ class Loadout:
 
     def trigger_refreshes(self):
         self.refresh_stats()
-        self.cSpe.refresh_stats()
         self.gearscore = self.get_gear_score()
 
     def update_stats(self, list_bonus_value):
@@ -96,7 +95,6 @@ class Loadout:
                 stats[couple_stat[0]] += couple_stat[1]
         
         stats = self.cSpe.retreat_stats(stats)
-
         stats = lib.cap_min_max_stats(self.bot, stats, self.cSpe)
 
         #On agrège
