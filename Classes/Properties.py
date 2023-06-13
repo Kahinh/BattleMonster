@@ -81,8 +81,8 @@ class Statistic:
         self.display_emote = rStatistics["display_emote"]
         self.reverse = rStatistics["reverse"]
         self.percentage = rStatistics["percentage"]
-        self.cap_min = rStatistics["cap_min"] if rStatistics["is_cap_min"] else None
-        self.cap_max = rStatistics["cap_max"] if rStatistics["is_cap_max"] else None
+        self.cap_min = float(rStatistics["cap_min"]) if rStatistics["is_cap_min"] else None
+        self.cap_max = float(rStatistics["cap_max"]) if rStatistics["is_cap_max"] else None
 
     def sub_division(self):
         if any([self.sub_l, self.sub_h, self.sub_s]):
