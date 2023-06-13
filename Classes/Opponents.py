@@ -143,7 +143,7 @@ class Opponent:
     return extraction
 
   def isParry(self, hit, cSlayer):
-    if (self.parry["parry_chance_l"] + cSlayer.stats[f"parry_l"]) >= 1 and (self.parry["parry_chance_h"] + cSlayer.stats[f"parry_h"]) >= 1:
+    if (float(self.parry["parry_chance_l"]) + float(cSlayer.stats[f"parry_l"])) >= 1.0 and (float(self.parry["parry_chance_h"]) + float(cSlayer.stats[f"parry_h"])) >= 1.0:
       return True
     else:
       ParryChance = min(max(self.parry[f"parry_chance_{hit}"] + cSlayer.stats[f"parry_{hit}"], 0), 1)
