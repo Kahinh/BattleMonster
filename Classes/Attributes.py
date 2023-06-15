@@ -181,7 +181,9 @@ class Templier(Spe):
       return cSlot.count
     
   def update_spe_damage(self):
-    if self.cLoadout is not None : self.spe_damage = self.cLoadout.stats["armor"] 
+    if self.cLoadout is not None :
+      if "armor" in self.cLoadout.stats: 
+        self.spe_damage = self.cLoadout.stats["armor"] 
 
 class ChefdeGuerre(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):

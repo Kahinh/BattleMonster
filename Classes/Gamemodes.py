@@ -343,6 +343,7 @@ class Gamemode:
       return canSpecial[1], 0, False
       
     #On peut attaquer selon le timing
+    print(cOpponent.slayers_hits)
     if (canAttack := cOpponent.slayer_canAttack(cSlayer)) and not canAttack[0] and hit != "s":
       return f"> Hop hop hop, tu dois encore attendre avant d'attaquer !\n{cOpponent.slayers_hits[cSlayer.id].checkStatus(0, cOpponent)}", 0, False
     
@@ -360,10 +361,11 @@ class Gamemode:
       content += cSlayer.recap_useStacks(hit)
       return content, 0, False
     
+    #Forgeron
     if hit == "s" and cSlayer.cSpe.id == 5:
       i = 0
-      for id in cOpponent.slayers_hits:
-        if id != cSlayer.id and cSlayer.cSpe.id != 5:
+      for id, cDamageDone in cOpponent.slayers_hits.items():
+        if id != cSlayer.id and cDamageDone.cSlayer.cSpe.id != 5:
           cOpponent.slayers_hits[id].timestamp_next_hit = datetime.timestamp(datetime.now())
           i += 1
       content = f"\n> Vous avez reset les attaques de {int(i)} Slayers !"

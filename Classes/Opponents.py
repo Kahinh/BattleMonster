@@ -104,6 +104,9 @@ class Opponent:
       self.img_url_normal = OpponentData["img_url_normal"]
       self.img_url_enraged = OpponentData["img_url_enraged"]
       self.bg_url = OpponentData["bg_url"]
+
+      #forgeron
+      self.slayers_hits = {}
     
     OpponentData = await pullOpponentData()
     compileOpponentData(OpponentData)
@@ -173,6 +176,7 @@ class Opponent:
     else:
       self.slayers_hits[cSlayer.id] = DamageDone(cSlayer, 0 if hit == "s" else cSlayer.stats["cooldown"], damage if damage > 0 else 0, True if damage > 0 else False, cSlayer.stats["luck"])
     content = self.slayers_hits[cSlayer.id].checkStatus(damage, self)
+    print(self.slayers_hits)
     return content
   
   def slayer_loses_eligibility(self, cSlayer):
@@ -226,6 +230,7 @@ class Banner(Opponent):
     self = await super().handler_Build(gamemode, element, rarity, type)
     self.base_hp = None
     self.total_hp = None
+    self.armor = self.armor_cap
 
     #last hits
     self.last_hits = {}

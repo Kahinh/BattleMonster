@@ -213,7 +213,7 @@ class Slayer:
         #Dégâts de base :
         damage = int(self.stats[f"damage_{hit}"])
 
-        if hit == "s": damage += int(damage + self.current_loadout.cSpe.spe_damage)
+        if hit == "s": damage += int(self.current_loadout.cSpe.spe_damage)
 
         #Add CDG :
         if self.cSpe.id == 4 and hit == "s":
@@ -223,7 +223,7 @@ class Slayer:
         armor_reduction = 0
         if self.cSpe.id == 6 and hit == "s":
             if cOpponent.armor == cOpponent.armor_cap:
-                damage = (damage + int(self.stats["total_letality_s"])) * (1 + self.stats["total_letality_per"])
+                damage = (damage + int(self.stats["letality_s"])) * (1 + self.stats["letality_per_s"])
             else:
                 armor_reduction = int((cOpponent.armor - max(self.reduceArmor(hit, cOpponent.armor), 0)) * self.bot.Variables["chasseur_armor_reduction_mult"])
                 armor_reduction = int(min(armor_reduction, cOpponent.armor - cOpponent.armor_cap))
