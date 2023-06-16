@@ -147,7 +147,7 @@ class Gamemode:
           cObject = lib.Object.get_Object_Class(self.bot, row)
 
           #ON VEND AUTOMATIQUEMENT L'ITEM
-          if cSlayer.isinInventory(cObject.id):
+          if cSlayer.isinInventory(cObject.id) or cObject.id in cSlayer.inventories["items"]:
             auto_sellItem(cSlayer, cObject)
           #ON AJOUTE DANS LA DB INVENTAIRE
           else:
@@ -343,7 +343,6 @@ class Gamemode:
       return canSpecial[1], 0, False
       
     #On peut attaquer selon le timing
-    print(cOpponent.slayers_hits)
     if (canAttack := cOpponent.slayer_canAttack(cSlayer)) and not canAttack[0] and hit != "s":
       return f"> Hop hop hop, tu dois encore attendre avant d'attaquer !\n{cOpponent.slayers_hits[cSlayer.id].checkStatus(0, cOpponent)}", 0, False
     

@@ -17,6 +17,7 @@ class Object:
     self.img_url = rItem["img_url"]
     self.element = rItem["element"]
     self.rarity = rItem["rarity"]
+    self.monster = rItem["monster"]
     self.gearscore = 0
     self.base_bonuses = lib.get_bonuses(bot, rItem)
 

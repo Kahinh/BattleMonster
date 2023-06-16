@@ -183,6 +183,7 @@ class InventoryView(lib.discord.ui.View):
         return filtered_list
 
     def get_itemsequipped_list(self):
+        self.itemsequipped_list = []
         #On get si on a des items équipés à cet endroit là
         if self.items_list_filtered != []:
             self.itemsequipped_list = self.cSlayer.slot_items_equipped(self.bot.Slots[self.items_list_filtered[self.index].slot])

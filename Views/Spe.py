@@ -20,8 +20,6 @@ class Equip_Button(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
-            # self.view.cSlayer.mult_damage = 0
-            # self.view.cSlayer.berserker_mode = 0
             await self.view.cSlayer.set_specialization(self.view.current_spe_id)
             await self.view.update_view(interaction)
             await interaction.followup.send(content="La spécialité a bien été équipée !", ephemeral=True) 

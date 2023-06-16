@@ -39,12 +39,12 @@ class Loadout_Name(lib.discord.ui.Modal):
     async def on_submit(self, interaction: lib.discord.Interaction):
         if self.loadout_id is None:
             id = await self.cSlayer.bot.dB.push_creation_loadouts(self.cSlayer.id, self.loadout_name.value, self.cSlayer.current_loadout.get_loadout_list())
-            self.cSlayer.loadouts[id] = await Loadout.get_Object_Class_from_cSlayer(self.cSlayer.bot, str(self.loadout_name.value), self.cSlayer, self.cSlayer.current_loadout.cSpe.id, self.cSlayer.current_loadout.items)
+            self.cSlayer.loadouts[id] = await Loadout.get_Object_Class_from_cSlayer(self.cSlayer.bot, str(self.loadout_name.value), self.cSlayer, self.cSlayer.current_loadout.cSpe.id, [cObject for cObject in self.cSlayer.current_loadout.items])
             self.LoadoutView.index = int(id)
             await interaction.response.send_message(f"Le loadout a bien été ajouté !", ephemeral=True)
         else:
             await self.cSlayer.bot.dB.push_update_loadouts(self.loadout_id, self.cSlayer.id, self.loadout_name.value, self.cSlayer.current_loadout.get_loadout_list())
-            self.cSlayer.loadouts[self.loadout_id] = await Loadout.get_Object_Class_from_cSlayer(self.cSlayer.bot, str(self.loadout_name.value), self.cSlayer, self.cSlayer.current_loadout.cSpe.id, self.cSlayer.current_loadout.items)
+            self.cSlayer.loadouts[self.loadout_id] = await Loadout.get_Object_Class_from_cSlayer(self.cSlayer.bot, str(self.loadout_name.value), self.cSlayer, self.cSlayer.current_loadout.cSpe.id, [cObject for cObject in self.cSlayer.current_loadout.items])
             await interaction.response.send_message(f"Le loadout a bien été remplacé !", ephemeral=True)
         await self.cSlayer.bot.ActiveList.update_interface(self.cSlayer.id, "Loadout")
 
@@ -253,18 +253,22 @@ class Action_Button_equip(lib.discord.ui.Button):
             
             #On update le spe id dans le table Slayer
             if self.view.cSlayer.cSpe.id != self.view.cLoadout.cSpe.id:
+                self.view.cSlayer.special_stacks = 0
+                await self.view.bot.dB.push_special_stacks(self.view.cSlayer.id, self.view.cSlayer.special_stacks)
                 await self.view.bot.dB.push_spe(self.view.cSlayer.id, self.view.cLoadout.cSpe.id)
             
             mass_update_equipped = []
             #On update le items equipped dans la table Inventory Items
             for cObject in self.view.cSlayer.current_loadout.items:
                 mass_update_equipped.append((self.view.cSlayer.id, cObject.id, False))
+                cObject.equipped = False
             for cObject in self.view.cLoadout.items:
                 mass_update_equipped.append((self.view.cSlayer.id, cObject.id, True))
+                cObject.equipped = True
             if mass_update_equipped != []:
                 await self.view.bot.dB.equip_unequip_mass_update(mass_update_equipped)
             
-            self.view.cSlayer.current_loadout = await Loadout.get_Object_Class_from_cSlayer(self.view.cSlayer.bot, self.view.cLoadout.name, self.view.cSlayer, self.view.cLoadout.cSpe.id, self.view.cLoadout.items, True)
+            self.view.cSlayer.current_loadout = await Loadout.get_Object_Class_from_cSlayer(self.view.cSlayer.bot, self.view.cLoadout.name, self.view.cSlayer, self.view.cLoadout.cSpe.id, [cObject for cObject in self.view.cSlayer.current_loadout.items], True)
             await interaction.response.send_message(content="Le loadout a été équipé !", ephemeral=True)
         else:
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)

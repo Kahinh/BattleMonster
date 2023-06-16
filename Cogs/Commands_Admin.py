@@ -104,8 +104,7 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
             await interaction.followup.send(content=f"{user} possède déjà {item_name}", ephemeral=True)
           else:
             cObject = lib.Object.get_Object_Class(self.bot, item_row)
-            cSlayer.addtoInventory(cObject)
-            await self.bot.dB.add_item(cSlayer, cObject)
+            await cSlayer.addtoInventory(cObject)
             await self.bot.ActiveList.update_interface(cSlayer.id, "inventaire")
             await interaction.followup.send(content=f"{item_name} a été donné à {user}", ephemeral=True)
             channel = self.bot.get_channel(self.bot.rChannels["logs"])
@@ -167,8 +166,7 @@ class Commands_Admin(lib.commands.GroupCog, name="admin"):
     if self.bot.power:
       cSlayer = self.bot.ActiveList.get_active_Slayer(int(user))
       if cSlayer is not None and isinstance(money, int):
-        cSlayer.add_remove_money(money)
-        await self.bot.dB.push_money_only_slayer(cSlayer, money)
+        await cSlayer.add_remove_money(money)
         
         #On poste le message
         channel = self.bot.get_channel(self.bot.rChannels["logs"])
