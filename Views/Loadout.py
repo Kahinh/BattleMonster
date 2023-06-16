@@ -268,7 +268,7 @@ class Action_Button_equip(lib.discord.ui.Button):
             if mass_update_equipped != []:
                 await self.view.bot.dB.equip_unequip_mass_update(mass_update_equipped)
             
-            self.view.cSlayer.current_loadout = await Loadout.get_Object_Class_from_cSlayer(self.view.cSlayer.bot, self.view.cLoadout.name, self.view.cSlayer, self.view.cLoadout.cSpe.id, [cObject for cObject in self.view.cSlayer.current_loadout.items], True)
+            self.view.cSlayer.current_loadout = await Loadout.get_Object_Class_from_cSlayer(self.view.cSlayer.bot, self.view.cLoadout.name, self.view.cSlayer, self.view.cLoadout.cSpe.id, [cObject for cObject in self.view.cLoadout.items], True)
             await interaction.response.send_message(content="Le loadout a été équipé !", ephemeral=True)
         else:
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
