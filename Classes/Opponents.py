@@ -176,7 +176,6 @@ class Opponent:
     else:
       self.slayers_hits[cSlayer.id] = DamageDone(cSlayer, 0 if hit == "s" else cSlayer.stats["cooldown"], damage if damage > 0 else 0, True if damage > 0 else False, cSlayer.stats["luck"])
     content = self.slayers_hits[cSlayer.id].checkStatus(damage, self)
-    print(self.slayers_hits)
     return content
   
   def slayer_loses_eligibility(self, cSlayer):
