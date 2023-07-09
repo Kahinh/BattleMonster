@@ -115,12 +115,12 @@ class Opponent:
     return self
 
   def dealDamage(self, cSlayer):
-    armor = int(self.reduceArmor(cSlayer.stats["armor"]))
+    armor = int(self.reduceArmor(cSlayer.stats("armor")))
     damage = int(self.damage)
     #Armor
     damage = int(max(damage * int(self.bot.Variables["ratio_armor"])/(int(self.bot.Variables["ratio_armor"])+armor), 0))
     #Max HP
-    damage = int(min(damage, cSlayer.health - cSlayer.damage_taken))
+    damage = int(min(damage, cSlayer.current_health))
     return damage, f"\n> ↪️ Parade: **-{int(damage)}** vie"
 
   def reduceArmor(self, armor):
@@ -146,10 +146,10 @@ class Opponent:
     return extraction
 
   def isParry(self, hit, cSlayer):
-    if (float(self.parry["parry_chance_l"]) + float(cSlayer.stats[f"parry_l"])) >= 1.0 and (float(self.parry["parry_chance_h"]) + float(cSlayer.stats[f"parry_h"])) >= 1.0:
+    if (float(self.parry["parry_chance_l"]) + float(cSlayer.stats("parry_l"))) >= 1.0 and (float(self.parry["parry_chance_h"]) + float(cSlayer.stats("parry_h"))) >= 1.0:
       return True
     else:
-      ParryChance = min(max(self.parry[f"parry_chance_{hit}"] + cSlayer.stats[f"parry_{hit}"], 0), 1)
+      ParryChance = min(max(self.parry[f"parry_chance_{hit}"] + cSlayer.stats(f"parry_{hit}"), 0), 1)
       return random.choices(population=[True, False], weights=[ParryChance, 1-ParryChance], k=1)[0]
 
   def getDamage(self, damage):
@@ -172,9 +172,9 @@ class Opponent:
 
   def slayer_storeAttack(self, cSlayer, damage, hit):
     if cSlayer.id in self.slayers_hits:
-      self.slayers_hits[cSlayer.id].updateClass(damage, None if hit == "s" else cSlayer.stats["cooldown"], cSlayer.stats["luck"])
+      self.slayers_hits[cSlayer.id].updateClass(damage, None if hit == "s" else cSlayer.stats("cooldown"), cSlayer.stats("luck"))
     else:
-      self.slayers_hits[cSlayer.id] = DamageDone(cSlayer, 0 if hit == "s" else cSlayer.stats["cooldown"], damage if damage > 0 else 0, True if damage > 0 else False, cSlayer.stats["luck"])
+      self.slayers_hits[cSlayer.id] = DamageDone(cSlayer, 0 if hit == "s" else cSlayer.stats("cooldown"), damage if damage > 0 else 0, True if damage > 0 else False, cSlayer.stats("luck"))
     content = self.slayers_hits[cSlayer.id].checkStatus(damage, self)
     return content
   

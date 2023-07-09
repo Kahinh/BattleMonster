@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from Classes.Objects import Object, Mythic, Pet, Item, Improvable_Object
 from Classes.Attributes import Spe
-from copy import deepcopy
+from collections import Counter
+
 
 import os, sys, inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -32,9 +33,10 @@ class Loadout:
         self.cSpe = None
 
         #Second init
-        self.gearscore = 0
-        self.pre_stats = {}
-        self.stats = {}
+        self.items_stats = {}
+
+        #Third init
+        self.buffs_list = []
 
     @staticmethod
     async def get_Object_Class_from_db(bot, name, cSlayer, spe_id, items_list, is_current_loadout=False):
@@ -61,65 +63,80 @@ class Loadout:
         cLoadout.cSpe = cSpe
         cLoadout.items = list_items
 
-        cLoadout.gearscore = cLoadout.get_gear_score()
-        cLoadout.init_pre_stats() #stats des items
-
-        cLoadout.trigger_refreshes()
+        cLoadout.init_items_stats() #stats des items
 
         return cLoadout
 
-    def init_pre_stats(self):
-        pre_stats = {}
+    @property
+    def gearscore(self):
+        return self.get_gear_score()
+    
+    @property
+    def spe_stats(self):
+        return self.cSpe.bonuses
+    
+    @property
+    def base_stats(self):
+        return self.bot.Base_Player.bonuses
+    
+    @property
+    def temporary_stats(self):
+        return self.cSpe.temporary_stats()
+    
+    @property
+    def additional_stats(self):
+        return self.cSpe.additional_stats()
+    
+    @property
+    def buffs_stats(self):
+        buffs_stats = {}
+        for Buffs in self.buffs:
+            buffs_stats = Counter(buffs_stats) + Counter(Buffs)
+        return buffs_stats
+    
+    def init_items_stats(self):
+        items_stats = {}
         for cObject in self.items:
-            pre_stats = lib.add_bonuses(self.bot, pre_stats, cObject.bonuses)
-        self.pre_stats = pre_stats
-        self.stats = pre_stats
+            items_stats = lib.add_bonuses(self.bot, items_stats, cObject.bonuses)
+        self.items_stats = items_stats
 
-    def trigger_refreshes(self):
-        self.refresh_stats()
-        self.cSpe.update_spe_damage()
-        self.gearscore = self.get_gear_score()
-
-    def update_stats(self, list_bonus_value):
-        for couple in list_bonus_value:
-            self.stats[couple[0]] += couple[1]
-
-    def refresh_stats(self):
-        
-        stats = deepcopy(self.pre_stats)
-        stats = lib.add_bonuses(self.bot, stats, self.cSpe.bonuses)
-        stats = lib.add_bonuses(self.bot, stats, self.bot.Base_Player.bonuses)
-
-        #temporary stats
-        if self.cSpe.remaining_hit_temporary_stat > 0:
-            for couple_stat in self.cSpe.temporary_stats():
-                stats[couple_stat[0]] += couple_stat[1]
-        
-        stats = self.cSpe.retreat_stats(stats)
-        stats = lib.cap_min_max_stats(self.bot, stats, self.cSpe)
-
-        #On agrège
-        stats.update({'armor': int(stats['armor'] * (1 + stats['armor_per']))})
-        stats.pop('armor_per')
-        stats.update({'health': int(stats['health'] * (1 + stats['health_per']))})
-        stats.pop('health_per')
-        stats.update({'damage_l': int((stats['damage_l'] + stats['damage_weapon']) * (1 + stats['damage_per_l']))})
-        stats.pop('damage_per_l')
-        stats.update({'damage_h': int((stats['damage_h'] + stats['damage_weapon']) * (1 + stats['damage_per_h']))})
-        stats.pop('damage_per_h')
-        stats.update({'damage_s': int((stats['damage_s'] + stats['damage_weapon']) * (1 + stats['damage_per_s']))})
-        stats.pop('damage_per_s')
-        stats.update({'stacks': int(stats['stacks'] - stats['stacks_reduction'])})
-        stats.pop('stacks_reduction')
-        stats.update({'cooldown': int(float(self.bot.Variables["cooldown"]) - stats['vivacity'])})
-        self.stats = stats
-
-    def activate_temporary_stat(self):
-        self.cSpe.activate_temporary_stat()
-        self.refresh_stats()
-
-    def deactivate_temporary_stat(self):
-        self.refresh_stats()
+    def stats(self, bonus):
+        match bonus:
+            case "armor":
+                return lib.cap_min_max_bonus(bonus, (self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0) + self.buffs_stats.get(bonus, 0)) * (1 + self.stats("armor_per")), self.bot, self.cSpe)
+            case "health":
+                return lib.cap_min_max_bonus(bonus, (self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0) + self.buffs_stats.get(bonus, 0)) * (1 + self.stats("health_per")), self.bot, self.cSpe)
+            case "damage_l":
+                return lib.cap_min_max_bonus(bonus, (self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0) + self.buffs_stats.get(bonus, 0) + self.stats("damage_weapon")) * (1 + self.stats("damage_per_l")), self.bot, self.cSpe)
+            case "damage_h":
+                return lib.cap_min_max_bonus(bonus, (self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0) + self.buffs_stats.get(bonus, 0) + self.stats("damage_weapon")) * (1 + self.stats("damage_per_h")), self.bot, self.cSpe)
+            case "damage_s":
+                return lib.cap_min_max_bonus(bonus, (self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0) + self.buffs_stats.get(bonus, 0) + self.stats("damage_weapon")) * (1 + self.stats("damage_per_s")), self.bot, self.cSpe)
+            case "stacks":
+                return lib.cap_min_max_bonus(bonus, (self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0) + self.buffs_stats.get(bonus, 0)) - self.stats("stacks_reduction"), self.bot, self.cSpe)
+            case "cooldown":
+                return int(float(self.bot.Variables["cooldown"]) - self.stats("vivacity"))
+            case _:
+                return lib.cap_min_max_bonus(bonus, self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0) + self.buffs_stats.get(bonus, 0), self.bot, self.cSpe)
+            
+    def stats_uncapped(self, bonus):
+        match bonus:
+            case "armor":
+                return (self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0)) * (1 + self.stats("armor_per"))
+            case "health":
+                return (self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0)) * (1 + self.stats("health_per"))
+            case "damage_l":
+                return (self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.stats("damage_weapon")) * (1 + self.stats("damage_per_l"))
+            case "damage_h":
+                return (self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.stats("damage_weapon")) * (1 + self.stats("damage_per_h"))
+            case "damage_s":
+                return (self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.stats("damage_weapon")) * (1 + self.stats("damage_per_s"))
+            case "stacks":
+                return (self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0)) - self.stats("stacks_reduction")
+            case "cooldown":
+                return int(float(self.bot.Variables["cooldown"]) - self.stats("vivacity"))
+            case _:
+                return self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0)
 
     def get_gear_score(self):
         gearscore = 0
@@ -155,8 +172,7 @@ class Loadout:
         await self.bot.dB.equip_item(self.cSlayer, cObject)
         cObject.equipped = True
         self.items.append(cObject)
-        self.pre_stats = lib.add_bonuses(self.bot, self.pre_stats, cObject.bonuses)
-        self.trigger_refreshes()
+        self.items_stats = lib.add_bonuses(self.bot, self.items_stats, cObject.bonuses)
         await self.cSlayer.adapt_damage_taken(damage_taken_percentage)
 
     async def unequip_item(self, cObject):
@@ -164,22 +180,20 @@ class Loadout:
         await self.bot.dB.unequip_item(self.cSlayer, cObject)
         cObject.equipped = False
         self.items.remove(cObject)
-        self.pre_stats = lib.remove_bonuses(self.bot, self.pre_stats, cObject.bonuses)
-        self.trigger_refreshes()
+        self.items_stats = lib.remove_bonuses(self.bot, self.items_stats, cObject.bonuses)
         await self.cSlayer.adapt_damage_taken(damage_taken_percentage)
 
     async def remove_item_for_enhancement(self, cObject):
         if self.is_current_loadout:
             damage_taken_percentage = self.cSlayer.damage_taken_percentage
-        self.pre_stats = lib.remove_bonuses(self.bot, self.pre_stats, cObject.bonuses)
+        self.items_stats = lib.remove_bonuses(self.bot, self.items_stats, cObject.bonuses)
         if self.is_current_loadout:
             await self.cSlayer.adapt_damage_taken(damage_taken_percentage)
 
     async def add_item_for_enhancement(self, cObject):
         if self.is_current_loadout:
             damage_taken_percentage = self.cSlayer.damage_taken_percentage
-        self.pre_stats = lib.add_bonuses(self.bot, self.pre_stats, cObject.bonuses)
-        self.trigger_refreshes()
+        self.items_stats = lib.add_bonuses(self.bot, self.items_stats, cObject.bonuses)
         if self.is_current_loadout:
             await self.cSlayer.adapt_damage_taken(damage_taken_percentage)
 
@@ -194,7 +208,6 @@ class Loadout:
         cSpe = await Spe.get_Spe_Class(self.bot, spe_id, self)
         self.cSpe = cSpe
         await self.correct_slots_after_changing_spe()
-        self.trigger_refreshes()
 
     def get_loadout_list(self):
         loadout_list = [self.cSpe.id]

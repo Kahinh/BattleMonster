@@ -169,8 +169,8 @@ class InventoryView(lib.discord.ui.View):
         self.add_item(Equip_Button())
         self.add_item(Next_Button())
         self.add_item(Slot_Dropdown(self.bot.Slots))
-        self.add_item(Element_Dropdown(self.bot.Elements))
         self.add_item(Rarity_Dropdown(self.bot.Rarities))
+        self.add_item(Element_Dropdown(self.bot.Elements))
 
         self.disable_enable_InventoryView()
 

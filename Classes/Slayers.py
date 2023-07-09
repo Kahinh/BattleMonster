@@ -99,20 +99,13 @@ class Slayer:
         return self.current_loadout.stats
     @property
     def health(self):
-        return self.current_loadout.stats["health"]
+        return self.current_loadout.stats("health")
     @property
     def current_health(self):
-        return self.current_loadout.stats["health"] - self.damage_taken
+        return self.current_loadout.stats("health") - self.damage_taken
     @property
     def damage_taken_percentage(self):
         return float(self.damage_taken/self.health)
-    
-    @property
-    def remaining_hit_temporary_stat(self):
-        return self.cSpe.remaining_hit_temporary_stat
-    
-    def trigger_refreshes(self):
-        self.current_loadout.trigger_refreshes()
 
     def item_can_be_equipped(self, cSlot):
         empty_slot, only_one_place_on_slot = self.current_loadout.item_can_be_equipped(cSlot)
@@ -166,9 +159,6 @@ class Slayer:
                 return False
         else:
             return True
-    
-    def activate_temporary_stat(self):
-        self.current_loadout.activate_temporary_stat()
 
     async def equip_item(self, cObject):
         await self.current_loadout.equip_item(cObject)
@@ -200,18 +190,18 @@ class Slayer:
                 await channel.send(content=f"<@{self.id}>",embed=embed)
 
     def canSpecial(self):
-        if self.special_stacks >= self.stats["stacks"]:
+        if self.special_stacks >= self.stats("stacks"):
             return True, ""
         else:
-            return False, f"\n> ☄️ Tu ne possèdes pas le nombre de charges nécessaires - Charge total : **{self.special_stacks}/{self.stats['stacks']}**"
+            return False, f"\n> ☄️ Tu ne possèdes pas le nombre de charges nécessaires - Charge total : **{self.special_stacks}/{self.stats('stacks')}**"
     
     def isCrit(self, hit):
-        isCrit = random.choices(population=[True, False], weights=[float(self.stats[f"crit_chance_{hit}"]), float(1-self.stats[f"crit_chance_{hit}"])], k=1)[0]
+        isCrit = random.choices(population=[True, False], weights=[float(self.stats(f"crit_chance_{hit}")), float(1-self.stats(f"crit_chance_{hit}"))], k=1)[0]
         return isCrit
 
     def dealDamage(self, hit, cOpponent, isCrit, CritMult, ProtectCrit, ArmorMult):
         #Dégâts de base :
-        damage = int(self.stats[f"damage_{hit}"])
+        damage = int(self.stats(f"damage_{hit}"))
 
         if hit == "s": damage += int(self.current_loadout.cSpe.spe_damage)
 
@@ -223,14 +213,14 @@ class Slayer:
         armor_reduction = 0
         if self.cSpe.id == 6 and hit == "s":
             if cOpponent.armor == cOpponent.armor_cap:
-                damage = (damage + int(self.stats["letality_s"])) * (1 + self.stats["letality_per_s"])
+                damage = (damage + int(self.stats("letality_s"))) * (1 + self.stats("letality_per_s"))
             else:
                 armor_reduction = int((cOpponent.armor - max(self.reduceArmor(hit, cOpponent.armor), 0)) * self.bot.Variables["chasseur_armor_reduction_mult"])
                 armor_reduction = int(min(armor_reduction, cOpponent.armor - cOpponent.armor_cap))
                 cOpponent.armor -= armor_reduction
 
         #On applique les Mult : Crit & Finaux
-        damage = int(damage*(1 + CritMult) * (1 + self.stats[f"final_damage_{hit}"]))
+        damage = int(damage*(1 + CritMult) * (1 + self.stats(f"final_damage_{hit}")))
         #ArmorMult
         damage = int(max(damage * ArmorMult, 0))
         #ProtectCrit
@@ -245,30 +235,22 @@ class Slayer:
                 return 0, f"\n> ⚔️ {self.cSpe.ability_name if hit == 's' else hit} : {int(damage)} - Le {cOpponent.group_name} est déjà mort !"
 
         content = f"\n> ⚔️ {self.cSpe.ability_name if hit == 's' else hit} : {int(damage)} {'‼️' if isCrit else ''} {'(-' + str(armor_reduction) + '🛡️)' if armor_reduction > 0 else ''} {'[🔥+' + str(self.current_loadout.cSpe.spe_damage) + ']' if self.current_loadout.cSpe.spe_damage > 0 and hit == 's' else ''} {'[🪓' + str(self.remaining_hit_temporary_stat -1) + 'restants]' if self.remaining_hit_temporary_stat > 0 else ''}"
-        self.cSpe.reduce_remaining_hit_temporary_stat()
-        #content = f"\n> ⚔️ {self.cSpe.ability_name if hit == 'S' else hit} : {int(damage)} {'‼️' if isCrit else ''} {'[🔥+' + str(mult_damage) + ']' if mult_damage > 0 else ''} {additionnal_ability if additionnal_ability != '' else ''} {'[🪓' + str(self.berserker_mode -1) + 'restants]' if self.berserker_mode > 0 else ''}"
+
+        self.cSpe.update_remaining_hit_temporary_stat(-1)
 
         return damage, content
     
     def reduceArmor(self, hit, armor):
         #Reduction Fix
-        armor = (armor-int(self.stats[f"letality_{hit}"]))
+        armor = (armor-int(self.stats(f"letality_{hit}")))
         #Reudction %
         if armor > 0:
-            armor = armor*(1-float(self.stats[f"letality_per_{hit}"]))
+            armor = armor*(1-float(self.stats(f"letality_per_{hit}")))
         return int(armor)
-
-    def getStacks(self, hit):
-        if hit == "s":
-            stacks_earned = int(max(min(int(self.stats["stacks"]*0.5) - self.special_stacks, self.stats[f"special_charge_{hit}"]),0))
-        else:
-            stacks_earned = int(min(self.stats["stacks"] - self.special_stacks, self.stats[f"special_charge_{hit}"]))
-        self.special_stacks += stacks_earned
-        return stacks_earned
 
     def getDamage(self, damage):
         self.damage_taken += damage
-        if self.health == 0:
+        if self.current_health == 0:
             self.dead = True
 
     def isAlive(self):
@@ -284,22 +266,27 @@ class Slayer:
 
     def recap_useStacks(self, hit):
         if hit == "s":
-            if self.cSpe.id == 7 and self.special_stacks == self.stats['stacks']:
-                content = f"\n> ☄️ Charge récupérées, spécial disponible : **{self.special_stacks}/{self.stats['stacks']}**"
+            if self.cSpe.id == 7 and self.special_stacks == self.stats('stacks'):
+                content = f"\n> ☄️ Charge récupérées, spécial disponible : **{self.special_stacks}/{self.stats('stacks')}**"
             else:
-                content = f"\n> ☄️ Charge consommée : {self.stats['stacks']} - Charge total : **{self.special_stacks}/{self.stats['stacks']}**"
+                content = f"\n> ☄️ Charge consommée : {self.stats('stacks')} - Charge total : **{self.special_stacks}/{self.stats('stacks')}**"
             return content
-        
+
+    def getStacks(self, hit):
+        stacks_earned = int(min(self.stats("stacks") - self.special_stacks, self.stats(f"special_charge_{hit}")))
+        self.special_stacks += stacks_earned
+        return stacks_earned
+
     def useStacks(self, hit):
         if hit == "s":
-            if not self.cSpe.demon_proc(self.current_loadout.stats):
-                self.special_stacks = self.special_stacks - self.stats['stacks']
+            if not self.cSpe.demon_proc():
+                self.special_stacks = self.special_stacks - self.stats('stacks')
 
     def recapStacks(self):
-        if self.stats["stacks"] == self.special_stacks:
-            content = f"\n\n> ☄️ Ta capacité spéciale est chargée : Charge total : **{self.special_stacks}/{self.stats['stacks']}**"
+        if self.stats("stacks") == self.special_stacks:
+            content = f"\n\n> ☄️ Ta capacité spéciale est chargée : Charge total : **{self.special_stacks}/{self.stats('stacks')}**"
         else:
-            content = f"\n\n ☄️ Charge total : **{self.special_stacks}/{self.stats['stacks']}**"
+            content = f"\n\n ☄️ Charge total : **{self.special_stacks}/{self.stats('stacks')}**"
         return content
 
     def recapHealth(self, total_damage_taken):

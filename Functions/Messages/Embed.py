@@ -55,6 +55,9 @@ def create_embed_battle(self):
             i += 1
         embed.add_field(name=f"Classement meilleur combo de {int(bot.Variables['factionwar_nbr_hit_stack'])} coups:", value=value, inline=False)
 
+    if self.Opponents[self.count].type == "banner":
+        embed.set_footer(text=f"Fin de combat : {lib.datetime.datetime.fromtimestamp(self.timer_start + int(self.bot.Variables['factionwar_timing_before_end_seconds'])).strftime('%H:%M:%S')}")
+
     return embed
 
 def create_embed_end_battle(Battle, timeout):
@@ -238,7 +241,6 @@ def create_embed_spe(cSlayer, cSpe):
     embed=lib.discord.Embed(title=f"{cSpe.emote} {cSpe.name}",
     description= \
         f"{cSpe.description}\n" \
-        f"```ansi\n⚔️Dégâts: {cSpe.damage}```" \
         f"```ansi\n☄️Charges: {cSpe.stacks}```" \
         f"\n\n__Statistiques :__"
         f"{cSpe.getDisplayStats()}" \
@@ -415,17 +417,17 @@ def create_embed_profil_global(cLoadout_or_cSlayer, avatar, cLoadout2=None):
         description += f"```- 🪙 Coin : {int(cLoadout_or_cSlayer.money)}```"
     description += "\n**__Statistiques__**"
     if hasattr(cLoadout_or_cSlayer, "money"):
-        description += f"```- {'💀' if cLoadout_or_cSlayer.dead else '❤️'} Vie : {int(cLoadout_or_cSlayer.current_health)}/{cLoadout_or_cSlayer.health}```"
+        description += f"```- {'💀' if cLoadout_or_cSlayer.dead else '❤️'} Vie : {int(cLoadout_or_cSlayer.current_health)}/{int(cLoadout_or_cSlayer.health)}```"
     else:
-        description += f"```ansi\n- ❤️ Vie : {sa(cLoadout2.stats['health'], cLoadout_or_cSlayer.stats['health'], 0)} {cLoadout_or_cSlayer.stats['health']} {btb() + '(' + str(cLoadout2.stats['health']) + ')' if not duplicated else ''}```"
+        description += f"```ansi\n- ❤️ Vie : {sa(cLoadout2.stats('health'), cLoadout_or_cSlayer.stats('health'), 0)} {cLoadout_or_cSlayer.stats('health')} {btb() + '(' + str(cLoadout2.stats('health')) + ')' if not duplicated else ''}```"
     description += f"```ansi\n- 🔰 Score : {sa(cLoadout2.gearscore, cLoadout_or_cSlayer.gearscore, 0)} {cLoadout_or_cSlayer.gearscore} {btb() + '(' + str(cLoadout2.gearscore) + ')' if not duplicated else ''}```"
-    description += f"```ansi\n- 🛡️ Armure : {sa(cLoadout2.stats['armor'], cLoadout_or_cSlayer.stats['armor'], 0)} {cLoadout_or_cSlayer.stats['armor']} {btb() + '(' + str(cLoadout2.stats['armor']) + ')' if not duplicated else ''}```"
-    description += f"```ansi\n- 🌪️ Vivacité : {sa(cLoadout2.stats['cooldown'], cLoadout_or_cSlayer.stats['cooldown'], 1)} {cLoadout_or_cSlayer.stats['cooldown']}s {btb() + '(' + str(cLoadout2.stats['cooldown']) + 's)' if not duplicated else ''}```"
+    description += f"```ansi\n- 🛡️ Armure : {sa(cLoadout2.stats('armor'), cLoadout_or_cSlayer.stats('armor'), 0)} {int(cLoadout_or_cSlayer.stats('armor'))} {btb() + '(' + str(int(cLoadout2.stats('armor'))) + ')' if not duplicated else ''}```"
+    description += f"```ansi\n- 🌪️ Vivacité : {sa(cLoadout2.stats('cooldown'), cLoadout_or_cSlayer.stats('cooldown'), 1)} {cLoadout_or_cSlayer.stats('cooldown')}s {btb() + '(' + str(cLoadout2.stats('cooldown')) + 's)' if not duplicated else ''}```"
     if hasattr(cLoadout_or_cSlayer, "money"):
-        description += f"```- ☄️ Charge : {cLoadout_or_cSlayer.special_stacks}/{cLoadout_or_cSlayer.stats['stacks']}```"
+        description += f"```- ☄️ Charge : {cLoadout_or_cSlayer.special_stacks}/{int(cLoadout_or_cSlayer.stats('stacks'))}```"
     else:
-        description += f"```ansi\n- ☄️ Charge : {sa(cLoadout2.stats['stacks'], cLoadout_or_cSlayer.stats['stacks'], 1)} {cLoadout_or_cSlayer.stats['stacks']} {btb() + '(' + str(cLoadout2.stats['stacks']) + ')' if not duplicated else ''}```"
-    description += f"```ansi\n- 🍀 Luck : {sa(cLoadout2.stats['luck'], cLoadout_or_cSlayer.stats['luck'], 0)} {int(cLoadout_or_cSlayer.stats['luck'] * 100)}% {btb() + '(' + str(int(cLoadout2.stats['luck']*100)) + '%)' if not duplicated else ''}```"
+        description += f"```ansi\n- ☄️ Charge : {sa(cLoadout2.stats('stacks'), cLoadout_or_cSlayer.stats('stacks'), 1)} {cLoadout_or_cSlayer.stats('stacks')} {btb() + '(' + str(cLoadout2.stats('stacks')) + ')' if not duplicated else ''}```"
+    description += f"```ansi\n- 🍀 Luck : {sa(cLoadout2.stats('luck'), cLoadout_or_cSlayer.stats('luck'), 0)} {int(cLoadout_or_cSlayer.stats('luck') * 100)}% {btb() + '(' + str(int(cLoadout2.stats('luck')*100)) + '%)' if not duplicated else ''}```"
 
     embed=lib.discord.Embed(title=f"Profil de {cLoadout_or_cSlayer.name}",
     description=description,
@@ -475,9 +477,10 @@ def create_embed_profil_attack(cLoadout_or_cSlayer, avatar, hit, cLoadout2=None)
         return "\u001b[0;0m"
 
     description = "**__Statistiques__**"
-    for statistic in cLoadout_or_cSlayer.stats:
-        if f"_{hit}" in statistic:
-            description += f"```ansi\n- {bot.Statistics[statistic[:-2]].display_emote} {bot.Statistics[statistic[:-2]].display_name}: {'🔒' if cLoadout_or_cSlayer.cSpe.adapt_min(bot.Statistics[statistic[:-2]].cap_min, bot.Statistics[statistic[:-2]].name, cLoadout_or_cSlayer.stats) == cLoadout_or_cSlayer.stats[statistic] or cLoadout_or_cSlayer.cSpe.adapt_max(bot.Statistics[statistic[:-2]].cap_max, bot.Statistics[statistic[:-2]].name, cLoadout_or_cSlayer.stats) == cLoadout_or_cSlayer.stats[statistic] else ''}{sa(cLoadout2.stats[statistic], cLoadout_or_cSlayer.stats[statistic], bot.Statistics[statistic[:-2]].reverse)} {str(int(cLoadout_or_cSlayer.stats[statistic]*100)) + '%' if bot.Statistics[statistic[:-2]].percentage else int(cLoadout_or_cSlayer.stats[statistic] + (cLoadout_or_cSlayer.cSpe.spe_damage if hit == 's' and statistic == 'damage_s' else 0))} {btb() + '(' + (str(int(cLoadout2.stats[statistic]*100)) + '%' if bot.Statistics[statistic[:-2]].percentage else str(int(cLoadout2.stats[statistic]))) + ')' if not duplicated else ''}```"
+    for _, cStatistic in bot.Statistics.items():
+        for subdivisions in cStatistic.sub_division():
+            if f"_{hit}" in subdivisions:
+                description += f"```ansi\n- {cStatistic.display_emote} {cStatistic.display_name}: {'🔒' if cLoadout_or_cSlayer.cSpe.adapt_min(cStatistic.cap_min, cStatistic.name, cLoadout_or_cSlayer.stats) == cLoadout_or_cSlayer.stats(subdivisions) or cLoadout_or_cSlayer.cSpe.adapt_max(cStatistic.cap_max, cStatistic.name, cLoadout_or_cSlayer.stats) == cLoadout_or_cSlayer.stats(subdivisions) else ''}{sa(cLoadout2.stats(subdivisions), cLoadout_or_cSlayer.stats(subdivisions), cStatistic.reverse)} {str(int(cLoadout_or_cSlayer.stats(subdivisions)*100)) + '%' if cStatistic.percentage else int(cLoadout_or_cSlayer.stats(subdivisions) + (cLoadout_or_cSlayer.cSpe.spe_damage if hit == 's' and subdivisions == 'damage_s' else 0))} {btb() + '(' + (str(int(cLoadout2.stats(subdivisions)*100)) + '%' if cStatistic.percentage else str(int(cLoadout2.stats(subdivisions)))) + ')' if not duplicated else ''}```"
     embed=lib.discord.Embed(title=f"{hit} {cLoadout_or_cSlayer.name}",
     description=description,
     color=0x1abc9c)  

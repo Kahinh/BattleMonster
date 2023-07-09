@@ -51,9 +51,7 @@ class Spe:
     self.emote = rSpe["display_emote"]
     self.ability_name = rSpe["ability_name"]
     self.bonuses = lib.get_bonuses(bot, rSpe)
-    self.add_spe_damage()
     self.remaining_hit_temporary_stat = 0
-    self.spe_damage = 0
 
   @staticmethod
   async def get_Spe_Class(bot, id, cLoadout):
@@ -105,52 +103,45 @@ class Spe:
     self = cls(bot, rSpe, cLoadout)
     return self
 
+  @property
+  def spe_damage(self):
+      return 0
+
   def slot_nbr_max_items(self, cSlot):
     return cSlot.count
 
   def nbr_hit(self):
     return 0
 
-  def demon_proc(self, dict_data):
+  def demon_proc(self):
       return False
-
-  def add_spe_damage(self):
-    self.bonuses["damage_s"] += self.damage
-
-  def update_spe_damage(self):
-    pass
   
   def refresh_stats(self):
     self.cLoadout.update_stats([])
 
-  def activate_temporary_stat(self):
-    pass
-
-  def reduce_remaining_hit_temporary_stat(self):
-    if self.remaining_hit_temporary_stat == 0:
-      pass
-    else:
-      self.remaining_hit_temporary_stat -= 1
-      if self.remaining_hit_temporary_stat == 0:
-        self.cLoadout.deactivate_temporary_stat()
-
-  def temporary_stats(self):
-    return []
-
   def getDisplayStats(self, cObject2=None):
     return lib.get_display_stats(self, cObject2)
   
-  def adapt_min(self, cap_min, statistic, dict_data):
+  def adapt_min(self, cap_min, bonus, stat):
     return cap_min
 
-  def adapt_max(self, cap_max, statistic, dict_data):
-    if "special_charge" in statistic:
-      return int(float(self.bot.Variables["charge_gain_max_mult"]) * int(dict_data['stacks'] - dict_data.get('stacks_reduction', 0)))
+  def adapt_max(self, cap_max, bonus, stat):
+    if "special_charge" in bonus:
+      try:
+        return int(float(self.bot.Variables["charge_gain_max_mult"]) * self.cLoadout.stats("stacks"))
+      except:
+        return cap_max
     else:
       return cap_max
+
+  def update_remaining_hit_temporary_stat(self, nbr):
+    self.remaining_hit_temporary_stat += nbr
+
+  def temporary_stats(self):
+    return {}
   
-  def retreat_stats(self, dict_stats):
-    return dict_stats
+  def additional_stats(self):
+    return {"damage_s": self.damage}
 
 class Recrue(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
@@ -172,18 +163,19 @@ class EscrimeDouble(Spe):
 class Templier(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
     super().__init__(bot, rSpe, cLoadout)
-    self.update_spe_damage()
 
   def slot_nbr_max_items(self, cSlot):
     if cSlot.name == "shield":
       return cSlot.count + 1
     else:
       return cSlot.count
-    
-  def update_spe_damage(self):
-    if self.cLoadout is not None :
-      if "armor" in self.cLoadout.stats: 
-        self.spe_damage = self.cLoadout.stats["armor"] 
+
+  @property
+  def spe_damage(self):
+    try:
+      return int(self.cLoadout.stats("armor") * float(self.bot.Variables["templier_mult_armor_spe_damage"]))
+    except:
+      return 0
 
 class ChefdeGuerre(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
@@ -197,41 +189,63 @@ class Stratège(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
     super().__init__(bot, rSpe, cLoadout)
 
-  def adapt_max(self, cap_max, statistic, dict_data):
-    cap_max = super().adapt_max(cap_max, statistic, dict_data)
-    if statistic == "leta_per":
-      return self.bot.Variables["chasseur_leta_per_cap_max"]
+  def adapt_max(self, cap_max, bonus, stat):
+    cap_max = super().adapt_max(cap_max, bonus, stat)
+    if "letality_per" in bonus:
+      return float(self.bot.Variables["chasseur_leta_per_cap_max"])
     else:
       return cap_max
 
 class Démon(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
     super().__init__(bot, rSpe, cLoadout)
-  
-  def demon_proc(self, dict_data):
+    self.demon_stacks = 0
+
+  @property
+  def spe_damage(self):
+    try:
+      return min(int(float(self.bot.Variables["demon_bonus_mult"]) * self.demon_stacks * self.cLoadout.stats("damage_s")), int(float(self.bot.Variables["demon_max_spe_damage_mult_damage_s"]) * self.cLoadout.stats("damage_s")))
+    except:
+      return 0
+
+  def demon_proc(self):
     if random.choices((True, False), (float(self.bot.Variables["demon_chance_proc"]), 1-float(self.bot.Variables["demon_chance_proc"])), k=1)[0]:
-      self.spe_damage += int(float(self.bot.Variables["demon_bonus_mult"]) * dict_data["damage_s"])
+      self.demon_stacks += 1
       return True
     else:
-      self.spe_damage = 0
+      self.demon_stacks = 0
       return False
 
 class Assassin(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
     super().__init__(bot, rSpe, cLoadout)
 
-  def activate_temporary_stat(self):
-    self.remaining_hit_temporary_stat = int(self.bot.Variables['assassin_nbr_hit_activation'])
+  def update_remaining_hit_temporary_stat(self, nbr):
+    self.remaining_hit_temporary_stat = min(self.remaining_hit_temporary_stat + nbr, self.bot.Variables["assassin_nbr_hit_activation"])
 
   def temporary_stats(self):
-    return [['crit_chance_l', float(self.bot.Variables['assassin_crit_chance_bonus'])], ['crit_chance_h', float(self.bot.Variables['assassin_crit_chance_bonus'])], ['crit_damage_l', float(self.bot.Variables['assassin_crit_damage_bonus'])], ['crit_damage_h', float(self.bot.Variables['assassin_crit_damage_bonus'])]]
+    if self.remaining_hit_temporary_stat == 0:
+      return {}
+    else:
+      return {
+        "crit_chance_l": float(self.bot.Variables["assassin_crit_chance_bonus"]),
+        "crit_chance_h": float(self.bot.Variables["assassin_crit_chance_bonus"]),
+        "crit_chance_s": float(self.bot.Variables["assassin_crit_chance_bonus"]),
+        "crit_damage_l": float(self.bot.Variables["assassin_crit_damage_bonus"]),
+        "crit_damage_h": float(self.bot.Variables["assassin_crit_damage_bonus"]),
+        "crit_damage_s": float(self.bot.Variables["assassin_crit_damage_bonus"])
+      }
 
-  def retreat_stats(self, dict_stats):
-    dict_stats = super().retreat_stats(dict_stats)
-    dict_stats["crit_damage_l"] += max(dict_stats["crit_chance_l"] - 1, 0)
-    dict_stats["crit_damage_h"] += max(dict_stats["crit_chance_h"] - 1, 0)
-    dict_stats["crit_damage_s"] += max(dict_stats["crit_chance_s"] - 1, 0)
-    return dict_stats
+  def additional_stats(self):
+    try:
+      return {      
+        "damage_s": self.damage,
+        "crit_damage_l": max(0, (self.cLoadout.stats_uncapped("crit_chance_l")-1)),
+        "crit_damage_h": max(0, (self.cLoadout.stats_uncapped("crit_chance_h")-1)),
+        "crit_damage_s": max(0, (self.cLoadout.stats_uncapped("crit_chance_s")-1))
+      }
+    except: 
+      return {}
 
 @dataclass
 class Base_Slayer:

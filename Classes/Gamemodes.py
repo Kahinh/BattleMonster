@@ -289,7 +289,7 @@ class Gamemode:
       
       def CritMult(is_Crit):
         if is_Crit:
-          return cSlayer.stats[f"crit_damage_{hit}"]
+          return cSlayer.stats(f"crit_damage_{hit}")
         else:
           return 0
       
@@ -354,7 +354,7 @@ class Gamemode:
     
     #Spe Berserker
     if hit == "s" and cSlayer.cSpe.id == 8:
-      cSlayer.activate_temporary_stat()
+      cSlayer.current_loadout.cSpe.update_remaining_hit_temporary_stat(int(self.bot.Variables["assassin_nbr_hit_activation"]))
       content = f"\n> Vous avez activé le mode Berserker, vous obtenez {int(self.bot.Variables['assassin_crit_chance_bonus'])*100}% Chance Critique et {int(self.bot.Variables['assassin_crit_damage_bonus'])*100}% Dégâts Critiques pendant 5 coups !"
       cSlayer.useStacks(hit)
       content += cSlayer.recap_useStacks(hit)
@@ -436,7 +436,7 @@ class Gamemode:
     if total_damage_taken > 0:
       await cSlayer.getDrop(pets=[193])
       #Leta
-    if int(cSlayer.stats["letality_l"]) + int(cSlayer.stats["letality_h"]) + int(cSlayer.stats["letality_s"]) > 6000:
+    if int(cSlayer.stats("letality_l")) + int(cSlayer.stats("letality_h")) + int(cSlayer.stats("letality_s")) > 6000:
       await cSlayer.getDrop(rate=1, pets=[409])
 
     #Achievement Biggest_Hit
@@ -458,6 +458,7 @@ class Gamemode:
 
 
     #On update le Slayer dans la dB
+    #TODO A ENLEVER UNE FOIS QU'ON EST BON
     await self.bot.dB.push_slayer_data(cSlayer)
 
     #A t on tué un monstre ?
