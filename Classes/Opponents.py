@@ -4,6 +4,7 @@ import random
 from datetime import datetime
 
 from Classes.DamageDone import DamageDone
+from collections import Counter
 
 @dataclass
 class Opponent:
@@ -31,7 +32,7 @@ class Opponent:
     self.roll_dices = random.randint(gamemode.min_dice, gamemode.max_dice)
 
     #Storage
-    self.last_hits = []
+    self.buffs = []
     self.slayers_hits = {}
     self.loot_table = []
 
@@ -127,23 +128,33 @@ class Opponent:
       armor = max((int(armor*(1-float(self.letality_per)))-int(self.letality)), 0)
       return int(armor)
 
-  def storeLastHits(self, damage, cSlayer, gamemode_type):
-    if cSlayer.cSpe.id != 4 and damage != 0:
-
-      #On check quelle liste il faut prendre
-      list_lasthits = self.identify_lasthits_list(cSlayer)
-
-      list_lasthits.append(int(damage*float(self.bot.Variables["cdg_malus_attack_in_stack"])))
-      if len(list_lasthits) > int(self.bot.Variables["cdg_nbr_hit_stack"]):
-        list_lasthits.pop(0)
-
-  def identify_lasthits_list(self, cSlayer):
-    return self.last_hits
+  def identify_buffs_list(self, cSlayer):
+    return self.buffs
   
-  def extract_lasthits_list(self, cSlayer):
-    extraction = sum(self.last_hits)
-    self.last_hits = []
-    return extraction
+  def add_buff(self, cBuff, cSlayer):
+    self.identify_buffs_list(cSlayer).append(cBuff)
+
+  def get_buff(self, name, cSlayer):
+    #Pour CDG
+    buff_list = [cBuff for cBuff in self.identify_buffs_list(cSlayer) if cBuff.name == name]
+    return buff_list
+  
+  def get_all_buffs(self, hit, cSlayer):
+    #storage
+    cBuffs_list = []
+    buffs_stats = {}
+    for cBuff in self.identify_buffs_list(cSlayer):
+      if cBuff.isUsable(hit, cSlayer, len([cBuff_from_list for cBuff_from_list in cBuffs_list if cBuff_from_list.name == cBuff.name])):
+        buffs_stats = Counter(buffs_stats) + Counter(cBuff.stats)
+        cBuffs_list.append(cBuff)
+        if cBuff.stack == 0: self.identify_buffs_list(cSlayer).remove(cBuff) #On clear si on a tout utilisé les stacks
+    return buffs_stats
+
+  def get_display_buffs(self):
+    content = ""
+    for cBuff in self.buffs[:10]:
+      content += f"{cBuff.emote} "
+    return content
 
   def isParry(self, hit, cSlayer):
     if (float(self.parry["parry_chance_l"]) + float(cSlayer.stats("parry_l"))) >= 1.0 and (float(self.parry["parry_chance_h"]) + float(cSlayer.stats("parry_h"))) >= 1.0:
@@ -232,7 +243,7 @@ class Banner(Opponent):
     self.armor = self.armor_cap
 
     #last hits
-    self.last_hits = {}
+    self.buffs = {}
     self.split_by_faction_last_hits()
 
     #factions_total_damage
@@ -247,7 +258,7 @@ class Banner(Opponent):
   
   def split_by_faction_last_hits(self):
     for faction_id in self.bot.Factions:
-      self.last_hits.update({faction_id: []})
+      self.buffs.update({faction_id: []})
 
   def split_by_faction_total_damage(self):
     for faction_id in self.bot.Factions:
@@ -267,14 +278,17 @@ class Banner(Opponent):
       return f"\n> Cette attaque permet à ta faction d'atteindre un nouveau record de **{self.faction_best_damage[cSlayer.faction]}** dégâts"
     else:
       return ""
-    
-  def identify_lasthits_list(self, cSlayer):
-    return self.last_hits[cSlayer.faction]
 
-  def extract_lasthits_list(self, cSlayer):
-    extraction = sum(self.last_hits[cSlayer.faction])
-    self.last_hits[cSlayer.faction] = []
-    return extraction
+  def identify_buffs_list(self, cSlayer):
+    return self.buffs[cSlayer.faction]
+
+  def get_display_buffs(self):
+    content = ""
+    for faction_id, buffs in self.buffs.items():
+      content += f"\n - {self.bot.Factions[faction_id].emote} {self.bot.Factions[faction_id].name}: "
+      for cBuff in buffs[:5]:
+        content += f"{cBuff.emote} "
+    return content
 
   def getDamage(self, damage):
     pass
@@ -332,3 +346,69 @@ class Mythique6(Mythique):
   def __init__(self, gamemode, element, rarity, type):
     super().__init__(gamemode, element, "mythic", type)
     pass
+
+class Buff:
+  def __init__(self, bot, slayer_id, stats, use_count = 0):
+    self.bot = bot
+    self.name = ""
+    self.emote = ""
+    self.use_count = 0
+    self.stack = 0
+    self.slayer_id = slayer_id
+
+  def isUsable(self, hit, cSlayer, already_nbr):
+    return False
+
+class Buff_CDG(Buff):
+  def __init__(self, bot, slayer_id, damage, use_count = 1):
+    super().__init__(bot, slayer_id, damage, use_count)
+    self.name = "CDG"
+    self.emote = "📯"
+    self.stack = 1
+    self.damage_list = [damage]
+
+  @property
+  def stats(self):
+    return {"damage_s" : sum(self.damage_list)}
+
+  def update_damage_list(self, damage):
+    self.damage_list.append(damage)
+    if len(self.damage_list) > int(self.bot.Variables["cdg_nbr_hit_stack"]):
+      self.damage_list.pop(0)
+
+  def isUsable(self, hit, cSlayer, already_nbr):
+    if hit == 's' and cSlayer.cSpe.id == 4 and self.slayer_id != cSlayer.id and already_nbr < self.stack:
+      self.stack -= 1
+      return True
+    else:
+      return False
+
+class Buff_Dompteur(Buff):
+  def __init__(self, bot, slayer_id, stats, use_count = 1):
+    super().__init__(bot, slayer_id, stats, use_count)
+    self.name = "Dompteur"
+    self.emote = ""
+    self.stack = 1
+
+class Buff_Hemomancien(Buff):
+  def __init__(self, bot, slayer_id, damage, use_count = 0):
+    super().__init__(bot, slayer_id, damage, use_count)
+    self.name = "Hemomancien"
+    self.emote = "🔮"
+    self.stack = int(bot.Variables["hemo_stack"])
+    self.damage = damage
+
+  @property
+  def stats(self):
+    return {
+      "damage_l" : self.damage,
+      "damage_h" : self.damage,
+      "damage_s" : self.damage,
+    }
+
+  def isUsable(self, hit, cSlayer, already_nbr):
+    if self.slayer_id != cSlayer.id and already_nbr < self.stack:
+      self.stack -= 1
+      return True
+    else:
+      return False

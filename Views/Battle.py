@@ -7,14 +7,14 @@ class Light_Button(lib.discord.ui.Button):
     async def callback(self, interaction: lib.discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         cSlayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
-        content, damage, monster_killed = await self.view.Battle.handler_Attack(cSlayer, "l")
+        content, damage, monster_killed, to_update = await self.view.Battle.handler_Attack(cSlayer, "l")
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
 
         if self.view.Battle.stats["kills"] >= int(self.view.bot.Variables["battle_kills_before_escape"]):
             self.view.Battle.end = True
             await self.view.updateBattle(timeout=True)
-        elif damage > 0:
+        elif damage > 0 or to_update:
             await self.view.updateBattle(monster_killed=monster_killed)
 
 class Heavy_Button(lib.discord.ui.Button):
@@ -24,13 +24,13 @@ class Heavy_Button(lib.discord.ui.Button):
     async def callback(self, interaction: lib.discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         cSlayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
-        content, damage, monster_killed = await self.view.Battle.handler_Attack(cSlayer, "h")
+        content, damage, monster_killed, to_update = await self.view.Battle.handler_Attack(cSlayer, "h")
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
         if self.view.Battle.stats["kills"] >= int(self.view.bot.Variables["battle_kills_before_escape"]):
             self.view.Battle.end = True
             await self.view.updateBattle(timeout=True)
-        elif damage > 0:
+        elif damage > 0 or to_update:
             await self.view.updateBattle(monster_killed=monster_killed)
 
 class Special_Button(lib.discord.ui.Button):
@@ -40,13 +40,13 @@ class Special_Button(lib.discord.ui.Button):
     async def callback(self, interaction: lib.discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         cSlayer = await self.view.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
-        content, damage, monster_killed = await self.view.Battle.handler_Attack(cSlayer, "s")
+        content, damage, monster_killed, to_update = await self.view.Battle.handler_Attack(cSlayer, "s")
         #On répond au joueur
         await interaction.followup.send(content=content, ephemeral=True)
         if self.view.Battle.stats["kills"] >= int(self.view.bot.Variables["battle_kills_before_escape"]):
             self.view.Battle.end = True
             await self.view.updateBattle(timeout=True)
-        elif damage > 0:
+        elif damage > 0 or to_update:
             await self.view.updateBattle(monster_killed=monster_killed)
         
 

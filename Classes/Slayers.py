@@ -99,13 +99,16 @@ class Slayer:
         return self.current_loadout.stats
     @property
     def health(self):
-        return self.current_loadout.stats("health")
+        return int(self.current_loadout.stats("health"))
     @property
     def current_health(self):
-        return self.current_loadout.stats("health") - self.damage_taken
+        return int(self.current_loadout.stats("health") - self.damage_taken)
     @property
     def damage_taken_percentage(self):
         return float(self.damage_taken/self.health)
+    @property
+    def remaining_hit_temporary_stat(self):
+        return self.current_loadout.remaining_hit_temporary_stat
 
     def item_can_be_equipped(self, cSlot):
         empty_slot, only_one_place_on_slot = self.current_loadout.item_can_be_equipped(cSlot)
@@ -205,10 +208,6 @@ class Slayer:
 
         if hit == "s": damage += int(self.current_loadout.cSpe.spe_damage)
 
-        #Add CDG :
-        if self.cSpe.id == 4 and hit == "s":
-            damage += int(cOpponent.extract_lasthits_list(self))
-
         #Add Chasseur
         armor_reduction = 0
         if self.cSpe.id == 6 and hit == "s":
@@ -248,10 +247,12 @@ class Slayer:
             armor = armor*(1-float(self.stats(f"letality_per_{hit}")))
         return int(armor)
 
-    def getDamage(self, damage):
+    async def getDamage(self, damage):
         self.damage_taken += damage
+        await self.bot.dB.push_damage_taken(self.id, damage)
         if self.current_health == 0:
             self.dead = True
+            await self.bot.dB.push_slayer_dead(self.id, self.dead)
 
     def isAlive(self):
         if self.dead:
@@ -269,7 +270,7 @@ class Slayer:
             if self.cSpe.id == 7 and self.special_stacks == self.stats('stacks'):
                 content = f"\n> ☄️ Charge récupérées, spécial disponible : **{self.special_stacks}/{self.stats('stacks')}**"
             else:
-                content = f"\n> ☄️ Charge consommée : {self.stats('stacks')} - Charge total : **{self.special_stacks}/{self.stats('stacks')}**"
+                content = f"\n> ☄️ Charge consommée : {self.stats('stacks')} - Charge total : **{int(self.special_stacks)}/{self.stats('stacks')}**"
             return content
 
     def getStacks(self, hit):

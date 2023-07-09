@@ -72,6 +72,8 @@ class Spe:
         return await Démon.handler_Build(bot, id, cLoadout)
       case 8:
         return await Assassin.handler_Build(bot, id, cLoadout)
+      case 9:
+        return await Hemomancien.handler_Build(bot, id, cLoadout)
       case _:
         print("Cette spé n'existe pas")
 
@@ -94,6 +96,8 @@ class Spe:
         return Démon(bot, row)
       case 8:
         return Assassin(bot, row)
+      case 9:
+        return Hemomancien(bot, row)
       case _:
         print("Cette spé n'existe pas")
 
@@ -243,6 +247,10 @@ class Assassin(Spe):
       }
     except: 
       return {}
+
+class Hemomancien(Spe):
+  def __init__(self, bot, rSpe, cLoadout=None):
+    super().__init__(bot, rSpe, cLoadout)
 
 @dataclass
 class Base_Slayer:

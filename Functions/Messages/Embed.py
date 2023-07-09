@@ -3,50 +3,55 @@ import lib
 def create_embed_battle(self):
 
     bot = self.bot
+    cOpponent = self.Opponents[self.count]
 
-    description=f"🔰*Score requis* : **{self.Opponents[self.count].gearscore}**\n"
-    description += f"\n**{self.Opponents[self.count].group_name} {self.bot.Rarities[self.Opponents[self.count].rarity].display_text.capitalize()}**"
-    if self.Opponents[self.count].type != "banner":
-        description += f"\n⚔️ Puissance : **{int(self.Opponents[self.count].damage)}** {self.bot.Elements[self.Opponents[self.count].element].display_emote}"
-    if int(self.Opponents[self.count].armor) == int(self.Opponents[self.count].armor_cap):
-        description += f"\n🛡️ Armure : **{int(self.Opponents[self.count].armor)}**"
+    description=f"🔰*Score requis* : **{cOpponent.gearscore}**\n"
+    description += f"\n**{cOpponent.group_name} {self.bot.Rarities[cOpponent.rarity].display_text.capitalize()}**"
+    if cOpponent.type != "banner":
+        description += f"\n⚔️ Puissance : **{int(cOpponent.damage)}** {self.bot.Elements[cOpponent.element].display_emote}"
+    if int(cOpponent.armor) == int(cOpponent.armor_cap):
+        description += f"\n🛡️ Armure : **{int(cOpponent.armor)}**"
     else:
-        description += f"\n🛡️ Armure : **{int(self.Opponents[self.count].armor)}** *({int(self.Opponents[self.count].armor_cap)} min.)*"
-    description += f"\n🎲 Butin Disponible : **{self.Opponents[self.count].roll_dices}**"
-    description += f"\n\n{self.Opponents[self.count].description}"
+        description += f"\n🛡️ Armure : **{int(cOpponent.armor)}** *({int(cOpponent.armor_cap)} min.)*"
+    description += f"\n🎲 Butin Disponible : **{cOpponent.roll_dices}**"
+    description += f"\n\n{cOpponent.description}"
     
     embed=lib.discord.Embed(
     title=
-        f"{self.Opponents[self.count].name} ({'{:,}'.format(int(self.Opponents[self.count].base_hp)).replace(',', ' ')}/{'{:,}'.format(int(self.Opponents[self.count].total_hp)).replace(',', ' ')} ❤️) {'💩💩' if len(self.Opponents[self.count].loot_table) == 0 else ''}"
-        if self.Opponents[self.count].type != "banner"
+        f"{cOpponent.name} ({'{:,}'.format(int(cOpponent.base_hp)).replace(',', ' ')}/{'{:,}'.format(int(cOpponent.total_hp)).replace(',', ' ')} ❤️) {'💩💩' if len(cOpponent.loot_table) == 0 else ''}"
+        if cOpponent.type != "banner"
         else
-        f"{self.Opponents[self.count].name} {'💩💩' if len(self.Opponents[self.count].loot_table) == 0 else ''}",
+        f"{cOpponent.name} {'💩💩' if len(cOpponent.loot_table) == 0 else ''}",
     description=description,
-    color=int(self.bot.Rarities[self.Opponents[self.count].rarity].display_color, 16)
+    color=int(self.bot.Rarities[cOpponent.rarity].display_color, 16)
     )
     value = ""
     #Parry
-    if self.Opponents[self.count].type != "banner":
-        value += f"✊ Chance de blocage - Attaque Légère: **{int(self.Opponents[self.count].parry['parry_chance_l'] * 100)}%**\n" \
-                f"✊ Chance de blocage - Attaque Lourde: **{int(self.Opponents[self.count].parry['parry_chance_h'] * 100)}%**\n" \
-                f"🗡️ Létalité : **({int(self.Opponents[self.count].letality)}, {int(self.Opponents[self.count].letality_per *100)}%)**\n"
+    if cOpponent.type != "banner":
+        value += f"✊ Chance de blocage - Attaque Légère: **{int(cOpponent.parry['parry_chance_l'] * 100)}%**\n" \
+                f"✊ Chance de blocage - Attaque Lourde: **{int(cOpponent.parry['parry_chance_h'] * 100)}%**\n" \
+                f"🗡️ Létalité : **({int(cOpponent.letality)}, {int(cOpponent.letality_per *100)}%)**\n"
     #Létalité & Résistance Critique
-    value += f"🧿 Résistance Critique : **{self.Opponents[self.count].protect_crit}**\n"
+    value += f"🧿 Résistance Critique : **{cOpponent.protect_crit}**\n"
 
     #Statistiques avancées
     embed.add_field(name="Statistiques Avancées", \
         value= value,
         inline=False)
-    if self.Opponents[self.count].img_url_normal is not None:
-        embed.set_thumbnail(url=f"{self.Opponents[self.count].img_url_normal}")
-    if self.Opponents[self.count].bg_url is not None:
-        embed.set_image(url=f"{self.Opponents[self.count].bg_url}")
+    if cOpponent.img_url_normal is not None:
+        embed.set_thumbnail(url=f"{cOpponent.img_url_normal}")
+    if cOpponent.bg_url is not None:
+        embed.set_image(url=f"{cOpponent.bg_url}")
     if self.spawns_count > 1:   
-        embed.set_footer(text=f"{self.Opponents[self.count].group_name} : {self.count+1}/{self.spawns_count}")
-    
+        embed.set_footer(text=f"{cOpponent.group_name} : {self.count+1}/{self.spawns_count}")
+
+    #Buffs
+    if len(cOpponent.buffs) > 0:
+        embed.add_field(name="Altérations d'état", value=cOpponent.get_display_buffs(), inline=False)
+
     #Banner
-    if self.Opponents[self.count].type == "banner":
-        listed_factions = sorted(self.Opponents[self.count].faction_best_damage.items(), key=lambda x:x[1], reverse=True)
+    if cOpponent.type == "banner":
+        listed_factions = sorted(cOpponent.faction_best_damage.items(), key=lambda x:x[1], reverse=True)
         value = ""
         i = 0
         award_list = ["🥇","🥈","🥉","🏅"]
@@ -55,7 +60,7 @@ def create_embed_battle(self):
             i += 1
         embed.add_field(name=f"Classement meilleur combo de {int(bot.Variables['factionwar_nbr_hit_stack'])} coups:", value=value, inline=False)
 
-    if self.Opponents[self.count].type == "banner":
+    if cOpponent.type == "banner":
         embed.set_footer(text=f"Fin de combat : {lib.datetime.datetime.fromtimestamp(self.timer_start + int(self.bot.Variables['factionwar_timing_before_end_seconds'])).strftime('%H:%M:%S')}")
 
     return embed

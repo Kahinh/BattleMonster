@@ -83,6 +83,10 @@ class dB:
     async with self.bot.db_pool.acquire() as conn:
       await conn.execute('UPDATE "slayers" SET damage_taken = $1 where id = $2', damage_taken, slayer_id)
 
+  async def push_slayer_dead(self, slayer_id, bool):
+    async with self.bot.db_pool.acquire() as conn:
+      await conn.execute('UPDATE "slayers" SET dead = $1 where id = $2', bool, slayer_id)
+
   async def get_itemrow_by_name(self, item_name):
     async with self.bot.db_pool.acquire() as conn:
       item_row = await conn.fetchrow('SELECT * FROM "items" WHERE name = $1', item_name)

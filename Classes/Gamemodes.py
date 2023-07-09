@@ -1,6 +1,6 @@
 import random
 from Classes.Objects import Item, Mythic
-from Classes.Opponents import Opponent, Monster, Banner, Mythique1, Mythique2, Mythique3, Mythique4, Mythique5, Mythique6
+from Classes.Opponents import Opponent, Monster, Banner, Mythique1, Mythique2, Mythique3, Mythique4, Mythique5, Mythique6, Buff, Buff_CDG, Buff_Dompteur, Buff_Hemomancien
 from math import sqrt
 from datetime import datetime
 
@@ -251,14 +251,28 @@ class Gamemode:
     def Opponent_Receive_Damage():
       content = ""
       content += cOpponent.recapDamageTaken(total_damage_dealt)
-      cOpponent.storeLastHits(total_damage_dealt, cSlayer, self.type)
+
+      #On store pour CDG
+      if (buff_list := cOpponent.get_buff('CDG', cSlayer)) and buff_list != [] and cSlayer.cSpe.id != 4 and total_damage_dealt != 0:
+        cBuff_CDG = buff_list[0]
+        cBuff_CDG.update_damage_list(total_damage_dealt)
+      else:
+        cOpponent.add_buff(Buff_CDG(self.bot, cSlayer.id, total_damage_dealt), cSlayer)
+
       self.stats['attacks_received'] += 1
       return content
 
     def Banner_Receive_Damage():
       content = ""
       content += cOpponent.recapDamageTaken(total_damage_dealt, cSlayer)
-      cOpponent.storeLastHits(total_damage_dealt, cSlayer, self.type)
+
+      #On store pour CDG
+      if (buff_list := cOpponent.get_buff('CDG', cSlayer)) and buff_list != [] and cSlayer.cSpe.id != 4 and total_damage_dealt != 0:
+        cBuff_CDG = buff_list[0]
+        cBuff_CDG.update_damage_list(total_damage_dealt)
+      else:
+        cOpponent.add_buff(Buff_CDG(self.bot, cSlayer.id, total_damage_dealt), cSlayer)
+
       self.stats['attacks_received'] += 1
       return content
 
@@ -332,25 +346,25 @@ class Gamemode:
     total_damage_taken = 0
 
     if not cOpponent.isAlive():
-      return f'Le {cOpponent.group_name} est déjà mort !', 0, False
+      return f'Le {cOpponent.group_name} est déjà mort !', 0, False, False
 
     #On check si on est vivant ou mort.
     if (isAlive := cSlayer.isAlive()) and not isAlive[0]:
-      return isAlive[1], 0, False
+      return isAlive[1], 0, False, False
     
     #On peut special
     if ((canSpecial := cSlayer.canSpecial()) and not canSpecial[0]) and hit == "s":
-      return canSpecial[1], 0, False
+      return canSpecial[1], 0, False, False
       
     #On peut attaquer selon le timing
     if (canAttack := cOpponent.slayer_canAttack(cSlayer)) and not canAttack[0] and hit != "s":
-      return f"> Hop hop hop, tu dois encore attendre avant d'attaquer !\n{cOpponent.slayers_hits[cSlayer.id].checkStatus(0, cOpponent)}", 0, False
+      return f"> Hop hop hop, tu dois encore attendre avant d'attaquer !\n{cOpponent.slayers_hits[cSlayer.id].checkStatus(0, cOpponent)}", 0, False, False
     
     if (int(cSlayer.faction) not in self.bot.Factions and self.type == "factionwar"):
-      return "Tu dois faire parti d'une faction pour combattre ici", 0, False
+      return "Tu dois faire parti d'une faction pour combattre ici", 0, False, False
     
     if isFail():
-      return f"\n> **Raté !** Score insuffisant", 0, False
+      return f"\n> **Raté !** Score insuffisant", 0, False, False
     
     #Spe Berserker
     if hit == "s" and cSlayer.cSpe.id == 8:
@@ -358,7 +372,29 @@ class Gamemode:
       content = f"\n> Vous avez activé le mode Berserker, vous obtenez {int(self.bot.Variables['assassin_crit_chance_bonus'])*100}% Chance Critique et {int(self.bot.Variables['assassin_crit_damage_bonus'])*100}% Dégâts Critiques pendant 5 coups !"
       cSlayer.useStacks(hit)
       content += cSlayer.recap_useStacks(hit)
-      return content, 0, False
+      return content, 0, False, False
+    
+    #Spe Hemomancien
+    if hit == "s" and cSlayer.cSpe.id == 9:
+      if cSlayer.current_health > int(float(self.bot.Variables["hemo_health_lost_when_spe"]) * cSlayer.health):
+
+        #Buff
+        cBuff_Hemomancien = Buff_Hemomancien(self.bot, cSlayer.id, int(cSlayer.health * float(self.bot.Variables["hemo_health_into_damage"])), 1 + int(cSlayer.health * float(self.bot.Variables["hemo_health_into_stacks"])))
+        cOpponent.add_buff(cBuff_Hemomancien, cSlayer)
+
+        #Vie perdue
+        health_lost = int(float(self.bot.Variables["hemo_health_lost_when_spe"]) * cSlayer.health)
+        await cSlayer.getDamage(health_lost)
+
+        content = f"\n> Vous avez réalisé un Sacrifice de Sang,"
+        content += f"\n> - **-{health_lost}** 💔 (Vie restante : {cSlayer.current_health}/{cSlayer.health} ❤️)"
+        content += f"\n> - 🔮 Dégâts infligés **+{cBuff_Hemomancien.damage}** ⚔️ pour les **{cBuff_Hemomancien.use_count}** prochaines attaques !\n"
+        cSlayer.useStacks(hit)
+        content += cSlayer.recap_useStacks(hit)
+        return content, 0, False, True
+      else:
+        content = f"\n Tu ne peux pas encore utiliser ton Sacrifice de Sang, il te faut au minimum {int(float(self.bot.Variables['hemo_health_lost_when_spe']) * cSlayer.health)} points de vie."
+        return content, 0, False, False
     
     #Forgeron
     if hit == "s" and cSlayer.cSpe.id == 5:
@@ -370,12 +406,15 @@ class Gamemode:
       content = f"\n> Vous avez reset les attaques de {int(i)} Slayers !"
       cSlayer.useStacks(hit)
       content += cSlayer.recap_useStacks(hit)
-      return content, 0, False
+      return content, 0, False, False
 
     #On consomme les stacks du S avant
     if hit == "s":
       cSlayer.useStacks(hit)
     
+    #On récupère les buffs
+    cSlayer.current_loadout.buffs_stats = cOpponent.get_all_buffs(hit, cSlayer)
+
     #Nombre de hits que le Slayer peut faire :
     for i in range(cSlayer.getNbrHit()):
       damage_dealt, damage_taken, hit_content, is_Crit = handler_Hit(cSlayer, hit)
@@ -388,7 +427,7 @@ class Gamemode:
         cOpponent.getDamage(damage_dealt)
       #Le joueur prend des dégâts.
       if damage_taken > 0:
-        cSlayer.getDamage(damage_taken)
+        await cSlayer.getDamage(damage_taken)
 
     #On récap ce qui a été fait à l'adversaire
     if total_damage_dealt > 0:
@@ -470,7 +509,10 @@ class Gamemode:
           self.count += 1
           monster_killed = True
 
-    return content, total_damage_dealt, monster_killed
+    #On clear les buffs
+    cSlayer.current_loadout.buffs_stats = {}
+
+    return content, total_damage_dealt, monster_killed, False
 
   def get_Opponent_Rarity(self):
     return random.choices(list(self.spawnrate.keys()), list(self.spawnrate.values()), k=1)[0]
