@@ -115,9 +115,6 @@ class Spe:
 
   def demon_proc(self):
       return False
-  
-  def refresh_stats(self):
-    self.cLoadout.update_stats([])
 
   def getDisplayStats(self, cObject2=None):
     return lib.get_display_stats(self, cObject2)
@@ -240,9 +237,9 @@ class Assassin(Spe):
     try:
       return {      
         "damage_s": self.damage,
-        "crit_damage_l": max(0, (self.cLoadout.stats_uncapped("crit_chance_l")-1)),
-        "crit_damage_h": max(0, (self.cLoadout.stats_uncapped("crit_chance_h")-1)),
-        "crit_damage_s": max(0, (self.cLoadout.stats_uncapped("crit_chance_s")-1))
+        "crit_damage_l": max(0, (self.cLoadout.stats("crit_chance_l", False)-1)),
+        "crit_damage_h": max(0, (self.cLoadout.stats("crit_chance_h", False)-1)),
+        "crit_damage_s": max(0, (self.cLoadout.stats("crit_chance_s", False)-1))
       }
     except: 
       return {}
