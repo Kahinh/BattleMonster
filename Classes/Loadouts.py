@@ -70,8 +70,8 @@ class Loadout:
         return self.get_gear_score()
     
     @property
-    def remaining_hit_temporary_stat(self):
-        return self.cSpe.remaining_hit_temporary_stat
+    def temporary_stat(self):
+        return self.cSpe.temporary_stat
     
     @property
     def spe_stats(self):
@@ -145,8 +145,8 @@ class Loadout:
 
         return empty_slot, only_one_place_on_slot
 
-
     async def equip_item(self, cObject):
+        self.check_to_reset_on_charge_bonus_item(cObject)
         damage_taken_percentage = self.cSlayer.damage_taken_percentage
         await self.bot.dB.equip_item(self.cSlayer, cObject)
         cObject.equipped = True
@@ -155,6 +155,7 @@ class Loadout:
         await self.cSlayer.adapt_damage_taken(damage_taken_percentage)
 
     async def unequip_item(self, cObject):
+        self.check_to_reset_on_charge_bonus_item(cObject)
         damage_taken_percentage = self.cSlayer.damage_taken_percentage
         await self.bot.dB.unequip_item(self.cSlayer, cObject)
         cObject.equipped = False
@@ -164,6 +165,7 @@ class Loadout:
 
     async def remove_item_for_enhancement(self, cObject):
         if self.is_current_loadout:
+            self.check_to_reset_on_charge_bonus_item(cObject)
             damage_taken_percentage = self.cSlayer.damage_taken_percentage
         self.items_stats = lib.remove_bonuses(self.bot, self.items_stats, cObject.bonuses)
         if self.is_current_loadout:
@@ -171,10 +173,16 @@ class Loadout:
 
     async def add_item_for_enhancement(self, cObject):
         if self.is_current_loadout:
+            self.check_to_reset_on_charge_bonus_item(cObject)
             damage_taken_percentage = self.cSlayer.damage_taken_percentage
         self.items_stats = lib.add_bonuses(self.bot, self.items_stats, cObject.bonuses)
         if self.is_current_loadout:
             await self.cSlayer.adapt_damage_taken(damage_taken_percentage)
+
+    def check_to_reset_on_charge_bonus_item(self, cObject):
+        if cObject.bonuses.get("stacks_reduction", 0) + cObject.bonuses.get("special_charge_l", 0) + cObject.bonuses.get("special_charge_h", 0) + cObject.bonuses.get("special_charge_s") != 0.00:
+            self.cSlayer.special_stacks = 0 #On reset tout
+            self.cSpe.temporary_stat = 0 #On reset tout
 
     def already_equipped(self, slot):
         items_list = []

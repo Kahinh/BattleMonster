@@ -253,9 +253,7 @@ class Action_Button_equip(lib.discord.ui.Button):
             
             #On update le spe id dans le table Slayer
             if self.view.cSlayer.cSpe.id != self.view.cLoadout.cSpe.id:
-                self.view.cSlayer.special_stacks = 0
-                await self.view.bot.dB.push_special_stacks(self.view.cSlayer.id, self.view.cSlayer.special_stacks)
-                await self.view.bot.dB.push_spe(self.view.cSlayer.id, self.view.cLoadout.cSpe.id)
+                await self.view.cSlayer.set_specialization(self.view.cLoadout.cSpe.id)
             
             mass_update_equipped = []
             #On update le items equipped dans la table Inventory Items

@@ -107,8 +107,8 @@ class Slayer:
     def damage_taken_percentage(self):
         return float(self.damage_taken/self.health)
     @property
-    def remaining_hit_temporary_stat(self):
-        return self.current_loadout.remaining_hit_temporary_stat
+    def temporary_stat(self):
+        return self.current_loadout.temporary_stat
 
     def item_can_be_equipped(self, cSlot):
         empty_slot, only_one_place_on_slot = self.current_loadout.item_can_be_equipped(cSlot)
@@ -124,11 +124,14 @@ class Slayer:
         self.inventories["specializations"].append(int(spe_id))
         await self.bot.dB.push_spe_list(self) 
 
-    async def set_specialization(self, spe_id):
-        self.special_stacks = 0
+    async def set_specialization(self, spe_id, from_spe_view=True):
+        if spe_id == 11:
+            self.lastregen = datetime.timestamp(datetime.now())
+        self.special_stacks = 0 #On reset tout
+        self.cSpe.temporary_stat = 0 #On reset tout
         await self.bot.dB.push_special_stacks(self.id, self.special_stacks)
         await self.bot.dB.push_spe(self.id, spe_id)
-        await self.current_loadout.set_specialization(spe_id)
+        if from_spe_view: await self.current_loadout.set_specialization(spe_id)
     
     async def add_remove_money(self, amount):
         if self.money + amount < 0:
@@ -197,6 +200,12 @@ class Slayer:
             return True, ""
         else:
             return False, f"\n> ☄️ Tu ne possèdes pas le nombre de charges nécessaires - Charge total : **{self.special_stacks}/{self.stats('stacks')}**"
+        
+    def canRegen(self):
+        if datetime.timestamp(datetime.now()) - self.lastregen >= int(self.bot.Variables["regen_waiting_time_rez"]) or not self.firstregen:
+            return True
+        else:
+            return False
     
     def isCrit(self, hit):
         isCrit = random.choices(population=[True, False], weights=[float(self.stats(f"crit_chance_{hit}")), float(1-self.stats(f"crit_chance_{hit}"))], k=1)[0]
@@ -233,9 +242,17 @@ class Slayer:
             if damage == 0:
                 return 0, f"\n> ⚔️ {self.cSpe.ability_name if hit == 's' else hit} : {int(damage)} - Le {cOpponent.group_name} est déjà mort !"
 
-        content = f"\n> ⚔️ {self.cSpe.ability_name if hit == 's' else hit} : {int(damage)} {'‼️' if isCrit else ''} {'(-' + str(armor_reduction) + '🛡️)' if armor_reduction > 0 else ''} {'[🔥+' + str(self.current_loadout.cSpe.spe_damage) + ']' if self.current_loadout.cSpe.spe_damage > 0 and hit == 's' else ''} {'[🪓' + str(self.remaining_hit_temporary_stat -1) + 'restants]' if self.remaining_hit_temporary_stat > 0 else ''}"
+        print("lastregenavanthit: ", self.lastregen)
+        regen_timer_reduction = int(self.stats("vivacity")) if self.cSpe.id == 11 and hit == "s" and not self.canRegen() else 0 #guérisseur
+        self.lastregen -= regen_timer_reduction #guérisseur
+        print("regen_timer_reduction: ", regen_timer_reduction)
+        print("lastregenapreshit: ", self.lastregen)
 
-        self.cSpe.update_remaining_hit_temporary_stat(-1)
+        content = f"\n> ⚔️ {self.cSpe.ability_name if hit == 's' else hit} : {int(damage)} {'‼️' if isCrit else ''} {'(-' + str(armor_reduction) + '🛡️)' if armor_reduction > 0 else ''}{'[🔥+' + str(self.current_loadout.cSpe.spe_damage) + ']' if self.current_loadout.cSpe.spe_damage > 0 and hit == 's' and self.current_loadout.cSpe.id == 7 else ''}{'[🪓' + str(self.temporary_stat -1) + 'restants]' if self.temporary_stat > 0 and self.current_loadout.cSpe.id == 8 else ''}{'[⚕️ -' + str(regen_timer_reduction) + ']' if regen_timer_reduction > 0 else ''}"
+
+        
+        if self.cSpe.id == 8: self.cSpe.update_temporary_stat(-1) #berserker
+        if self.cSpe.id == 12 and hit == "s": self.cSpe.update_temporary_stat(0) #chargeur
 
         return damage, content
     

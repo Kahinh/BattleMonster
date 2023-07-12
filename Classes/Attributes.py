@@ -3,6 +3,8 @@ from dataclasses import dataclass
 import datetime
 import random
 
+from collections import Counter
+
 import os, sys, inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -51,7 +53,7 @@ class Spe:
     self.emote = rSpe["display_emote"]
     self.ability_name = rSpe["ability_name"]
     self.bonuses = lib.get_bonuses(bot, rSpe)
-    self.remaining_hit_temporary_stat = 0
+    self.temporary_stat = 0
 
   @staticmethod
   async def get_Spe_Class(bot, id, cLoadout):
@@ -74,6 +76,12 @@ class Spe:
         return await Assassin.handler_Build(bot, id, cLoadout)
       case 9:
         return await Hemomancien.handler_Build(bot, id, cLoadout)
+      case 10:
+        return await Dompteur.handler_Build(bot, id, cLoadout)
+      case 11:
+        return await Guerrisseur.handler_Build(bot, id, cLoadout)
+      case 12:
+        return await Chargeur.handler_Build(bot, id, cLoadout)
       case _:
         print("Cette spé n'existe pas")
 
@@ -98,6 +106,12 @@ class Spe:
         return Assassin(bot, row)
       case 9:
         return Hemomancien(bot, row)
+      case 10:
+        return Dompteur(bot, row)
+      case 11:
+        return Guerrisseur(bot, row)
+      case 12:
+        return Chargeur(bot, row)
       case _:
         print("Cette spé n'existe pas")
 
@@ -135,8 +149,8 @@ class Spe:
     else:
       return cap_max
 
-  def update_remaining_hit_temporary_stat(self, nbr):
-    self.remaining_hit_temporary_stat += nbr
+  def update_temporary_stat(self, nbr):
+    self.temporary_stat += nbr
 
   def temporary_stats(self):
     return {}
@@ -221,11 +235,11 @@ class Assassin(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
     super().__init__(bot, rSpe, cLoadout)
 
-  def update_remaining_hit_temporary_stat(self, nbr):
-    self.remaining_hit_temporary_stat = min(self.remaining_hit_temporary_stat + nbr, self.bot.Variables["assassin_nbr_hit_activation"])
+  def update_temporary_stat(self, nbr):
+    self.temporary_stat = min(self.temporary_stat + nbr, self.bot.Variables["assassin_nbr_hit_activation"])
 
   def temporary_stats(self):
-    if self.remaining_hit_temporary_stat == 0:
+    if self.temporary_stat == 0:
       return {}
     else:
       return {
@@ -251,6 +265,61 @@ class Assassin(Spe):
 class Hemomancien(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
     super().__init__(bot, rSpe, cLoadout)
+
+  #TODO Faire un get_buffs_stats pour Hemomancien
+  def get_buffs_stats(self):
+    pass
+
+class Dompteur(Spe):
+  def __init__(self, bot, rSpe, cLoadout=None):
+    super().__init__(bot, rSpe, cLoadout)
+
+  def slot_nbr_max_items(self, cSlot):
+    if cSlot.name == "pet":
+      return cSlot.count + 2
+    else:
+      return cSlot.count
+    
+  def get_buffs_stats(self):
+    pets_list = [cObject for cObject in self.cLoadout.items if cObject.slot == "pet"]
+    buffs_stats = {}
+    for cObject in pets_list:
+      buffs_stats = Counter(buffs_stats) + Counter(cObject.bonuses)
+    return buffs_stats, 1
+
+class Guerrisseur(Spe):
+  def __init__(self, bot, rSpe, cLoadout=None):
+    super().__init__(bot, rSpe, cLoadout)
+
+  def slot_nbr_max_items(self, cSlot):
+    if cSlot.name == "shield":
+      return cSlot.count + 1
+    else:
+      return cSlot.count
+
+class Chargeur(Spe):
+  def __init__(self, bot, rSpe, cLoadout=None):
+    super().__init__(bot, rSpe, cLoadout)
+
+  def adapt_max(self, cap_max, bonus, stat):
+    cap_max = super().adapt_max(cap_max, bonus, stat)
+    if "stacks_reduction" in bonus:
+      return 0
+    else:
+      return cap_max
+    
+  def update_temporary_stat(self, nbr):
+    if nbr == 0:
+      self.temporary_stat = 0
+    else:
+      self.temporary_stat += nbr
+
+  @property
+  def spe_damage(self):
+    try:
+      return int(self.temporary_stat)
+    except:
+      return 0
 
 @dataclass
 class Base_Slayer:

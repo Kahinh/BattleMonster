@@ -16,9 +16,10 @@ class Context_Menus(lib.commands.Cog):
     async def profil(self, interaction: lib.discord.Interaction, user: lib.discord.User) -> None:
         await interaction.response.defer(ephemeral=True)
         if self.bot.power:
+            cRequesterSlayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
             cSlayer = await self.bot.ActiveList.get_Slayer(user.id, user.name)
             embed = lib.Embed.create_embed_profil_global(cSlayer, user.display_avatar)
-            view = lib.SlayerView(self.bot, cSlayer, interaction, user.display_avatar, "shared_profil")
+            view = lib.SlayerView(self.bot, cSlayer, interaction, user.display_avatar, "shared_profil", True if cSlayer.faction == cRequesterSlayer.faction and cSlayer.faction != 0 else False)
             await interaction.followup.send(embed=embed, view=view, ephemeral=True)
         else:
             await interaction.followup.send(content="Le bot est en attente de redémarrage ou en cours d'update. Veuillez patienter.")

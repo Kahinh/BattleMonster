@@ -202,3 +202,8 @@ class dB:
         await conn.execute('UPDATE slayers_loadouts SET slayer_id = $1, name = $2, loadout = $3' \
           ' WHERE id = $4', slayer_id, name, str(loadout_list), loadout_id)
     return id
+  
+  async def push_MassRegenGuérisseur(self, data_mass_regen):
+    if data_mass_regen != []:  
+      async with self.bot.db_pool.acquire() as conn :
+        await conn.executemany('UPDATE "slayers" SET damage_taken = $2 where id = $1', data_mass_regen)

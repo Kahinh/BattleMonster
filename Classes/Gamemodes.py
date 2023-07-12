@@ -322,10 +322,12 @@ class Gamemode:
         if armor < 0:
             return float(sqrt(1+(((int(self.bot.Variables["ratio_armor"])+abs(armor))/int(self.bot.Variables["ratio_armor"]))*float(bot.Variables["malus_negative_armor_with_leta"]))))
       
-      def getStacks():
+      def getStacks(damage_dealt):
         stacks_earned = cSlayer.getStacks(hit)
         if stacks_earned > 0:
-          return f"[+{stacks_earned}☄️]"
+          if cSlayer.cSpe.id == 12 and hit == "l": 
+            cSlayer.cSpe.update_temporary_stat(damage_dealt) #chargeur
+          return f"[+{stacks_earned}☄️]{' [🌀' + str(damage_dealt) + ']' if cSlayer.cSpe.id == 12 and hit == 'l' else ''}"
         else:
           return ""
 
@@ -334,7 +336,7 @@ class Gamemode:
             if not isParry():
               is_Crit = isCrit()
               damage_dealt, hit_content = cSlayer.dealDamage(hit, cOpponent, is_Crit, CritMult(is_Crit), ProtectCrit(is_Crit), ArmorMult(Armor()))
-              hit_content += getStacks()
+              hit_content += getStacks(damage_dealt)
             else:
               damage_taken, hit_content = cOpponent.dealDamage(cSlayer)
 
@@ -368,7 +370,7 @@ class Gamemode:
     
     #Spe Berserker
     if hit == "s" and cSlayer.cSpe.id == 8:
-      cSlayer.current_loadout.cSpe.update_remaining_hit_temporary_stat(int(self.bot.Variables["assassin_nbr_hit_activation"]))
+      cSlayer.current_loadout.cSpe.update_temporary_stat(int(self.bot.Variables["assassin_nbr_hit_activation"]))
       content = f"\n> Vous avez activé le mode Berserker, vous obtenez {int(self.bot.Variables['assassin_crit_chance_bonus'])*100}% Chance Critique et {int(self.bot.Variables['assassin_crit_damage_bonus'])*100}% Dégâts Critiques pendant 5 coups !"
       cSlayer.useStacks(hit)
       content += cSlayer.recap_useStacks(hit)
@@ -393,7 +395,36 @@ class Gamemode:
         content += cSlayer.recap_useStacks(hit)
         return content, 0, False, True
       else:
-        content = f"\n Tu ne peux pas encore utiliser ton Sacrifice de Sang, il te faut au minimum {int(float(self.bot.Variables['hemo_health_lost_when_spe']) * cSlayer.health)} points de vie."
+        content = f"\n> Tu ne peux pas encore utiliser ton Sacrifice de Sang, il te faut au minimum {int(float(self.bot.Variables['hemo_health_lost_when_spe']) * cSlayer.health)} points de vie."
+        return content, 0, False, False
+    
+    #Dompteur
+    if hit == "s" and cSlayer.cSpe.id == 10:
+      buffs_stats, buffs_stacks = cSlayer.cSpe.get_buffs_stats()
+      if buffs_stats != {}:
+        cBuff_Dompteur = Buff_Dompteur(self.bot, cSlayer.id, buffs_stats, buffs_stacks)
+        cOpponent.add_buff(cBuff_Dompteur, cSlayer)
+
+        content = f"\n> [**Appel de la Meute**] Vos familiers assisteront le prochain allié qui attaquera cette cible !\n> - **Effets octroyés :**\n"
+        for bonus, boost in buffs_stats.items():
+          if int(boost*100) > 0:
+            if "_" in bonus: 
+              bonus_name = bonus[:-2] 
+              if "_l" in bonus:
+                secondary_name = "(léger)"
+              elif "_h" in bonus:
+                secondary_name = "(lourd)"
+              else:
+                secondary_name = "(spécial)"
+            else: 
+              bonus_name = bonus
+              secondary_name = ""
+            content += f">  - {self.bot.Statistics[bonus_name].display_emote} {self.bot.Statistics[bonus_name].display_name} {secondary_name}: **{str(int(boost*100)) + '%' if self.bot.Statistics[bonus_name].percentage else int(boost)}**\n"
+        cSlayer.useStacks(hit)
+        content += cSlayer.recap_useStacks(hit)
+        return content, 0, False, True
+      else:
+        content = f"\n> Equipes un familier pour utiliser ton spécial !"
         return content, 0, False, False
     
     #Forgeron
@@ -436,7 +467,7 @@ class Gamemode:
       else:
         content += Banner_Receive_Damage()
 
-    #On utilise les stacks
+    #On update les stacks
     if hit == "s":
       content += cSlayer.recap_useStacks(hit)
     else:

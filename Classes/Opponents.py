@@ -351,25 +351,38 @@ class Buff:
   def __init__(self, bot, slayer_id, stats, use_count = 0):
     self.bot = bot
     self.name = ""
-    self.emote = ""
     self.use_count = 0
     self.stack = 0
     self.slayer_id = slayer_id
 
   def isUsable(self, hit, cSlayer, already_nbr):
     return False
+  
+  @property
+  def emote(self):
+    return ""
 
 class Buff_CDG(Buff):
   def __init__(self, bot, slayer_id, damage, use_count = 1):
     super().__init__(bot, slayer_id, damage, use_count)
     self.name = "CDG"
-    self.emote = "📯"
+    self.emote_select = {
+      1: "1️⃣",
+      2: "2️⃣",
+      3: "3️⃣",
+      4: "4️⃣",
+      5: "5️⃣"
+    }
     self.stack = 1
     self.damage_list = [damage]
 
   @property
   def stats(self):
     return {"damage_s" : sum(self.damage_list)}
+  
+  @property
+  def emote(self):
+    return self.emote_select.get(len(self.damage_list), "📯")
 
   def update_damage_list(self, damage):
     self.damage_list.append(damage)
@@ -377,26 +390,44 @@ class Buff_CDG(Buff):
       self.damage_list.pop(0)
 
   def isUsable(self, hit, cSlayer, already_nbr):
-    if hit == 's' and cSlayer.cSpe.id == 4 and self.slayer_id != cSlayer.id and already_nbr < self.stack:
+    if hit == 's' and cSlayer.cSpe.id == 4 and already_nbr < self.stack:
       self.stack -= 1
       return True
     else:
       return False
 
 class Buff_Dompteur(Buff):
-  def __init__(self, bot, slayer_id, stats, use_count = 1):
-    super().__init__(bot, slayer_id, stats, use_count)
+  def __init__(self, bot, slayer_id, bonuses, use_count = 1):
+    super().__init__(bot, slayer_id, bonuses, use_count)
     self.name = "Dompteur"
-    self.emote = ""
     self.stack = 1
+    self.bonuses = bonuses
+
+  @property
+  def emote(self):
+    return "🐩"
+
+  @property
+  def stats(self):
+    return self.bonuses
+
+  def isUsable(self, hit, cSlayer, already_nbr):
+    if self.slayer_id != cSlayer.id and already_nbr < self.stack:
+      self.stack -= 1
+      return True
+    else:
+      return False
 
 class Buff_Hemomancien(Buff):
   def __init__(self, bot, slayer_id, damage, use_count = 0):
     super().__init__(bot, slayer_id, damage, use_count)
     self.name = "Hemomancien"
-    self.emote = "🔮"
     self.stack = int(bot.Variables["hemo_stack"])
     self.damage = damage
+
+  @property
+  def emote(self):
+    return "🔮"
 
   @property
   def stats(self):

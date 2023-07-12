@@ -120,7 +120,7 @@ class Gatherables_Button(lib.discord.ui.Button):
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
 class SlayerView(lib.discord.ui.View):
-    def __init__(self, bot, cSlayer, interaction, avatar, interface_name="profil"):
+    def __init__(self, bot, cSlayer, interaction, avatar, interface_name="profil", friendly_interface=True):
         super().__init__(timeout=60)
         self.bot = bot
         self.interface_name=interface_name
@@ -128,6 +128,7 @@ class SlayerView(lib.discord.ui.View):
         self.cSlayer = cSlayer
         self.obsolete = False
         self.tab = "Profil"
+        self.friendly_interface = friendly_interface
         self.avatar = avatar
 
         self.add_item(Profil_Button_locked())
@@ -135,11 +136,12 @@ class SlayerView(lib.discord.ui.View):
         self.add_item(Profil_Button_l())
         self.add_item(Profil_Button_h())
         self.add_item(Profil_Button_s())
-        self.add_item(Equipment_Button_locked())
-        self.add_item(Equipment_Button_weaponarmor())
-        self.add_item(Equipment_Button_accessories())
-        self.add_item(Equipment_Button_relics())
-        self.add_item(Equipment_Button_pets())
+        if friendly_interface:
+            self.add_item(Equipment_Button_locked())
+            self.add_item(Equipment_Button_weaponarmor())
+            self.add_item(Equipment_Button_accessories())
+            self.add_item(Equipment_Button_relics())
+            self.add_item(Equipment_Button_pets())
         self.add_item(Achievements_Button())
         self.add_item(Gatherables_Button())
 
