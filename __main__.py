@@ -5,6 +5,9 @@ import discord
 from gitignore.postgresql import user, password, dbname, host, port
 from gitignore.tokens import token
 
+import datetime
+from zoneinfo import ZoneInfo
+
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -25,6 +28,8 @@ class BattleMonster(lib.commands.Bot):
         self.Specializations = {}
         self.Slots = {}
         self.Statistics = {}
+        self.Gamemodes = {}
+        self.Gamemodes_spawn_time = {}
         self.Base_Player = None
 
         super().__init__(
@@ -36,7 +41,8 @@ class BattleMonster(lib.commands.Bot):
             'Cogs.Sync',
             'Cogs.Commands_Slayer',
             'Cogs.Context_Menus',
-            'Cogs.Commands_Enhancement'
+            'Cogs.Commands_Enhancement',
+            'Cogs.Loop_time'
         ]
 
     async def setup_hook(self):
@@ -50,7 +56,9 @@ class BattleMonster(lib.commands.Bot):
         #TODO Mettre tout ça dans le dBManager
         async with self.db_pool.acquire() as conn:
             async with conn.transaction():
-                self.rGamemodes = await conn.fetch("SELECT * FROM gamemodes")    
+                #TODO Faire sauter le self et corriger partout où nécessaire
+                self.rGamemodes = await conn.fetch("SELECT * FROM gamemodes")
+                rGamemodes_spawn_time = await conn.fetch("SELECT * FROM gamemodes_spawn_time")    
                 rBaseBonuses = await conn.fetchrow("SELECT * FROM base_bonuses_slayers")   
                 rChannels = await conn.fetch(lib.qChannels.SELECT_ALL, lib.tokens.TestProd)  
                 rElements = await conn.fetch("SELECT * FROM elements")
@@ -88,6 +96,10 @@ class BattleMonster(lib.commands.Bot):
         for row in rSlots: self.Slots.update({row["slot"] : lib.Slot(row)})
         #Base Bonuses
         self.Base_Player = lib.Base_Slayer(self, rBaseBonuses)
+        #Gamemodes
+        for row in self.rGamemodes: self.Gamemodes.update({row["name"]: row})
+        #Gamemodes_spawn_time
+        for row in rGamemodes_spawn_time: self.Gamemodes_spawn_time.update({datetime.time(hour=row["hour"], minute=row["min"], tzinfo=ZoneInfo('Europe/Paris')): row["gamemode"]})
 
     async def on_ready(self):
         print(">>>>>>>>>> BOT LIVE <<<<<<<<<<")

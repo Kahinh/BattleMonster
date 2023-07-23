@@ -242,11 +242,8 @@ class Slayer:
             if damage == 0:
                 return 0, f"\n> ⚔️ {self.cSpe.ability_name if hit == 's' else hit} : {int(damage)} - Le {cOpponent.group_name} est déjà mort !"
 
-        print("lastregenavanthit: ", self.lastregen)
         regen_timer_reduction = int(self.stats("vivacity")) if self.cSpe.id == 11 and hit == "s" and not self.canRegen() else 0 #guérisseur
         self.lastregen -= regen_timer_reduction #guérisseur
-        print("regen_timer_reduction: ", regen_timer_reduction)
-        print("lastregenapreshit: ", self.lastregen)
 
         content = f"\n> ⚔️ {self.cSpe.ability_name if hit == 's' else hit} : {int(damage)} {'‼️' if isCrit else ''} {'(-' + str(armor_reduction) + '🛡️)' if armor_reduction > 0 else ''}{'[🔥+' + str(self.current_loadout.cSpe.spe_damage) + ']' if self.current_loadout.cSpe.spe_damage > 0 and hit == 's' and self.current_loadout.cSpe.id == 7 else ''}{'[🪓' + str(self.temporary_stat -1) + 'restants]' if self.temporary_stat > 0 and self.current_loadout.cSpe.id == 8 else ''}{'[⚕️ -' + str(regen_timer_reduction) + ']' if regen_timer_reduction > 0 else ''}"
 

@@ -180,7 +180,7 @@ class Loadout:
             await self.cSlayer.adapt_damage_taken(damage_taken_percentage)
 
     def check_to_reset_on_charge_bonus_item(self, cObject):
-        if cObject.bonuses.get("stacks_reduction", 0) + cObject.bonuses.get("special_charge_l", 0) + cObject.bonuses.get("special_charge_h", 0) + cObject.bonuses.get("special_charge_s") != 0.00:
+        if cObject.bonuses.get("stacks_reduction", 0) != 0.00:
             self.cSlayer.special_stacks = 0 #On reset tout
             self.cSpe.temporary_stat = 0 #On reset tout
 
