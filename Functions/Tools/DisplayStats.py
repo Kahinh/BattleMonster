@@ -72,7 +72,10 @@ def get_display_stats(cStatOwner1, cStatOwner2):
         if stat is None:
             return f"{int(number)}"
         if bot.Statistics[stat].percentage:
-            return f"{int(round(number*100,0))}%"
+            if (number*100)%1 == 0.0:
+                return f"{int(number*100)}%"
+            else:
+                return f"{round(number*100,2)}%"
         else:
             return f"{int(number)}"
     

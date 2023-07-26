@@ -11,7 +11,6 @@ class Loop_time(lib.commands.Cog):
         gamemodedata = self.bot.Gamemodes[gamemode_name]
         gamemode = await lib.Gamemode.get_Gamemode_Class(self.bot, gamemodedata)
         if gamemode.isReady() : await gamemode.handler_Spawn()
-        print("Ca a spawn !")
 
     def before_timed_task(self):
         async def wrapper():

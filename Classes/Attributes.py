@@ -143,7 +143,7 @@ class Spe:
   def adapt_max(self, cap_max, bonus, stat):
     if "special_charge" in bonus:
       try:
-        return int(float(self.bot.Variables["charge_gain_max_mult"]) * self.cLoadout.stats("stacks"))
+        return int(float(self.bot.Variables["charge_gain_max_mult"]) * self.cLoadout.stats("stacks", from_spe=True))
       except:
         return cap_max
     else:
@@ -188,7 +188,7 @@ class Templier(Spe):
   @property
   def spe_damage(self):
     try:
-      return int(self.cLoadout.stats("armor") * float(self.bot.Variables["templier_mult_armor_spe_damage"]))
+      return int(self.cLoadout.stats("armor", from_spe=True) * float(self.bot.Variables["templier_mult_armor_spe_damage"]))
     except:
       return 0
 
@@ -219,7 +219,7 @@ class Démon(Spe):
   @property
   def spe_damage(self):
     try:
-      return min(int(float(self.bot.Variables["demon_bonus_mult"]) * self.demon_stacks * self.cLoadout.stats("damage_s")), int(float(self.bot.Variables["demon_max_spe_damage_mult_damage_s"]) * self.cLoadout.stats("damage_s")))
+      return min(int(float(self.bot.Variables["demon_bonus_mult"]) * self.demon_stacks * self.cLoadout.stats("damage_s", from_spe=True)), int(float(self.bot.Variables["demon_max_spe_damage_mult_damage_s"]) * self.cLoadout.stats("damage_s", from_spe=True)))
     except:
       return 0
 
@@ -255,9 +255,9 @@ class Assassin(Spe):
     try:
       return {      
         "damage_s": self.damage,
-        "crit_damage_l": max(0, (self.cLoadout.stats("crit_chance_l", False)-1)),
-        "crit_damage_h": max(0, (self.cLoadout.stats("crit_chance_h", False)-1)),
-        "crit_damage_s": max(0, (self.cLoadout.stats("crit_chance_s", False)-1))
+        "crit_damage_l": max(0, (self.cLoadout.stats("crit_chance_l", False, from_spe=True)-1)),
+        "crit_damage_h": max(0, (self.cLoadout.stats("crit_chance_h", False, from_spe=True)-1)),
+        "crit_damage_s": max(0, (self.cLoadout.stats("crit_chance_s", False, from_spe=True)-1))
       }
     except: 
       return {}

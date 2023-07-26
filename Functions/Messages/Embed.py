@@ -352,7 +352,7 @@ def create_embed_enhancement_pet(cSlayer, pet_list, index, bot):
         description += pet_list[index].getDisplayStats()
 
         description += "\n\n**__Nourriture :__**"
-        description += f"\n{bot.PetFood[pet_list[index].id].display_emote} {bot.PetFood[pet_list[index].id].name} - **{cSlayer.inventories['gatherables'][bot.PetFood[pet_list[index].id].id]}/{100-pet_list[index].level}** requis pour atteindre le nv. max."
+        description += f"\n{bot.PetFood.get(pet_list[index].id, 1).display_emote} {bot.PetFood.get(pet_list[index].id, 1).name} - **{cSlayer.inventories['gatherables'][bot.PetFood.get(pet_list[index].id, 1).id]}/{100-pet_list[index].level}** requis pour atteindre le nv. max."
 
         embed=lib.discord.Embed(title=f"{pet_list[index].name} - Niveau : {pet_list[index].level}",
         description=description,
@@ -481,11 +481,27 @@ def create_embed_profil_attack(cLoadout_or_cSlayer, avatar, hit, cLoadout2=None)
     #back to basic
         return "\u001b[0;0m"
 
+    def _ffin(number, stat=None):
+        if stat is None:
+            return f"{int(number)}"
+        if bot.Statistics[stat].percentage:
+            if (number*100)%1 == 0.0:
+                return f"{int(number*100)}%"
+            else:
+                return f"{round(number*100,2)}%"
+        else:
+            return f"{int(number)}"
+
     description = "**__Statistiques__**"
-    for _, cStatistic in bot.Statistics.items():
+    for stat, cStatistic in bot.Statistics.items():
         for subdivisions in cStatistic.sub_division():
             if f"_{hit}" in subdivisions:
-                description += f"```ansi\n- {cStatistic.display_emote} {cStatistic.display_name}: {'🔒' if cLoadout_or_cSlayer.cSpe.adapt_min(cStatistic.cap_min, cStatistic.name, cLoadout_or_cSlayer.stats) == cLoadout_or_cSlayer.stats(subdivisions) or cLoadout_or_cSlayer.cSpe.adapt_max(cStatistic.cap_max, cStatistic.name, cLoadout_or_cSlayer.stats) == cLoadout_or_cSlayer.stats(subdivisions) else ''}{sa(cLoadout2.stats(subdivisions), cLoadout_or_cSlayer.stats(subdivisions), cStatistic.reverse)} {str(int(cLoadout_or_cSlayer.stats(subdivisions)*100)) + '%' if cStatistic.percentage else int(cLoadout_or_cSlayer.stats(subdivisions) + (cLoadout_or_cSlayer.cSpe.spe_damage if hit == 's' and subdivisions == 'damage_s' else 0))} {btb() + '(' + (str(int(cLoadout2.stats(subdivisions)*100)) + '%' if cStatistic.percentage else str(int(cLoadout2.stats(subdivisions)))) + ')' if not duplicated else ''}```"
+                description += \
+                    f"```ansi\n- {cStatistic.display_emote} {cStatistic.display_name}: " \
+                    f"{'🔒' if cLoadout_or_cSlayer.cSpe.adapt_min(cStatistic.cap_min, cStatistic.name, cLoadout_or_cSlayer.stats) == cLoadout_or_cSlayer.stats(subdivisions) or cLoadout_or_cSlayer.cSpe.adapt_max(cStatistic.cap_max, cStatistic.name, cLoadout_or_cSlayer.stats) == cLoadout_or_cSlayer.stats(subdivisions) else ''}" \
+                    f"{sa(cLoadout2.stats(subdivisions), cLoadout_or_cSlayer.stats(subdivisions), cStatistic.reverse)}" \
+                    f"{_ffin(cLoadout_or_cSlayer.stats(subdivisions) + cLoadout_or_cSlayer.cSpe.spe_damage if hit == 's' and subdivisions == 'damage_s' else 0, stat)}" \
+                    f"{btb() + ' (' + _ffin(cLoadout2.stats(subdivisions), stat) + ')' if not duplicated else ''}```"
     embed=lib.discord.Embed(title=f"{hit} {cLoadout_or_cSlayer.name}",
     description=description,
     color=0x1abc9c)  

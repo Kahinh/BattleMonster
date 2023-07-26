@@ -74,8 +74,8 @@ class Feed_Button(lib.discord.ui.Button):
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
             cObject = self.view.pet_list[self.view.index]
-            cFood = self.view.bot.PetFood[self.view.pet_list[self.view.index].id]
-            max_food = int(min(100-int(self.view.pet_list[self.view.index].level), int(self.view.cSlayer.inventories["gatherables"].get(self.view.bot.PetFood[self.view.pet_list[self.view.index].id].id, 0))))
+            cFood = self.view.bot.PetFood.get(self.view.pet_list[self.view.index].id, 1)
+            max_food = int(min(int(self.view.bot.Variables["object_max_level_pets"])-int(self.view.pet_list[self.view.index].level), int(self.view.cSlayer.inventories["gatherables"].get(self.view.bot.PetFood.get(self.view.pet_list[self.view.index].id, 1).id, 0))))
             await interaction.response.send_modal(Feed_Amount(cObject, cFood, max_food, self.view.cSlayer, self.view.bot))
         else:
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
@@ -122,7 +122,7 @@ class EnhancementPetsView(lib.discord.ui.View):
                         item.disabled = False
 
     def disable_enable_feed_button(self):
-        if self.cSlayer.inventories["gatherables"].get(self.bot.PetFood[self.pet_list[self.index].id].id, 0) == 0:
+        if self.cSlayer.inventories["gatherables"].get(self.bot.PetFood.get(self.pet_list[self.index].id, 1).id, 0) == 0:
             for item in self.children:
                 if hasattr(item, "label"):
                     if item.label=="Nourrir":
@@ -134,7 +134,7 @@ class EnhancementPetsView(lib.discord.ui.View):
                         item.disabled = False
 
     def create_pet_list(self):
-        return [self.cSlayer.inventories["items"][item_id] for item_id in self.cSlayer.inventories["items"] if self.cSlayer.inventories["items"][item_id].slot == "pet" and self.cSlayer.inventories["items"][item_id].level != 100]
+        return [self.cSlayer.inventories["items"][item_id] for item_id in self.cSlayer.inventories["items"] if self.cSlayer.inventories["items"][item_id].slot == "pet" and self.cSlayer.inventories["items"][item_id].level != int(self.bot.Variables["object_max_level_pets"])]
 
     def create_embed(self):
         return lib.Embed.create_embed_enhancement_pet(self.cSlayer, self.pet_list, self.index, self.bot)
@@ -143,7 +143,7 @@ class EnhancementPetsView(lib.discord.ui.View):
         #Si le familier a atteint le niveau 100, on recalcule
         Pet_is100 = False
         for cObject in self.pet_list:
-            if cObject.level == 100:
+            if cObject.level == int(self.bot.Variables["object_max_level_pets"]):
                 Pet_is100 = True
 
         if Pet_is100:

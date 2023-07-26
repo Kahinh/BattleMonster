@@ -44,7 +44,7 @@ class DamageDone:
       self.luck = luck
     
   def canAttack(self):
-    if self.timestamp_next_hit < datetime.datetime.timestamp(datetime.datetime.now()):
+    if self.timestamp_next_hit - datetime.datetime.timestamp(datetime.datetime.now()) < 2:
       return True
     else:
       return False

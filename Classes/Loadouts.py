@@ -95,27 +95,27 @@ class Loadout:
             items_stats = lib.add_bonuses(self.bot, items_stats, cObject.bonuses)
         self.items_stats = items_stats
 
-    def stats(self, bonus, capped=True):
+    def stats(self, bonus, capped=True, from_spe=False):
         match bonus:
             case "armor":
-                return int((self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0) + self.buffs_stats.get(bonus, 0)) * (1 + self.stats("armor_per")))
+                return int((self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + (0 if from_spe else self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0)) + self.buffs_stats.get(bonus, 0)) * (1 + self.stats("armor_per")))
             case "health":
-                return int((self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0) + self.buffs_stats.get(bonus, 0)) * (1 + self.stats("health_per")))
+                return int((self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + (0 if from_spe else self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0)) + self.buffs_stats.get(bonus, 0)) * (1 + self.stats("health_per")))
             case "damage_l":
-                return int((self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0) + self.buffs_stats.get(bonus, 0) + self.stats("damage_weapon")) * (1 + self.stats("damage_per_l")))
+                return int((self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + (0 if from_spe else self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0)) + self.buffs_stats.get(bonus, 0) + self.stats("damage_weapon")) * (1 + self.stats("damage_per_l")))
             case "damage_h":
-                return int((self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0) + self.buffs_stats.get(bonus, 0) + self.stats("damage_weapon")) * (1 + self.stats("damage_per_h")))
+                return int((self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + (0 if from_spe else self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0)) + self.buffs_stats.get(bonus, 0) + self.stats("damage_weapon")) * (1 + self.stats("damage_per_h")))
             case "damage_s":
-                return int((self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0) + self.buffs_stats.get(bonus, 0) + self.stats("damage_weapon")) * (1 + self.stats("damage_per_s")))
+                return int((self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + (0 if from_spe else self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0)) + self.buffs_stats.get(bonus, 0) + self.stats("damage_weapon")) * (1 + self.stats("damage_per_s")))
             case "stacks":
-                return int((self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0)) - self.stats("stacks_reduction"))
+                return int((self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + (0 if from_spe else self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0))) - self.stats("stacks_reduction"))
             case "cooldown":
                 return int(max(float(self.bot.Variables["cooldown"]) - self.stats("vivacity"), 10))
             case _:
                 if capped:
-                    return lib.cap_min_max_bonus(bonus, self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0), self.bot, self.cSpe) + self.buffs_stats.get(bonus, 0)
+                    return lib.cap_min_max_bonus(bonus, self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + (0 if from_spe else self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0)), self.bot, self.cSpe) + self.buffs_stats.get(bonus, 0)
                 else:
-                    return self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0) + self.buffs_stats.get(bonus, 0)
+                    return self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + (0 if from_spe else self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0)) + self.buffs_stats.get(bonus, 0)
 
     def get_gear_score(self):
         gearscore = 0

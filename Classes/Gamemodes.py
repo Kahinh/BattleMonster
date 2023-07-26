@@ -429,11 +429,7 @@ class Gamemode:
     
     #Forgeron
     if hit == "s" and cSlayer.cSpe.id == 5:
-      i = 0
-      for id, cDamageDone in cOpponent.slayers_hits.items():
-        if id != cSlayer.id and cDamageDone.cSlayer.cSpe.id != 5:
-          cOpponent.slayers_hits[id].timestamp_next_hit = datetime.timestamp(datetime.now())
-          i += 1
+      i = cOpponent.chasseur_reset_cooldown(cSlayer)
       content = f"\n> Vous avez reset les attaques de {int(i)} Slayers !"
       cSlayer.useStacks(hit)
       content += cSlayer.recap_useStacks(hit)

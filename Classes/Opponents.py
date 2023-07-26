@@ -160,7 +160,7 @@ class Opponent:
     if (float(self.parry["parry_chance_l"]) + float(cSlayer.stats("parry_l"))) >= 1.0 and (float(self.parry["parry_chance_h"]) + float(cSlayer.stats("parry_h"))) >= 1.0:
       return True
     else:
-      ParryChance = min(max(self.parry[f"parry_chance_{hit}"] + cSlayer.stats(f"parry_{hit}"), 0), 1)
+      ParryChance = min(max(self.parry[f"parry_chance_{hit}"] + cSlayer.stats(f"parry_{hit}"), 0), 1) 
       return random.choices(population=[True, False], weights=[ParryChance, 1-ParryChance], k=1)[0]
 
   def getDamage(self, damage):
@@ -219,6 +219,14 @@ class Opponent:
 
   def get_roll_dices(self, cSlayer):
     return self.roll_dices
+  
+  def chasseur_reset_cooldown(self, cSlayer):
+    i = 0
+    for id, cDamageDone in self.slayers_hits.items():
+      if id != cSlayer.id and cDamageDone.cSlayer.cSpe.id != 5:
+        self.slayers_hits[id].timestamp_next_hit = datetime.timestamp(datetime.now())
+        i += 1
+    return i
 
 @dataclass
 class Monster(Opponent):
@@ -309,6 +317,14 @@ class Banner(Opponent):
 
     roll_dices = max(self.roll_dices - (slayer_faction_positionning * int(self.bot.Variables["factionwar_roll_dices_malus_by_positionning"])), 0)
     return int(roll_dices)
+
+  def chasseur_reset_cooldown(self, cSlayer):
+    i = 0
+    for id, cDamageDone in self.slayers_hits.items():
+      if id != cSlayer.id and cDamageDone.cSlayer.cSpe.id != 5 and cSlayer.faction == cDamageDone.cSlayer.faction:
+        self.slayers_hits[id].timestamp_next_hit = datetime.timestamp(datetime.now())
+        i += 1
+    return i
 
 class Mythique(Opponent):
   def __init__(self, gamemode, element, rarity, type):

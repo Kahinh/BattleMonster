@@ -268,7 +268,8 @@ class Action_Button_equip(lib.discord.ui.Button):
             
             self.view.cSlayer.current_loadout = await Loadout.get_Object_Class_from_cSlayer(self.view.cSlayer.bot, self.view.cLoadout.name, self.view.cSlayer, self.view.cLoadout.cSpe.id, [cObject for cObject in self.view.cLoadout.items], True)
             self.view.cSlayer.damage_taken = min(self.view.cSlayer.damage_taken, self.view.cSlayer.health - 1)
-            await interaction.response.send_message(content="Le loadout a été équipé !", ephemeral=True)
+            await self.view.update_view(interaction) 
+            await interaction.followup.send(content="Le loadout a été équipé !", ephemeral=True)
         else:
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
         

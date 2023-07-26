@@ -55,26 +55,26 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
     await interaction.response.defer(ephemeral=True)
     if self.bot.power:
       cSlayer = await self.bot.ActiveList.get_Slayer(interaction.user.id, interaction.user.name)
-      if cSlayer.damage_taken > 0:
-        #C'est une Rez
-        if cSlayer.dead:
-          waiting_time = int(self.bot.Variables["regen_waiting_time_rez"]) #7200
-          #Si on a attendu suffisamment
-          if datetime.datetime.timestamp(datetime.datetime.now()) - cSlayer.lastregen >= waiting_time or not cSlayer.firstregen:
-            #On rez
+      #C'est une Rez
+      if cSlayer.dead:
+        waiting_time = int(self.bot.Variables["regen_waiting_time_rez"]) #7200
+        #Si on a attendu suffisamment
+        if datetime.datetime.timestamp(datetime.datetime.now()) - cSlayer.lastregen >= waiting_time or not cSlayer.firstregen:
+          #On rez
 
-            #Register Regen
-            cSlayer.lastregen = datetime.datetime.timestamp(datetime.datetime.now())
-            cSlayer.firstregen = True
+          #Register Regen
+          cSlayer.lastregen = datetime.datetime.timestamp(datetime.datetime.now())
+          cSlayer.firstregen = True
 
-            cSlayer.dead = False
-            regen = cSlayer.regen()
-            await self.bot.dB.push_slayer_data(cSlayer)
-            await interaction.followup.send(content=f"Résurrection effectuée : Tu as récupéré {regen} ❤️", ephemeral=True)
-          else:
-            await interaction.followup.send(content=f"Malheureusement, il te faut encore attendre un peu !\nProchaine résurrection : **{int(cSlayer.lastregen + waiting_time - datetime.datetime.timestamp(datetime.datetime.now()))}**s", ephemeral=True)
-        #C'est une regen
+          cSlayer.dead = False
+          regen = cSlayer.regen()
+          await self.bot.dB.push_slayer_data(cSlayer)
+          await interaction.followup.send(content=f"Résurrection effectuée : Tu as récupéré {regen} ❤️", ephemeral=True)
         else:
+          await interaction.followup.send(content=f"Malheureusement, il te faut encore attendre un peu !\nProchaine résurrection : **{int(cSlayer.lastregen + waiting_time - datetime.datetime.timestamp(datetime.datetime.now()))}**s", ephemeral=True)
+      #C'est une regen
+      else:
+        if cSlayer.damage_taken > 0:
           waiting_time = int(self.bot.Variables["regen_waiting_time_regen"]) #3600
           #Si on a attendu suffisamment
           if datetime.datetime.timestamp(datetime.datetime.now()) - cSlayer.lastregen >= waiting_time or not cSlayer.firstregen:
@@ -86,28 +86,26 @@ class Commands_Slayer(lib.commands.GroupCog, name="slayer"):
 
             await self.bot.dB.push_slayer_data(cSlayer)
             await cSlayer.getDrop(pets=[192])
-            #Spé Guerrisseur
-            if cSlayer.faction != 0 and cSlayer.cSpe.id == 11:
-              regen_mass_update = []
-              content = f"> Régénération de masse effectuée.\n> Les talents de guérisseur de <@{cSlayer.id}> étendent cet effet à l'ensemble de sa faction ! Les joueurs récupèrent jusqu'à {regen} 💖\n> Joueurs concernés :\n> "
-              for slayer_id, cActiveSlayer in self.bot.ActiveList.active_slayers.items():
-                cOtherSlayer = cActiveSlayer.cSlayer
-                if cOtherSlayer.faction == cSlayer.faction and not cOtherSlayer.dead and cOtherSlayer.damage_taken > 0 and cOtherSlayer.id != cSlayer.id:
-                  content += f"<@{cOtherSlayer.id}>, "
-                  cOtherSlayer.damage_taken -= min(cOtherSlayer.damage_taken, regen)
-                  regen_mass_update.append((cOtherSlayer.id, cOtherSlayer.damage_taken))
-              
-              if regen_mass_update != []:
-                channel = self.bot.get_channel(self.bot.rChannels["logs"])
-                await channel.send(content=content)
-                await self.bot.dB.push_MassRegenGuérisseur(regen_mass_update)
-
-
             await interaction.followup.send(content=f"Régénération effectuée : Tu as récupéré {regen} ❤️", ephemeral=True)
           else:
             await interaction.followup.send(content=f"Malheureusement, il te faut encore attendre un peu !\nProchaine régénération : **{int(cSlayer.lastregen + waiting_time - datetime.datetime.timestamp(datetime.datetime.now()))}**s", ephemeral=True)
-      else:
-        await interaction.followup.send(content=f"Tu n'as pas besoin de te soigner !", ephemeral=True)
+        else:
+          await interaction.followup.send(content=f"Tu n'as pas besoin de te soigner !", ephemeral=True)
+        #Spé Guérisseur
+        if cSlayer.faction != 0 and cSlayer.cSpe.id == 11:
+          regen_mass_update = []
+          content = f"> Régénération de masse effectuée.\n> Les talents de guérisseur de <@{cSlayer.id}> étendent cet effet à l'ensemble de sa faction ! Les joueurs récupèrent jusqu'à {regen} 💖\n> Joueurs concernés :\n> "
+          for slayer_id, cActiveSlayer in self.bot.ActiveList.active_slayers.items():
+            cOtherSlayer = cActiveSlayer.cSlayer
+            if cOtherSlayer.faction == cSlayer.faction and not cOtherSlayer.dead and cOtherSlayer.damage_taken > 0 and cOtherSlayer.id != cSlayer.id:
+              content += f"<@{cOtherSlayer.id}>, "
+              cOtherSlayer.damage_taken -= min(cOtherSlayer.damage_taken, regen)
+              regen_mass_update.append((cOtherSlayer.id, cOtherSlayer.damage_taken))
+          
+          if regen_mass_update != []:
+            channel = self.bot.get_channel(self.bot.rChannels["logs"])
+            await channel.send(content=content)
+            await self.bot.dB.push_MassRegenGuérisseur(regen_mass_update)
     else:
       await interaction.followup.send(content="Le bot est en attente de redémarrage ou en cours d'update. Veuillez patienter.")
 
