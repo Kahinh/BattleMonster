@@ -233,6 +233,8 @@ class Slayer:
         damage = int(max(damage * ArmorMult, 0))
         #ProtectCrit
         damage = int(max(damage - ProtectCrit, 0))
+        #CDG
+        damage = int(damage + self.stats("CDG"))
         #A ce stade, si damage = 0, alors le monstre a trop d'armures
         if damage == 0:
             return 0, f"\n> ⚔️ {self.cSpe.ability_name if hit == 's' else hit} : {int(damage)} - L'adversaire possédait trop de défense !"
@@ -245,7 +247,7 @@ class Slayer:
         regen_timer_reduction = int(self.stats("vivacity")) if self.cSpe.id == 11 and hit == "s" and not self.canRegen() else 0 #guérisseur
         self.lastregen -= regen_timer_reduction #guérisseur
 
-        content = f"\n> ⚔️ {self.cSpe.ability_name if hit == 's' else hit} : {int(damage)} {'‼️' if isCrit else ''} {'(-' + str(armor_reduction) + '🛡️)' if armor_reduction > 0 else ''}{'[🔥+' + str(self.current_loadout.cSpe.spe_damage) + ']' if self.current_loadout.cSpe.spe_damage > 0 and hit == 's' and self.current_loadout.cSpe.id == 7 else ''}{'[🪓' + str(self.temporary_stat -1) + 'restants]' if self.temporary_stat > 0 and self.current_loadout.cSpe.id == 8 else ''}{'[⚕️ -' + str(regen_timer_reduction) + ']' if regen_timer_reduction > 0 else ''}"
+        content = f"\n> ⚔️ {self.cSpe.ability_name if hit == 's' else hit} : {int(damage)} {'‼️' if isCrit else ''} {'(-' + str(armor_reduction) + '🛡️)' if armor_reduction > 0 else ''}{'[🔥+' + str(self.current_loadout.cSpe.spe_damage) + ']' if self.current_loadout.cSpe.spe_damage > 0 and hit == 's' and self.current_loadout.cSpe.id == 7 else ''}{'[🪓' + str(self.temporary_stat -1) + 'restants]' if self.temporary_stat > 0 and self.current_loadout.cSpe.id == 8 else ''}{'[⚕️ -' + str(regen_timer_reduction) + ']' if regen_timer_reduction > 0 else ''}{'[📯' + str(self.stats('CDG')) + ']' if self.stats('CDG') > 0 else ''}"
 
         
         if self.cSpe.id == 8: self.cSpe.update_temporary_stat(-1) #berserker

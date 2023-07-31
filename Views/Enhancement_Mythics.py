@@ -136,7 +136,7 @@ class Feed_Amount(lib.discord.ui.Modal):
 
 class Feed_Button_Automatique(lib.discord.ui.Button):
     def __init__(self):
-        super().__init__(label="Améliorer Mult", style=lib.discord.ButtonStyle.green)
+        super().__init__(label="Auto-amélioration", style=lib.discord.ButtonStyle.green)
 
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
@@ -234,12 +234,12 @@ class EnhancementMythicsView(lib.discord.ui.View):
         if self.cSlayer.inventories["gatherables"].get(5, 0) == 0:
             for item in self.children:
                 if hasattr(item, "label"):
-                    if item.label=="Améliorer" or item.label=="Améliorer Mult":
+                    if item.label=="Améliorer" or item.label=="Auto-amélioration":
                         item.disabled = True
         else:
             for item in self.children:
                 if hasattr(item, "label"):
-                    if item.label=="Améliorer" or item.label=="Améliorer Mult":
+                    if item.label=="Améliorer" or item.label=="Auto-amélioration":
                         item.disabled = False
 
     def create_mythic_list(self, check=False):

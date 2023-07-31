@@ -34,7 +34,6 @@ class Spe:
 
   id: int
   name: str
-  description: str
   damage: int
   stacks: int
   cost: int
@@ -46,7 +45,8 @@ class Spe:
     self.bot = bot
     self.id = rSpe["id"]
     self.name = rSpe["name"]
-    self.description = rSpe["description"]
+    self.db_description = rSpe["description"]
+    self.db_description_special = rSpe["description_special"]
     self.damage = rSpe["damage"]
     self.stacks = rSpe["stacks"]
     self.cost = rSpe["cost"]
@@ -125,6 +125,14 @@ class Spe:
   def spe_damage(self):
       return 0
 
+  @property
+  def description(self):
+    return self.db_description
+  
+  @property
+  def description_special(self):
+    return self.db_description_special
+
   def slot_nbr_max_items(self, cSlot):
     return cSlot.count
 
@@ -191,6 +199,10 @@ class Templier(Spe):
       return int(self.cLoadout.stats("armor", from_spe=True) * float(self.bot.Variables["templier_mult_armor_spe_damage"]))
     except:
       return 0
+    
+  @property
+  def description_special(self):
+    return self.db_description_special.replace("%templier_mult_armor_spe_damage%", f"**{self.bot.Variables['templier_mult_armor_spe_damage']}**")
 
 class ChefdeGuerre(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
@@ -223,6 +235,10 @@ class Démon(Spe):
     except:
       return 0
 
+  @property
+  def description_special(self):
+    return self.db_description_special.replace("%demon_bonus_mult%", f"**{self.bot.Variables['demon_bonus_mult']*100}**").replace("%demon_max_spe_damage_mult_damage_s%", f"**{self.bot.Variables['demon_max_spe_damage_mult_damage_s']*100}**")
+
   def demon_proc(self):
     if random.choices((True, False), (float(self.bot.Variables["demon_chance_proc"]), 1-float(self.bot.Variables["demon_chance_proc"])), k=1)[0]:
       self.demon_stacks += 1
@@ -234,6 +250,10 @@ class Démon(Spe):
 class Assassin(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
     super().__init__(bot, rSpe, cLoadout)
+
+  @property
+  def description_special(self):
+    return self.db_description_special.replace("%assassin_nbr_hit_activation%", f"**{self.bot.Variables['assassin_nbr_hit_activation']}**").replace("%assassin_crit_chance_bonus%", f"**{self.bot.Variables['assassin_crit_chance_bonus']*100}**").replace("%assassin_crit_damage_bonus%", f"**{self.bot.Variables['assassin_crit_damage_bonus']*100}**")
 
   def update_temporary_stat(self, nbr):
     self.temporary_stat = min(self.temporary_stat + nbr, self.bot.Variables["assassin_nbr_hit_activation"])
@@ -265,6 +285,10 @@ class Assassin(Spe):
 class Hemomancien(Spe):
   def __init__(self, bot, rSpe, cLoadout=None):
     super().__init__(bot, rSpe, cLoadout)
+
+  @property
+  def description_special(self):
+    return self.db_description_special.replace("%hemo_health_lost_when_spe%", f"**{self.bot.Variables['hemo_health_lost_when_spe']*100}**").replace("%hemo_health_into_stacks%", f"**{self.bot.Variables['hemo_health_into_stacks']*100}**").replace("%hemo_health_into_damage%", f"**{self.bot.Variables['hemo_health_into_damage']*100}**")
 
   #TODO Faire un get_buffs_stats pour Hemomancien
   def get_buffs_stats(self):

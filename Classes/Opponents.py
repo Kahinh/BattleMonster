@@ -394,7 +394,7 @@ class Buff_CDG(Buff):
 
   @property
   def stats(self):
-    return {"damage_s" : sum(self.damage_list)}
+    return {"CDG" : sum(self.damage_list)}
   
   @property
   def emote(self):

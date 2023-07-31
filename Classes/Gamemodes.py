@@ -381,7 +381,7 @@ class Gamemode:
       if cSlayer.current_health > int(float(self.bot.Variables["hemo_health_lost_when_spe"]) * cSlayer.health):
 
         #Buff
-        cBuff_Hemomancien = Buff_Hemomancien(self.bot, cSlayer.id, int(cSlayer.health * float(self.bot.Variables["hemo_health_into_damage"])), 1 + int(cSlayer.health * float(self.bot.Variables["hemo_health_into_stacks"])))
+        cBuff_Hemomancien = Buff_Hemomancien(self.bot, cSlayer.id, int(cSlayer.health * float(self.bot.Variables["hemo_health_into_damage"])), int(min(cSlayer.health * float(self.bot.Variables["hemo_health_into_stacks"]), 1)))
         cOpponent.add_buff(cBuff_Hemomancien, cSlayer)
 
         #Vie perdue
@@ -440,7 +440,9 @@ class Gamemode:
       cSlayer.useStacks(hit)
     
     #On récupère les buffs
+    #TODO Pour nerf CDG il faut mettre dans une Statistics du bot à part
     cSlayer.current_loadout.buffs_stats = cOpponent.get_all_buffs(hit, cSlayer)
+    print(cSlayer.current_loadout.buffs_stats)
 
     #Nombre de hits que le Slayer peut faire :
     for i in range(cSlayer.getNbrHit()):
@@ -488,7 +490,7 @@ class Gamemode:
       await cSlayer.getDrop(rate=0.004, pets=[230])
       #Damage
     if total_damage_dealt > 0:
-      await cSlayer.getDrop(pets=[194])
+      await cSlayer.getDrop(pets=[194, 439, 444, 445])
       #Bworky Final Damage S
     if total_damage_dealt > 150000 and hit == 's':
       await cSlayer.getDrop(rate=1, pets=[301])
@@ -498,12 +500,25 @@ class Gamemode:
       #Blokus Parry %
     if total_damage_taken > 1000:
       await cSlayer.getDrop(rate=1, pets=[303])
+      await cSlayer.getDrop(pets=[438])
       #Armor
     if total_damage_taken > 0:
       await cSlayer.getDrop(pets=[193])
       #Leta
     if int(cSlayer.stats("letality_l")) + int(cSlayer.stats("letality_h")) + int(cSlayer.stats("letality_s")) > 6000:
       await cSlayer.getDrop(rate=1, pets=[409])
+      await cSlayer.getDrop(pets=[437, 440])
+      #Vie %
+    if cSlayer.current_health >= 20000:
+      await cSlayer.getDrop(pets=[409])
+    if str(total_damage_dealt).count('0') == len(str(total_damage_dealt))-1 and len(str(total_damage_dealt))>1 and hit == 'l':
+      await cSlayer.getDrop(rate=1, pets=[441])
+    if str(total_damage_dealt).count('0') == len(str(total_damage_dealt))-1 and len(str(total_damage_dealt))>1 and hit == 'h':
+      await cSlayer.getDrop(rate=1, pets=[442])
+    if str(total_damage_dealt).count('0') == len(str(total_damage_dealt))-1 and len(str(total_damage_dealt))>1 and hit == 's':
+      await cSlayer.getDrop(rate=1, pets=[443])
+
+      
 
     #Achievement Biggest_Hit
     if total_damage_dealt > cSlayer.achievements.get("biggest_hit", 0):

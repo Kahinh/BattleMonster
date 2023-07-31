@@ -97,6 +97,8 @@ class Loadout:
 
     def stats(self, bonus, capped=True, from_spe=False):
         match bonus:
+            case "CDG":
+                return self.buffs_stats.get(bonus, 0)
             case "armor":
                 return int((self.items_stats.get(bonus, 0) + self.spe_stats.get(bonus, 0) + self.base_stats.get(bonus, 0) + (0 if from_spe else self.temporary_stats.get(bonus, 0) + self.additional_stats.get(bonus, 0)) + self.buffs_stats.get(bonus, 0)) * (1 + self.stats("armor_per")))
             case "health":

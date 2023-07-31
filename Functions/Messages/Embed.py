@@ -245,7 +245,7 @@ def create_embed_equipment(bot, cLoadout_or_cSlayer, avatar, group):
 def create_embed_spe(cSlayer, cSpe):
     embed=lib.discord.Embed(title=f"{cSpe.emote} {cSpe.name}",
     description= \
-        f"{cSpe.description}\n" \
+        f"{cSpe.description}\n\n[**{cSpe.ability_name}**] : {cSpe.description_special}\n" \
         f"```ansi\n☄️Charges: {cSpe.stacks}```" \
         f"\n\n__Statistiques :__"
         f"{cSpe.getDisplayStats()}" \
