@@ -82,6 +82,12 @@ class Pet(Improvable_Object):
     await super().update_item_level(level_upgrade, cSlayer)
     self.gearscore = self.setGearscore()
 
+  def get_food(self):
+    if self.id in self.bot.PetFood:
+      return self.bot.PetFood[self.id]
+    else:
+      return self.bot.Gatherables[1]
+
 class Mythic(Improvable_Object):
   def __init__(self, bot, rItem):
     super().__init__(bot, rItem)

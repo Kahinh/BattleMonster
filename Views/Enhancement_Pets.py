@@ -74,8 +74,8 @@ class Feed_Button(lib.discord.ui.Button):
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
             cObject = self.view.pet_list[self.view.index]
-            cFood = self.view.bot.PetFood.get(self.view.pet_list[self.view.index].id, 1)
-            max_food = int(min(int(self.view.bot.Variables["object_max_level_pets"])-int(self.view.pet_list[self.view.index].level), int(self.view.cSlayer.inventories["gatherables"].get(self.view.bot.PetFood.get(self.view.pet_list[self.view.index].id, 1).id, 0))))
+            cFood = cObject.get_food()
+            max_food = int(min(int(self.view.bot.Variables["object_max_level_pets"])-int(self.view.pet_list[self.view.index].level), int(self.view.cSlayer.inventories["gatherables"].get(cObject.get_food().id, 0))))
             await interaction.response.send_modal(Feed_Amount(cObject, cFood, max_food, self.view.cSlayer, self.view.bot))
         else:
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
@@ -122,7 +122,8 @@ class EnhancementPetsView(lib.discord.ui.View):
                         item.disabled = False
 
     def disable_enable_feed_button(self):
-        if self.cSlayer.inventories["gatherables"].get(self.bot.PetFood.get(self.pet_list[self.index].id, 1).id, 0) == 0:
+        cObject = self.pet_list[self.index]
+        if self.cSlayer.inventories["gatherables"].get(cObject.get_food().id, 0) == 0:
             for item in self.children:
                 if hasattr(item, "label"):
                     if item.label=="Nourrir":

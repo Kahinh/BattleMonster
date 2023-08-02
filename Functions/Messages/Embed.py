@@ -348,12 +348,13 @@ def create_embed_enhancement_pet(cSlayer, pet_list, index, bot):
         color=0x1abc9c)   
         #embed.set_thumbnail(url=avatar)
     else:
+        cObject = pet_list[index]
         description = pet_list[index].description
         description += "\n"
         description += pet_list[index].getDisplayStats()
 
         description += "\n\n**__Nourriture :__**"
-        description += f"\n{bot.PetFood.get(pet_list[index].id, 1).display_emote} {bot.PetFood.get(pet_list[index].id, 1).name} - **{cSlayer.inventories['gatherables'][bot.PetFood.get(pet_list[index].id, 1).id]}/{100-pet_list[index].level}** requis pour atteindre le nv. max."
+        description += f"\n{cObject.get_food().display_emote} {cObject.get_food().name} - **{cSlayer.inventories['gatherables'][cObject.get_food().id]}/{100-pet_list[index].level}** requis pour atteindre le nv. max."
 
         embed=lib.discord.Embed(title=f"{pet_list[index].name} - Niveau : {pet_list[index].level}",
         description=description,

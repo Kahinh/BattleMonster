@@ -22,7 +22,7 @@ class Gather_Button(lib.discord.ui.Button):
                     #Si le pet équipé se nourrit de la bouffe, on fait +1
                     if (pet_list := cSlayer.slot_items_equipped(cSlayer.bot.Slots["pet"])) and len(pet_list) > 0:
                         for cPet in pet_list:
-                            if int(self.view.bot.PetFood.get(cPet.id, 1).id) == int(self.view.cGather.gatherable_id):
+                            if int(cPet.get_food().id) == int(self.view.cGather.gatherable_id):
                                 nbr += int(self.view.bot.Variables["bonus_gatherables_in_pets"])
 
                     #Si on a la faction qui a l'affinité
