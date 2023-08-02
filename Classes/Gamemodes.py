@@ -253,11 +253,12 @@ class Gamemode:
       content += cOpponent.recapDamageTaken(total_damage_dealt)
 
       #On store pour CDG
-      if (buff_list := cOpponent.get_buff('CDG', cSlayer)) and buff_list != [] and cSlayer.cSpe.id != 4 and total_damage_dealt != 0:
-        cBuff_CDG = buff_list[0]
-        cBuff_CDG.update_damage_list(total_damage_dealt)
-      else:
-        cOpponent.add_buff(Buff_CDG(self.bot, cSlayer.id, total_damage_dealt), cSlayer)
+      if cSlayer.cSpe.id != 4 and total_damage_dealt != 0:
+        if (buff_list := cOpponent.get_buff('CDG', cSlayer)) and buff_list != [] :
+          cBuff_CDG = buff_list[0]
+          cBuff_CDG.update_damage_list(total_damage_dealt)
+        else:
+          cOpponent.add_buff(Buff_CDG(self.bot, cSlayer.id, total_damage_dealt), cSlayer)
 
       self.stats['attacks_received'] += 1
       return content
@@ -267,11 +268,12 @@ class Gamemode:
       content += cOpponent.recapDamageTaken(total_damage_dealt, cSlayer)
 
       #On store pour CDG
-      if (buff_list := cOpponent.get_buff('CDG', cSlayer)) and buff_list != [] and cSlayer.cSpe.id != 4 and total_damage_dealt != 0:
-        cBuff_CDG = buff_list[0]
-        cBuff_CDG.update_damage_list(total_damage_dealt)
-      else:
-        cOpponent.add_buff(Buff_CDG(self.bot, cSlayer.id, total_damage_dealt), cSlayer)
+      if cSlayer.cSpe.id != 4 and total_damage_dealt != 0:
+        if (buff_list := cOpponent.get_buff('CDG', cSlayer)) and buff_list != []:
+          cBuff_CDG = buff_list[0]
+          cBuff_CDG.update_damage_list(total_damage_dealt)
+        else:
+          cOpponent.add_buff(Buff_CDG(self.bot, cSlayer.id, total_damage_dealt), cSlayer)
 
       self.stats['attacks_received'] += 1
       return content
@@ -381,7 +383,7 @@ class Gamemode:
       if cSlayer.current_health > int(float(self.bot.Variables["hemo_health_lost_when_spe"]) * cSlayer.health):
 
         #Buff
-        cBuff_Hemomancien = Buff_Hemomancien(self.bot, cSlayer.id, int(cSlayer.health * float(self.bot.Variables["hemo_health_into_damage"])), int(min(cSlayer.health * float(self.bot.Variables["hemo_health_into_stacks"]), 1)))
+        cBuff_Hemomancien = Buff_Hemomancien(self.bot, cSlayer.id, int(cSlayer.health * float(self.bot.Variables["hemo_health_into_damage"])), max(int(cSlayer.health / int(self.bot.Variables["hemo_health_into_stacks"])), 1))
         cOpponent.add_buff(cBuff_Hemomancien, cSlayer)
 
         #Vie perdue
@@ -440,9 +442,7 @@ class Gamemode:
       cSlayer.useStacks(hit)
     
     #On récupère les buffs
-    #TODO Pour nerf CDG il faut mettre dans une Statistics du bot à part
     cSlayer.current_loadout.buffs_stats = cOpponent.get_all_buffs(hit, cSlayer)
-    print(cSlayer.current_loadout.buffs_stats)
 
     #Nombre de hits que le Slayer peut faire :
     for i in range(cSlayer.getNbrHit()):
@@ -511,11 +511,11 @@ class Gamemode:
       #Vie %
     if cSlayer.current_health >= 20000:
       await cSlayer.getDrop(pets=[409])
-    if str(total_damage_dealt).count('0') == len(str(total_damage_dealt))-1 and len(str(total_damage_dealt))>1 and hit == 'l':
+    if str(total_damage_dealt).count('0') == len(str(total_damage_dealt))-1 and len(str(total_damage_dealt))>1 and hit == 'l' and self.Opponents[self.count].total_hp != total_damage_dealt:
       await cSlayer.getDrop(rate=1, pets=[441])
-    if str(total_damage_dealt).count('0') == len(str(total_damage_dealt))-1 and len(str(total_damage_dealt))>1 and hit == 'h':
+    if str(total_damage_dealt).count('0') == len(str(total_damage_dealt))-1 and len(str(total_damage_dealt))>1 and hit == 'h' and self.Opponents[self.count].total_hp != total_damage_dealt:
       await cSlayer.getDrop(rate=1, pets=[442])
-    if str(total_damage_dealt).count('0') == len(str(total_damage_dealt))-1 and len(str(total_damage_dealt))>1 and hit == 's':
+    if str(total_damage_dealt).count('0') == len(str(total_damage_dealt))-1 and len(str(total_damage_dealt))>1 and hit == 's' and self.Opponents[self.count].total_hp != total_damage_dealt:
       await cSlayer.getDrop(rate=1, pets=[443])
 
       

@@ -58,7 +58,7 @@ def create_embed_battle(self):
         for faction_best_damage_list in listed_factions:
             value += f"\n{award_list[i]} - {bot.Factions[faction_best_damage_list[0]].emote} {bot.Factions[faction_best_damage_list[0]].name}: **{faction_best_damage_list[1]}**"
             i += 1
-        embed.add_field(name=f"Classement meilleur combo de {int(bot.Variables['factionwar_nbr_hit_stack'])} coups:", value=value, inline=False)
+        embed.add_field(name=f"Classement meilleur combo de {cOpponent.nbr_hit_stack} coups:", value=value, inline=False)
 
     if cOpponent.type == "banner":
         embed.set_footer(text=f"Fin de combat : {lib.datetime.datetime.fromtimestamp(self.timer_start + int(self.bot.Variables['factionwar_timing_before_end_seconds'])).strftime('%H:%M:%S')}")
@@ -96,6 +96,7 @@ def create_embed_end_battle(Battle, timeout):
 def create_embed_end_factionwar(Battle):
     #TITLE
     bot = Battle.bot
+    cOpponent = Battle.Opponents[0]
 
     title = f"**{Battle.name.capitalize()} achevé : ✨ Félicitations Factions !**"
     
@@ -109,15 +110,15 @@ def create_embed_end_factionwar(Battle):
     embed=lib.discord.Embed(title=title, description=description, color=0x2ecc71)
 
     #Banner
-    if Battle.Opponents[0].type == "banner":
-        listed_factions = sorted(Battle.Opponents[0].faction_best_damage.items(), key=lambda x:x[1], reverse=True)
+    if cOpponent.type == "banner":
+        listed_factions = sorted(cOpponent.faction_best_damage.items(), key=lambda x:x[1], reverse=True)
         value = ""
         i = 0
         award_list = ["🥇","🥈","🥉","🏅"]
         for faction_best_damage_list in listed_factions:
             value += f"\n{award_list[i]} - {bot.Factions[faction_best_damage_list[0]].emote} {bot.Factions[faction_best_damage_list[0]].name}: **{faction_best_damage_list[1]}**"
             i += 1
-        embed.add_field(name=f"Classement meilleur combo de {int(bot.Variables['factionwar_nbr_hit_stack'])} coups:", value=value, inline=False)
+        embed.add_field(name=f"Classement meilleur combo de {cOpponent.nbr_hit_stack} coups:", value=value, inline=False)
 
     embed.set_thumbnail(url='https://images-ext-2.discordapp.net/external/K5FrBGB9d-8IbCg_bnZyheglS9Q61aXohV4hJSMiImA/%3Fcb%3D20200801054948/https/static.wikia.nocookie.net/dauntless_gamepedia_en/images/1/13/Hunt_Icon.png/revision/latest')
     return embed
@@ -500,7 +501,7 @@ def create_embed_profil_attack(cLoadout_or_cSlayer, avatar, hit, cLoadout2=None)
                     f"```ansi\n- {cStatistic.display_emote} {cStatistic.display_name}: " \
                     f"{'🔒' if cLoadout_or_cSlayer.cSpe.adapt_min(cStatistic.cap_min, cStatistic.name, cLoadout_or_cSlayer.stats) == cLoadout_or_cSlayer.stats(subdivisions) or cLoadout_or_cSlayer.cSpe.adapt_max(cStatistic.cap_max, cStatistic.name, cLoadout_or_cSlayer.stats) == cLoadout_or_cSlayer.stats(subdivisions) else ''}" \
                     f"{sa(cLoadout2.stats(subdivisions), cLoadout_or_cSlayer.stats(subdivisions), cStatistic.reverse)}" \
-                    f"{_ffin(cLoadout_or_cSlayer.stats(subdivisions) + cLoadout_or_cSlayer.cSpe.spe_damage if hit == 's' and subdivisions == 'damage_s' else 0, stat)}" \
+                    f"{_ffin(cLoadout_or_cSlayer.stats(subdivisions) + (cLoadout_or_cSlayer.cSpe.spe_damage if hit == 's' and subdivisions == 'damage_s' else 0), stat)}" \
                     f"{btb() + ' (' + _ffin(cLoadout2.stats(subdivisions), stat) + ')' if not duplicated else ''}```"
     embed=lib.discord.Embed(title=f"{hit} {cLoadout_or_cSlayer.name}",
     description=description,

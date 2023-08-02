@@ -345,6 +345,12 @@ class Chargeur(Spe):
     except:
       return 0
 
+  def adapt_min(self, cap_min, bonus, stat):
+    if bonus == "special_charge_l":
+      return 1
+    else:
+      return cap_min
+
 @dataclass
 class Base_Slayer:
   def __init__(self, bot, rBase_Bonuses):

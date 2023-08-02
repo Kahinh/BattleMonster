@@ -141,14 +141,8 @@ class EnhancementPetsView(lib.discord.ui.View):
 
     async def update_view(self, interaction=None):
         #Si le familier a atteint le niveau 100, on recalcule
-        Pet_is100 = False
-        for cObject in self.pet_list:
-            if cObject.level == int(self.bot.Variables["object_max_level_pets"]):
-                Pet_is100 = True
-
-        if Pet_is100:
-            self.pet_list = self.create_pet_list()
-            self.index = 0
+        self.pet_list = self.create_pet_list()
+        if self.index > len(self.pet_list) - 1: self.index = 0
 
         self.embed = self.create_embed()
 

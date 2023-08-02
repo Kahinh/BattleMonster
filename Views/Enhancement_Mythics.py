@@ -31,7 +31,7 @@ class Slot_Dropdown(lib.discord.ui.Select):
         options = []
         options.append(lib.discord.SelectOption(label="Tous", value="None", emoji="♾️"))
         for slot in Slots:
-            if Slots[slot].activated:
+            if Slots[slot].activated and Slots[slot].name != "pet":
                 options.append(lib.discord.SelectOption(label=Slots[slot].display_text.capitalize(), value=slot, emoji=Slots[slot].display_emote))
 
         super().__init__(placeholder="Filtrer l'emplacement...", min_values=1, max_values=1, options=options)
@@ -209,7 +209,7 @@ class EnhancementMythicsView(lib.discord.ui.View):
 
     def disable_enable_previous_next_buttons(self):
         len_list = len(self.mythic_list)
-        if self.index == len_list - 1:
+        if self.index == len_list - 1 or len_list == 0:
             for item in self.children:
                 if hasattr(item, "label"):
                     if item.label==">>":
@@ -219,7 +219,7 @@ class EnhancementMythicsView(lib.discord.ui.View):
                 if hasattr(item, "label"):
                     if item.label=="<<":
                         item.disabled = False 
-        if self.index == 0:
+        if self.index == 0  or len_list == 0:
             for item in self.children:
                 if hasattr(item, "label"):
                     if item.label=="<<":
@@ -231,7 +231,7 @@ class EnhancementMythicsView(lib.discord.ui.View):
                         item.disabled = False
 
     def disable_enable_feed_button(self):
-        if self.cSlayer.inventories["gatherables"].get(5, 0) == 0:
+        if self.cSlayer.inventories["gatherables"].get(5, 0) == 0 or self.mythic_list == []:
             for item in self.children:
                 if hasattr(item, "label"):
                     if item.label=="Améliorer" or item.label=="Auto-amélioration":
@@ -257,10 +257,8 @@ class EnhancementMythicsView(lib.discord.ui.View):
 
     async def update_view(self, interaction=None):
         self.mythic_list = self.create_mythic_list()
+        if self.index > len(self.mythic_list) - 1: self.index = 0
         self.embed = self.create_embed()
-        if self.mythic_list == []:
-            await self.close_view(embed=self.embed)
-            return
         self.disable_enable_previous_next_buttons()
         self.disable_enable_feed_button()
 

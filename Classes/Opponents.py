@@ -147,7 +147,7 @@ class Opponent:
       if cBuff.isUsable(hit, cSlayer, len([cBuff_from_list for cBuff_from_list in cBuffs_list if cBuff_from_list.name == cBuff.name])):
         buffs_stats = Counter(buffs_stats) + Counter(cBuff.stats)
         cBuffs_list.append(cBuff)
-        if cBuff.stack == 0: self.identify_buffs_list(cSlayer).remove(cBuff) #On clear si on a tout utilisé les stacks
+        if cBuff.use_count == 0: self.identify_buffs_list(cSlayer).remove(cBuff) #On clear si on a tout utilisé les stacks
     return buffs_stats
 
   def get_display_buffs(self):
@@ -242,6 +242,7 @@ class Banner(Opponent):
     self.bot = gamemode.bot
     self.roll_dices = gamemode.max_dice
     self.group_name = "Pilier"
+    self.nbr_hit_stack = self.get_nbr_hit_stack()
   
   @classmethod
   async def handler_Build(cls, gamemode, element, rarity, type):
@@ -264,6 +265,14 @@ class Banner(Opponent):
 
     return self
   
+  def get_nbr_hit_stack(self):
+    max = int(self.bot.Variables["factionwar_nbr_hit_stack"])
+    list = [max]
+    while max > 1:
+        max = int(max/2)
+        list.append(max)
+    return random.choice(list)
+
   def split_by_faction_last_hits(self):
     for faction_id in self.bot.Factions:
       self.buffs.update({faction_id: []})
@@ -278,7 +287,7 @@ class Banner(Opponent):
 
   def recapDamageTaken(self, damage, cSlayer):  
     self.faction_total_damage[cSlayer.faction].append(damage)
-    if len(self.faction_total_damage[cSlayer.faction]) > int(self.bot.Variables["factionwar_nbr_hit_stack"]):
+    if len(self.faction_total_damage[cSlayer.faction]) > self.nbr_hit_stack:
       self.faction_total_damage[cSlayer.faction].pop(0)
     
     if sum(self.faction_total_damage[cSlayer.faction]) > self.faction_best_damage[cSlayer.faction]:
@@ -367,7 +376,7 @@ class Buff:
   def __init__(self, bot, slayer_id, stats, use_count = 0):
     self.bot = bot
     self.name = ""
-    self.use_count = 0
+    self.use_count = use_count
     self.stack = 0
     self.slayer_id = slayer_id
 
@@ -406,8 +415,8 @@ class Buff_CDG(Buff):
       self.damage_list.pop(0)
 
   def isUsable(self, hit, cSlayer, already_nbr):
-    if hit == 's' and cSlayer.cSpe.id == 4 and already_nbr < self.stack:
-      self.stack -= 1
+    if hit == 's' and cSlayer.cSpe.id == 4 and already_nbr < self.stack and self.use_count > 0:
+      self.use_count -= 1
       return True
     else:
       return False
@@ -428,14 +437,14 @@ class Buff_Dompteur(Buff):
     return self.bonuses
 
   def isUsable(self, hit, cSlayer, already_nbr):
-    if self.slayer_id != cSlayer.id and already_nbr < self.stack:
-      self.stack -= 1
+    if self.slayer_id != cSlayer.id and already_nbr < self.stack and self.use_count > 0:
+      self.use_count -= 1
       return True
     else:
       return False
 
 class Buff_Hemomancien(Buff):
-  def __init__(self, bot, slayer_id, damage, use_count = 0):
+  def __init__(self, bot, slayer_id, damage, use_count = 1):
     super().__init__(bot, slayer_id, damage, use_count)
     self.name = "Hemomancien"
     self.stack = int(bot.Variables["hemo_stack"])
@@ -454,8 +463,8 @@ class Buff_Hemomancien(Buff):
     }
 
   def isUsable(self, hit, cSlayer, already_nbr):
-    if self.slayer_id != cSlayer.id and already_nbr < self.stack:
-      self.stack -= 1
+    if self.slayer_id != cSlayer.id and already_nbr < self.stack and self.use_count > 0:
+      self.use_count -= 1
       return True
     else:
       return False

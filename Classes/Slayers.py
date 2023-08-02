@@ -250,7 +250,7 @@ class Slayer:
         content = f"\n> ⚔️ {self.cSpe.ability_name if hit == 's' else hit} : {int(damage)} {'‼️' if isCrit else ''} {'(-' + str(armor_reduction) + '🛡️)' if armor_reduction > 0 else ''}{'[🔥+' + str(self.current_loadout.cSpe.spe_damage) + ']' if self.current_loadout.cSpe.spe_damage > 0 and hit == 's' and self.current_loadout.cSpe.id == 7 else ''}{'[🪓' + str(self.temporary_stat -1) + 'restants]' if self.temporary_stat > 0 and self.current_loadout.cSpe.id == 8 else ''}{'[⚕️ -' + str(regen_timer_reduction) + ']' if regen_timer_reduction > 0 else ''}{'[📯' + str(self.stats('CDG')) + ']' if self.stats('CDG') > 0 else ''}"
 
         
-        if self.cSpe.id == 8: self.cSpe.update_temporary_stat(-1) #berserker
+        if self.cSpe.id == 8 and self.cSpe.temporary_stat > 0: self.cSpe.update_temporary_stat(-1) #berserker
         if self.cSpe.id == 12 and hit == "s": self.cSpe.update_temporary_stat(0) #chargeur
 
         return damage, content
