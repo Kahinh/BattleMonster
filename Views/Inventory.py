@@ -88,7 +88,7 @@ class Previous_Button(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
-            self.view.index -= 1
+            self.view.index = max(self.view.index - 1, 0)
             self.itemID_compare = 0
             
             await self.view.update_view(interaction)        
@@ -102,6 +102,7 @@ class Next_Button(lib.discord.ui.Button):
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
             self.view.index += 1 
+            self.view.index = min(self.view.index + 1, len(self.view.items_list_filtered) - 1)
             self.itemID_compare = 0
             
             await self.view.update_view(interaction)   
@@ -231,7 +232,7 @@ class InventoryView(lib.discord.ui.View):
 
     def disable_enable_InventoryView(self):
         len_list = len(self.items_list_filtered)
-        if self.index == len_list - 1 or len_list == 0:
+        if self.index >= len_list - 1 or len_list == 0:
             for item in self.children:
                 if hasattr(item, "label"):
                     if item.label==">>":
