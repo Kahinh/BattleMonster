@@ -28,38 +28,23 @@ class Equip_Button(lib.discord.ui.Button):
                 if int(cObject.id) == int(self.view.item_displayed):
                     cObject_equipped = cObject
 
-            isEquipped, List = await self.view.cSlayer.equip_item(cObject_equipped)
+            empty_slot, only_one_place_on_slot = self.view.cSlayer.item_can_be_equipped(self.view.bot.Slots[cObject_equipped.slot])
+            self.itemID_compare = 0
 
-            if isEquipped:
-                await self.view.update_view(interaction) 
-                await self.view.bot.ActiveList.update_interface(self.view.cSlayer.id, "inventaire")
+            if any([empty_slot, only_one_place_on_slot]):
+                if only_one_place_on_slot and not empty_slot:
+                    await self.view.cSlayer.unequip_item(self.view.cSlayer.slot_items_equipped(self.view.bot.Slots[cObject_equipped.slot])[0])
+                await self.view.cSlayer.equip_item(cObject_equipped)
+                await self.view.update_view(interaction=interaction) 
                 await interaction.followup.send(content="L'objet a été équipé !", ephemeral=True) 
             else:
-                if len(List) == 0:
+                if len(self.view.cSlayer.slot_items_equipped(self.view.bot.Slots[cObject_equipped.slot])) == 0:
                     await interaction.response.send_message(content="Une erreur est survenue !", ephemeral=True)
                 else:
-                    viewMult = lib.MultEquipView(self.view.bot, self.view.cSlayer, List, interaction, cObject_equipped)
+                    viewMult = lib.MultEquipView(self.view.bot, self.view.cSlayer, self.view.cSlayer.slot_items_equipped(self.view.bot.Slots[cObject_equipped.slot]), interaction, cObject_equipped)
                     await self.view.bot.ActiveList.add_interface(interaction.user.id, "mult_equip", viewMult)
                     await interaction.response.send_message(content="Tous les emplacements sont déjà utilisés, quel objet souhaitez-vous remplacer ?", view=viewMult, ephemeral=True)
-        else:
-            await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
-class Sell_Button(lib.discord.ui.Button):
-    def __init__(self):
-        super().__init__(label="Vendre", style=lib.discord.ButtonStyle.red)
-
-    async def callback(self, interaction: lib.discord.Interaction):
-        if not self.view.obsolete:
-            for cObject in self.view.recap_loot["items"]:
-                if int(cObject.id) == int(self.view.item_displayed):
-                    cObject_sold = cObject
-            Sold = await self.view.cSlayer.sell_item(cObject_sold)
-            await self.view.update_view(interaction)   
-            if Sold:
-                await self.view.bot.ActiveList.update_interface(self.view.cSlayer.id, "inventaire")
-                await interaction.followup.send("L'objet a été vendu !", ephemeral=True)
-            else:
-                await interaction.followup.send("Une erreur s'est produite !", ephemeral=True)
         else:
             await interaction.response.send_message(content="Cette interface est obsolete. Il te faut la redémarrer !", ephemeral=True)
 
@@ -81,7 +66,6 @@ class LootReviewView(lib.discord.ui.View):
         self.clear_items()
         if self.item_displayed is not None:
             self.add_item(Equip_Button())
-            #self.add_item(Sell_Button())
 
         self.add_item(Loot_Dropdown(self.bot, self.recap_loot))
         if self.item_displayed is None:

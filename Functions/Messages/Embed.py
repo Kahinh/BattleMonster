@@ -208,10 +208,9 @@ def create_embed_item(bot, cSlayer, cObject1, cObject2=None):
     return embed
 
 def create_embed_achievement(cSlayer, avatar):
-
     description = \
-    f"🎖️ Monstres tués : **{cSlayer.achievements['monsters_killed']}**" \
-    f"\n🏆 Meilleur attaque : **{cSlayer.achievements['biggest_hit']}**"
+    f"🎖️ Monstres tués : **{cSlayer.achievements.get('monsters_killed', 0)}**" \
+    f"\n🏆 Meilleur attaque : **{cSlayer.achievements.get('biggest_hit', 0)}**"
 
     embed=lib.discord.Embed(title=f"Prouesses de {cSlayer.name}",
     description=description,

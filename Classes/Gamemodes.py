@@ -484,6 +484,8 @@ class Gamemode:
       await self.bot.ActiveList.remove_eligibility(cSlayer)
       content += "\n\n> ☠️ Tu es mort ! Tu perds l'éligibilité aux butins sur tous les combats en cours. ☠️"
 
+    #TODO Faire une fonction pour stocker tous les gains de pets et achievements plutôt que polluer ici
+
     #Familier 
       #Critique
     if is_Crit:

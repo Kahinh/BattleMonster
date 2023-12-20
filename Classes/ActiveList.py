@@ -32,7 +32,7 @@ class ActiveList:
     else:
       cSlayer = self.active_slayers[user_id].cSlayer
       self.active_slayers[user_id].timestamp = datetime.datetime.timestamp(datetime.datetime.now())
-    await cSlayer.getDrop(rate=1, pets=[410])
+    if cSlayer.beta_tester: await cSlayer.getDrop(rate=1, pets=[410])
     return cSlayer
 
   async def add_interface(self, id, interface_name, interface_class):

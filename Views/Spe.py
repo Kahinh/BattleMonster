@@ -33,7 +33,7 @@ class Buy_Button(lib.discord.ui.Button):
 
     async def callback(self, interaction: lib.discord.Interaction):
         if not self.view.obsolete:
-            if is_moneyspent := await self.view.cSlayer.add_remove_money(self.price):
+            if is_moneyspent := await self.view.cSlayer.add_remove_money(-self.price):
                 await self.view.cSlayer.set_inventory_specializations(int(self.view.current_spe_id))
                 await self.view.update_view(interaction)
                 await interaction.followup.send(content="La spécialité a bien été achetée !", ephemeral=True) 
