@@ -10,7 +10,7 @@ Une fois le monstre abattu, les joueurs peuvent acquérir des butins pour améli
 ## Fonctionnalités:
 ### Pour les joueurs: 
 - `/slayer profil`     : Afin de visualiser vos statistiques, votre équipement et vos achievements
-- `/slayer inventaire` : Permet d'ouvrir votre inventaire : Visualiser les bonus des items, les équiper ou les vendre
+- `/slayer inventaire` : Permet d'ouvrir votre inventaire, visualiser les bonus des items et les équiper ou les vendre
 - `/slayer regen`      : Récupérer de la vie ou ressuciter
 
 ## A propos:
