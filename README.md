@@ -39,11 +39,13 @@ Merci à vous de jouer !
 
 
 >[!NOTE]
->> - [ ] Ajouter des spé. de slayer ( 
 >> - [ ] Donjon solo ( poker loots - loose loot si mort )
+>> - [ ] Trouver d'autres utilités à la "money"
+>
 >> - [ ] Ajouter 10 objets de chaques types
 >> - [ ] Ajouter les Farming Island
 >> - [ ] Ajouter les autres objets de farm ( rareté )
->> - [ ] Trouver d'autres utilités à la "money"
+>> - [ ] Ajouter des spé. de slayer
+
 
 
