@@ -1,10 +1,10 @@
 # BattleMonster ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 
-**DISCLAIMER :**
-Le Bot est en cours de développement, il ne peut donc être déployé sur d'autres serveurs.
-Vous pouvez nous contacter si vous voulez participer au développement et/ou le tester !
+>[!IMPORTANT]
+> Le Bot est en cours de développement, il ne peut donc être déployé sur d'autres serveurs.
+> Vous pouvez nous contacter si vous voulez participer au développement et/ou le tester !
 
-BattleMonster est un bot RPG permettant de combattre des Monstres qui apparaissent de façon aléatoire sur le canal d'un serveur Discord.
+`BattleMonster` est un bot RPG permettant de combattre des Monstres qui apparaissent de façon aléatoire sur le canal d'un serveur Discord.
 Une fois le monstre abattu, les joueurs peuvent acquérir des butins pour améliorer leurs compétences.
 
 ## Fonctionnalités:
