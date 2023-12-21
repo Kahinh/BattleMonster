@@ -36,3 +36,13 @@ Merci à vous de jouer !
 - [X] Beta 0.4
 - [] Beta 0.5
 - [] Beta 0.6
+
+
+>[!NOTE]
+>> - [ ] Ajouter des spé. de slayer ( 
+>> - [ ] Donjon solo ( poker loots - loose loot si mort )
+>> - [ ] Ajouter 10 objets de chaques types
+>> - [ ] Ajouter les Farming Island
+>> - [ ] Ajouter les autres objets de farm ( rareté )
+
+
