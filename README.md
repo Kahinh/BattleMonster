@@ -44,5 +44,6 @@ Merci à vous de jouer !
 >> - [ ] Ajouter 10 objets de chaques types
 >> - [ ] Ajouter les Farming Island
 >> - [ ] Ajouter les autres objets de farm ( rareté )
+>> - [ ] Trouver d'autres utilités à la "money"
 
 
